@@ -142,39 +142,93 @@ model SeoProfile {
 }
 
 // ---------------------------------------------------------------------------
-// Media
+// Media — metadata domain (Sprint 3)
 // ---------------------------------------------------------------------------
 
 enum AssetStatus {
+  pending
   processing
   ready
+  failed
+}
+
+enum MediaSourceType {
+  upload
+  external_url
+  ai_generated
+  stock
+  import
+  unknown
 }
 
 model Asset {
-  id              String      @id @default(cuid())
-  organizationId  String      @map("organization_id")
-  projectId       String      @map("project_id")
-  filename        String
-  mimeType        String      @map("mime_type")
-  storageProvider String      @map("storage_provider")
-  storageKey      String      @map("storage_key")
-  sizeBytes       Int         @map("size_bytes")
-  checksum        String?
-  altText         String?     @map("alt_text")
-  tags            String[]    @default([])
-  usageRights     String?     @map("usage_rights")
-  source          String?
-  status          AssetStatus @default(processing)
-  deletedAt       DateTime?   @map("deleted_at")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  id                String      @id @default(cuid())
+  organizationId    String      @map("organization_id")
+  projectId         String      @map("project_id")
+  filename          String
+  originalFilename  String      @map("original_filename")
+  mimeType          String      @map("mime_type")
+  storageProvider   String      @map("storage_provider")
+  storageKey        String      @map("storage_key")
+  sizeBytes         Int         @map("size_bytes")
+  checksum          String?
+  checksumAlgorithm String      @default("sha256") @map("checksum_algorithm")
+  altText           String?     @map("alt_text")
+  tags              String[]    @default([])
+  usageRights       String?     @map("usage_rights")
+  status            AssetStatus @default(pending)
+  deletedAt         DateTime?   @map("deleted_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaSources     MediaSource[]
+  metadataRecords  MetadataRecord[]
 
+  @@unique([projectId, storageKey])
   @@index([projectId])
   @@index([organizationId])
   @@index([projectId, deletedAt])
+  @@index([projectId, status])
+  @@index([projectId, mimeType])
   @@map("assets")
+}
+
+model MediaSource {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  projectId      String          @map("project_id")
+  assetId        String          @map("asset_id")
+  sourceType     MediaSourceType @map("source_type")
+  sourceUrl      String?         @map("source_url")
+  sourceLabel    String?         @map("source_label")
+  createdAt      DateTime        @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@index([projectId])
+  @@index([projectId, sourceType])
+  @@map("media_sources")
+}
+
+model MetadataRecord {
+  id             String   @id @default(cuid())
+  organizationId String @map("organization_id")
+  projectId      String   @map("project_id")
+  assetId        String   @map("asset_id")
+  namespace      String
+  key            String
+  value          Json
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, namespace, key])
+  @@index([projectId])
+  @@index([assetId, namespace])
+  @@map("metadata_records")
 }
 
 // ---------------------------------------------------------------------------

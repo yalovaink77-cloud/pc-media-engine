@@ -6,7 +6,17 @@ export {
   type AuditLogEntry,
   AuditLogRepository,
 } from './audit-log.repository.js';
-export { AssetRepository, ContentItemRepository } from './content.repository.js';
+export { ContentItemRepository } from './content.repository.js';
+export {
+  AssetRepository,
+  type CreateMediaAssetInput,
+  type CreateMediaSourceInput,
+  MediaAssetRepository,
+  MediaSourceRepository,
+  MetadataRecordRepository,
+  type UpdateMediaAssetMetadataInput,
+  type UpsertMetadataRecordInput,
+} from './media.repository.js';
 export { OrganizationRepository, ProjectRepository } from './organization.repository.js';
 export {
   activeRecordsFilter,
