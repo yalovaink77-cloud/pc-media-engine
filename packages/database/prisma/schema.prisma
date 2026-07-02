@@ -42,6 +42,8 @@ model Project {
   aiJobs               AiJob[]
   auditLogEntries      AuditLogEntry[]
   analyticsSnapshots   AnalyticsSnapshot[]
+  ingestionSources     IngestionSource[]
+  ingestionJobs        IngestionJob[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -229,6 +231,79 @@ model MetadataRecord {
   @@index([projectId])
   @@index([assetId, namespace])
   @@map("metadata_records")
+}
+
+// ---------------------------------------------------------------------------
+// Ingestion — intent and tracking domain (Sprint 4)
+// ---------------------------------------------------------------------------
+
+enum IngestionSourceType {
+  local_folder
+  http_url
+  youtube
+  rss
+  s3_placeholder
+  manual
+}
+
+enum IngestionStatus {
+  pending
+  running
+  completed
+  failed
+  canceled
+}
+
+model IngestionSource {
+  id             String              @id @default(cuid())
+  organizationId String              @map("organization_id")
+  projectId      String              @map("project_id")
+  sourceType     IngestionSourceType @map("source_type")
+  sourceUri      String              @map("source_uri")
+  sourceLabel    String?             @map("source_label")
+  isEnabled      Boolean             @default(true) @map("is_enabled")
+  config         Json                @default("{}")
+  deletedAt      DateTime?           @map("deleted_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ingestionJobs IngestionJob[]
+
+  @@unique([projectId, sourceType, sourceUri])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([projectId, deletedAt])
+  @@index([projectId, sourceType])
+  @@map("ingestion_sources")
+}
+
+model IngestionJob {
+  id                   String              @id @default(cuid())
+  organizationId       String              @map("organization_id")
+  projectId            String              @map("project_id")
+  ingestionSourceId    String?             @map("ingestion_source_id")
+  status               IngestionStatus     @default(pending)
+  sourceType           IngestionSourceType @map("source_type")
+  sourceUri            String              @map("source_uri")
+  sourceIdentifier     String?             @map("source_identifier")
+  discoveredAssetCount Int                 @default(0) @map("discovered_asset_count")
+  importedAssetCount   Int                 @default(0) @map("imported_asset_count")
+  failureReason        String?             @map("failure_reason")
+  startedAt            DateTime?           @map("started_at")
+  completedAt          DateTime?           @map("completed_at")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ingestionSource IngestionSource? @relation(fields: [ingestionSourceId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([projectId, status])
+  @@index([ingestionSourceId])
+  @@index([projectId, createdAt])
+  @@map("ingestion_jobs")
 }
 
 // ---------------------------------------------------------------------------

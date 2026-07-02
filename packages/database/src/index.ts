@@ -13,6 +13,13 @@ export {
   loadDatabaseEnv,
 } from './config.js';
 export {
+  IngestionValidationError,
+  validateIngestionCounts,
+  validateIngestionSourceUri,
+  validateNonNegativeCount,
+  validateSourceIdentifier,
+} from './domain/ingestion-validation.js';
+export {
   buildStorageKeyPlaceholder,
   type ChecksumAlgorithm,
   MediaValidationError,
@@ -37,8 +44,12 @@ export {
   type AuditLogEntry,
   AuditLogRepository,
   ContentItemRepository,
+  type CreateIngestionJobInput,
+  type CreateIngestionSourceInput,
   type CreateMediaAssetInput,
   type CreateMediaSourceInput,
+  IngestionJobRepository,
+  IngestionSourceRepository,
   MediaAssetRepository,
   MediaSourceRepository,
   MetadataRecordRepository,
@@ -47,6 +58,8 @@ export {
   ProjectScopeError,
   requireOrganizationId,
   requireProjectId,
+  type UpdateIngestionJobProgressInput,
+  type UpdateIngestionSourceInput,
   type UpdateMediaAssetMetadataInput,
   type UpsertMetadataRecordInput,
 } from './repositories/index.js';
@@ -59,6 +72,10 @@ export type {
   ContentState,
   ContentType,
   ContentVersion,
+  IngestionJob,
+  IngestionSource,
+  IngestionSourceType,
+  IngestionStatus,
   MediaSource,
   MediaSourceType,
   MetadataRecord,

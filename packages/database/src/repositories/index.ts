@@ -8,6 +8,14 @@ export {
 } from './audit-log.repository.js';
 export { ContentItemRepository } from './content.repository.js';
 export {
+  type CreateIngestionJobInput,
+  type CreateIngestionSourceInput,
+  IngestionJobRepository,
+  IngestionSourceRepository,
+  type UpdateIngestionJobProgressInput,
+  type UpdateIngestionSourceInput,
+} from './ingestion.repository.js';
+export {
   AssetRepository,
   type CreateMediaAssetInput,
   type CreateMediaSourceInput,

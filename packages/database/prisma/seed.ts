@@ -7,6 +7,8 @@ const DEFAULT_PROJECT_NAME = 'PiercingConnect';
 const DEFAULT_PROJECT_DOMAIN = 'piercingconnect.com';
 
 const SAMPLE_ASSET_ID = 'seedpc0001';
+const SAMPLE_INGESTION_SOURCE_ID = 'seedpcingest001';
+const SAMPLE_INGESTION_JOB_ID = 'seedpcingestjob001';
 const SAMPLE_CHECKSUM = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
 
 const piercingConnectSettings = {
@@ -165,9 +167,56 @@ async function main(): Promise<void> {
       },
     });
 
+    const ingestionSource = await prisma.ingestionSource.upsert({
+      where: {
+        projectId_sourceType_sourceUri: {
+          projectId: project.id,
+          sourceType: 'local_folder',
+          sourceUri: './data/media/piercingconnect/inbox',
+        },
+      },
+      update: {
+        sourceLabel: 'PiercingConnect local inbox (seed placeholder)',
+      },
+      create: {
+        id: SAMPLE_INGESTION_SOURCE_ID,
+        organizationId: organization.id,
+        projectId: project.id,
+        sourceType: 'local_folder',
+        sourceUri: './data/media/piercingconnect/inbox',
+        sourceLabel: 'PiercingConnect local inbox (seed placeholder)',
+        config: {
+          note: 'Metadata-only seed record — no ingestion execution',
+        },
+      },
+    });
+
+    await prisma.ingestionJob.upsert({
+      where: { id: SAMPLE_INGESTION_JOB_ID },
+      update: {
+        status: 'completed',
+        discoveredAssetCount: 0,
+        importedAssetCount: 0,
+      },
+      create: {
+        id: SAMPLE_INGESTION_JOB_ID,
+        organizationId: organization.id,
+        projectId: project.id,
+        ingestionSourceId: ingestionSource.id,
+        status: 'completed',
+        sourceType: 'local_folder',
+        sourceUri: './data/media/piercingconnect/inbox',
+        discoveredAssetCount: 0,
+        importedAssetCount: 0,
+        completedAt: new Date('2026-07-04T12:00:00.000Z'),
+      },
+    });
+
     console.log(`Seeded organization: ${organization.slug} (${organization.id})`);
     console.log(`Seeded project: ${project.slug} (${project.id})`);
     console.log(`Seeded sample media asset: ${asset.id} (${asset.storageKey})`);
+    console.log(`Seeded ingestion source: ${ingestionSource.id} (${ingestionSource.sourceUri})`);
+    console.log(`Seeded ingestion job: ${SAMPLE_INGESTION_JOB_ID} (completed, metadata-only)`);
   } finally {
     await prisma.$disconnect();
   }
