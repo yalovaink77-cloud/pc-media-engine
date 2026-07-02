@@ -20,8 +20,10 @@ import {
 import { activeRecordsFilter, requireProjectId } from './scoped-query.js';
 
 export type CreateMediaAssetInput = {
+  id?: string;
   organizationId: string;
   projectId: string;
+  ingestionJobId?: string;
   filename: string;
   originalFilename?: string;
   mimeType: string;
@@ -93,8 +95,10 @@ export class MediaAssetRepository {
 
     return this.client.asset.create({
       data: {
+        ...(input.id ? { id: input.id } : {}),
         organizationId: input.organizationId,
         projectId: requireProjectId(input.projectId),
+        ingestionJobId: input.ingestionJobId ?? null,
         filename: input.filename,
         originalFilename,
         mimeType: input.mimeType.trim().toLowerCase(),

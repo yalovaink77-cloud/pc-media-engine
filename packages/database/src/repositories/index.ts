@@ -29,10 +29,16 @@ export { OrganizationRepository, ProjectRepository } from './organization.reposi
 export {
   type CreateProcessingArtifactInput,
   type CreateProcessingJobInput,
+  type FinaliseProcessingArtifactInput,
   ProcessingArtifactRepository,
   ProcessingJobRepository,
   type UpdateProcessingJobInput,
 } from './processing.repository.js';
+export {
+  type CreateProcessingJobAttemptInput,
+  ProcessingJobAttemptRepository,
+  type UpdateProcessingJobAttemptInput,
+} from './processing-attempt.repository.js';
 export {
   activeRecordsFilter,
   ProjectScopeError,

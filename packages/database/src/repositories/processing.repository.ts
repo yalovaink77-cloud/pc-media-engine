@@ -49,6 +49,13 @@ export type CreateProcessingArtifactInput = {
   artifactType: ArtifactType;
   mimeType: string;
   storageKeyPlaceholder: string;
+  storageKey?: string;
+  checksum?: string;
+  sizeBytes?: number;
+};
+
+export type FinaliseProcessingArtifactInput = {
+  storageKey: string;
   checksum?: string;
   sizeBytes?: number;
 };
@@ -187,10 +194,31 @@ export class ProcessingArtifactRepository {
         artifactType: input.artifactType,
         mimeType: input.mimeType.trim().toLowerCase(),
         storageKeyPlaceholder: input.storageKeyPlaceholder.trim(),
+        storageKey: input.storageKey ?? null,
         checksum: input.checksum?.toLowerCase(),
         sizeBytes: input.sizeBytes,
       },
     });
+  }
+
+  finalise(
+    projectId: string,
+    artifactId: string,
+    input: FinaliseProcessingArtifactInput,
+  ): Promise<ProcessingArtifact | null> {
+    return this.client.processingArtifact
+      .updateMany({
+        where: {
+          id: artifactId,
+          projectId: requireProjectId(projectId),
+        },
+        data: {
+          storageKey: input.storageKey,
+          checksum: input.checksum?.toLowerCase(),
+          sizeBytes: input.sizeBytes,
+        },
+      })
+      .then((result) => (result.count === 0 ? null : this.findById(projectId, artifactId)));
   }
 
   findById(projectId: string, artifactId: string): Promise<ProcessingArtifact | null> {

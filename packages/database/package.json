@@ -22,7 +22,8 @@
     "db:migrate": "dotenv -e ../../.env -- prisma migrate deploy",
     "db:migrate:dev": "dotenv -e ../../.env -- prisma migrate dev",
     "db:seed": "dotenv -e ../../.env -- prisma db seed",
-    "db:health": "dotenv -e ../../.env -- tsx src/scripts/db-health.ts"
+    "db:health": "dotenv -e ../../.env -- tsx src/scripts/db-health.ts",
+    "db:smoke": "dotenv -e ../../.env -- tsx src/scripts/smoke.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",

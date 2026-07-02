@@ -168,6 +168,7 @@ model Asset {
   id                String      @id @default(cuid())
   organizationId    String      @map("organization_id")
   projectId         String      @map("project_id")
+  ingestionJobId    String?     @map("ingestion_job_id")
   filename          String
   originalFilename  String      @map("original_filename")
   mimeType          String      @map("mime_type")
@@ -185,6 +186,7 @@ model Asset {
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ingestionJob     IngestionJob?     @relation(fields: [ingestionJobId], references: [id], onDelete: SetNull)
   mediaSources     MediaSource[]
   metadataRecords  MetadataRecord[]
   processingJobs   ProcessingJob[]
@@ -192,6 +194,7 @@ model Asset {
   @@unique([projectId, storageKey])
   @@index([projectId])
   @@index([organizationId])
+  @@index([ingestionJobId])
   @@index([projectId, deletedAt])
   @@index([projectId, status])
   @@index([projectId, mimeType])
@@ -299,6 +302,7 @@ model IngestionJob {
 
   project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   ingestionSource IngestionSource? @relation(fields: [ingestionSourceId], references: [id], onDelete: SetNull)
+  assets          Asset[]
 
   @@index([projectId])
   @@index([organizationId])
@@ -354,9 +358,10 @@ model ProcessingJob {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
 
-  project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  asset               Asset                @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  project             Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset               Asset                  @relation(fields: [assetId], references: [id], onDelete: Cascade)
   processingArtifacts ProcessingArtifact[]
+  attempts            ProcessingJobAttempt[]
 
   @@unique([assetId, processingType])
   @@index([projectId])
@@ -368,19 +373,41 @@ model ProcessingJob {
   @@map("processing_jobs")
 }
 
+model ProcessingJobAttempt {
+  id              String           @id @default(cuid())
+  organizationId  String           @map("organization_id")
+  projectId       String           @map("project_id")
+  processingJobId String           @map("processing_job_id")
+  attemptNumber   Int              @map("attempt_number")
+  status          ProcessingStatus @default(pending)
+  startedAt       DateTime?        @map("started_at")
+  completedAt     DateTime?        @map("completed_at")
+  failureReason   String?          @map("failure_reason")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+  @@unique([processingJobId, attemptNumber])
+  @@index([processingJobId])
+  @@index([projectId])
+  @@map("processing_job_attempts")
+}
+
 model ProcessingArtifact {
-  id                   String       @id @default(cuid())
-  organizationId       String       @map("organization_id")
-  projectId            String       @map("project_id")
-  processingJobId      String       @map("processing_job_id")
-  assetId              String       @map("asset_id")
-  artifactType         ArtifactType @map("artifact_type")
-  mimeType             String       @map("mime_type")
-  storageKeyPlaceholder String      @map("storage_key_placeholder")
-  checksum             String?
-  sizeBytes            Int?         @map("size_bytes")
-  createdAt            DateTime     @default(now()) @map("created_at")
-  updatedAt            DateTime     @updatedAt @map("updated_at")
+  id                    String       @id @default(cuid())
+  organizationId        String       @map("organization_id")
+  projectId             String       @map("project_id")
+  processingJobId       String       @map("processing_job_id")
+  assetId               String       @map("asset_id")
+  artifactType          ArtifactType @map("artifact_type")
+  mimeType              String       @map("mime_type")
+  storageKeyPlaceholder String       @map("storage_key_placeholder")
+  storageKey            String?      @map("storage_key")
+  checksum              String?
+  sizeBytes             Int?         @map("size_bytes")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
 
   processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
 
