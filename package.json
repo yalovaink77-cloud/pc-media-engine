@@ -19,7 +19,12 @@
     "format:check": "prettier --check . && editorconfig-checker",
     "editorconfig:check": "editorconfig-checker",
     "lint-staged": "lint-staged",
-    "commitlint": "commitlint"
+    "commitlint": "commitlint",
+    "db:generate": "pnpm --filter @pcme/database db:generate",
+    "db:migrate": "pnpm --filter @pcme/database db:migrate",
+    "db:migrate:dev": "pnpm --filter @pcme/database db:migrate:dev",
+    "db:seed": "pnpm --filter @pcme/database db:seed",
+    "db:health": "pnpm --filter @pcme/database db:health"
   },
   "lint-staged": {
     "*.{ts,js,mjs,cjs}": [

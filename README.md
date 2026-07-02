@@ -2,19 +2,36 @@
 
 A reusable media and content operating system. PiercingConnect is the first project; the engine is designed to support additional sites and brands over time.
 
-**Status:** Sprint 1 — repository foundation (tooling + infrastructure)
+**Status:** Sprint 2 — database foundation
 
 ## Documentation
 
 - [ROADMAP](ROADMAP.md) — sprint plan and milestones
 - [Engineering Principles](docs/engineering/engineering-principles.md) — mandatory standards for all contributors
 - [Sprint 1 Plan](docs/sprints/sprint-1-plan.md) — repository foundation scope and definition of done
+- [Sprint 2 Database Setup](docs/sprints/sprint-2-database-setup.md) — local PostgreSQL and Prisma workflow
 
 ## Prerequisites
 
 - Node.js 20 LTS
 - pnpm 9+ (via Corepack)
 - Docker (for local PostgreSQL and Redis)
+
+## Database (Sprint 2)
+
+```bash
+cp .env.example .env
+docker compose up -d
+pnpm install
+pnpm db:generate
+pnpm db:migrate:dev
+pnpm db:seed
+pnpm db:health
+```
+
+See [Sprint 2 Database Setup](docs/sprints/sprint-2-database-setup.md) for details.
+
+Database scripts load environment variables from the repo root `.env` file.
 
 ## Local Development Validation
 
