@@ -9,6 +9,8 @@ const DEFAULT_PROJECT_DOMAIN = 'piercingconnect.com';
 const SAMPLE_ASSET_ID = 'seedpc0001';
 const SAMPLE_INGESTION_SOURCE_ID = 'seedpcingest001';
 const SAMPLE_INGESTION_JOB_ID = 'seedpcingestjob001';
+const SAMPLE_PROCESSING_JOB_ID = 'seedpcprocjob001';
+const SAMPLE_PROCESSING_ARTIFACT_ID = 'seedpcartifact001';
 const SAMPLE_CHECKSUM = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
 
 const piercingConnectSettings = {
@@ -212,11 +214,56 @@ async function main(): Promise<void> {
       },
     });
 
+    const processingJob = await prisma.processingJob.upsert({
+      where: {
+        assetId_processingType: {
+          assetId: asset.id,
+          processingType: 'thumbnail',
+        },
+      },
+      update: { status: 'pending' },
+      create: {
+        id: SAMPLE_PROCESSING_JOB_ID,
+        organizationId: organization.id,
+        projectId: project.id,
+        assetId: asset.id,
+        processingType: 'thumbnail',
+        status: 'pending',
+        priority: 0,
+      },
+    });
+
+    await prisma.processingArtifact.upsert({
+      where: {
+        processingJobId_artifactType: {
+          processingJobId: processingJob.id,
+          artifactType: 'thumbnail',
+        },
+      },
+      update: {
+        storageKeyPlaceholder: `${DEFAULT_PROJECT_SLUG}/${SAMPLE_ASSET_ID}/thumb-navel-aftercare-guide-cover.jpg`,
+      },
+      create: {
+        id: SAMPLE_PROCESSING_ARTIFACT_ID,
+        organizationId: organization.id,
+        projectId: project.id,
+        processingJobId: processingJob.id,
+        assetId: asset.id,
+        artifactType: 'thumbnail',
+        mimeType: 'image/jpeg',
+        storageKeyPlaceholder: `${DEFAULT_PROJECT_SLUG}/${SAMPLE_ASSET_ID}/thumb-navel-aftercare-guide-cover.jpg`,
+      },
+    });
+
     console.log(`Seeded organization: ${organization.slug} (${organization.id})`);
     console.log(`Seeded project: ${project.slug} (${project.id})`);
     console.log(`Seeded sample media asset: ${asset.id} (${asset.storageKey})`);
     console.log(`Seeded ingestion source: ${ingestionSource.id} (${ingestionSource.sourceUri})`);
     console.log(`Seeded ingestion job: ${SAMPLE_INGESTION_JOB_ID} (completed, metadata-only)`);
+    console.log(`Seeded processing job: ${processingJob.id} (thumbnail, pending)`);
+    console.log(
+      `Seeded processing artifact: ${SAMPLE_PROCESSING_ARTIFACT_ID} (thumbnail placeholder)`,
+    );
   } finally {
     await prisma.$disconnect();
   }

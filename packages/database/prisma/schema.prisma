@@ -44,6 +44,7 @@ model Project {
   analyticsSnapshots   AnalyticsSnapshot[]
   ingestionSources     IngestionSource[]
   ingestionJobs        IngestionJob[]
+  processingJobs       ProcessingJob[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -186,6 +187,7 @@ model Asset {
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   mediaSources     MediaSource[]
   metadataRecords  MetadataRecord[]
+  processingJobs   ProcessingJob[]
 
   @@unique([projectId, storageKey])
   @@index([projectId])
@@ -304,6 +306,89 @@ model IngestionJob {
   @@index([ingestionSourceId])
   @@index([projectId, createdAt])
   @@map("ingestion_jobs")
+}
+
+// ---------------------------------------------------------------------------
+// Processing — intent and artifact domain (Sprint 5)
+// ---------------------------------------------------------------------------
+
+enum ProcessingType {
+  metadata_extract
+  thumbnail
+  waveform
+  transcript
+  preview
+  ai_analysis
+}
+
+enum ProcessingStatus {
+  pending
+  queued
+  running
+  completed
+  failed
+  cancelled
+}
+
+enum ArtifactType {
+  thumbnail
+  transcript
+  waveform
+  preview
+  metadata
+}
+
+model ProcessingJob {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  projectId      String          @map("project_id")
+  assetId        String          @map("asset_id")
+  processingType ProcessingType  @map("processing_type")
+  status         ProcessingStatus @default(pending)
+  priority       Int             @default(0)
+  retryCount     Int             @default(0) @map("retry_count")
+  requestedAt    DateTime        @default(now()) @map("requested_at")
+  startedAt      DateTime?       @map("started_at")
+  completedAt    DateTime?       @map("completed_at")
+  failureReason  String?         @map("failure_reason")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset               Asset                @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  processingArtifacts ProcessingArtifact[]
+
+  @@unique([assetId, processingType])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([assetId])
+  @@index([projectId, status])
+  @@index([projectId, processingType])
+  @@index([status, priority])
+  @@map("processing_jobs")
+}
+
+model ProcessingArtifact {
+  id                   String       @id @default(cuid())
+  organizationId       String       @map("organization_id")
+  projectId            String       @map("project_id")
+  processingJobId      String       @map("processing_job_id")
+  assetId              String       @map("asset_id")
+  artifactType         ArtifactType @map("artifact_type")
+  mimeType             String       @map("mime_type")
+  storageKeyPlaceholder String      @map("storage_key_placeholder")
+  checksum             String?
+  sizeBytes            Int?         @map("size_bytes")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+  @@unique([processingJobId, artifactType])
+  @@index([processingJobId])
+  @@index([assetId])
+  @@index([projectId])
+  @@map("processing_artifacts")
 }
 
 // ---------------------------------------------------------------------------

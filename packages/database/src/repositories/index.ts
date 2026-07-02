@@ -27,6 +27,13 @@ export {
 } from './media.repository.js';
 export { OrganizationRepository, ProjectRepository } from './organization.repository.js';
 export {
+  type CreateProcessingArtifactInput,
+  type CreateProcessingJobInput,
+  ProcessingArtifactRepository,
+  ProcessingJobRepository,
+  type UpdateProcessingJobInput,
+} from './processing.repository.js';
+export {
   activeRecordsFilter,
   ProjectScopeError,
   requireOrganizationId,
