@@ -12,5 +12,8 @@
     "lint": "eslint .",
     "test": "node -e \"process.exit(0)\"",
     "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@pcme/media": "workspace:*"
   }
 }

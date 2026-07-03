@@ -17,9 +17,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node -e \"process.exit(0)\""
+    "test": "vitest run",
+    "storage:smoke": "tsx src/scripts/storage-smoke.ts"
   },
   "devDependencies": {
-    "@types/node": "^22.10.7"
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "vitest": "^3.0.5"
   }
 }

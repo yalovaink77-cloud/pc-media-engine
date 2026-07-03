@@ -1,29 +1,24 @@
 import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 
-import type { StorageProvider } from './provider.js';
+import type { LocalStorageConfig } from './config.js';
+import { StorageKeyError, StorageKeyNotFoundError, validateStorageKey } from './key.js';
+import type { StorageMeta, StorageProvider } from './provider.js';
 
-export type LocalStorageConfig = {
-  /**
-   * Absolute path to the root directory where files are stored.
-   * Created automatically if it does not exist.
-   */
-  rootDir: string;
-
-  /**
-   * Base URL prepended to keys when building public URLs.
-   * Defaults to '/files' (the API serves files at that prefix).
-   * Example: 'http://localhost:3000/files'
-   */
-  baseUrl?: string;
-};
+export type { LocalStorageConfig } from './config.js';
 
 /**
  * LocalStorageProvider — stores files on the local filesystem.
  *
  * Intended for local development and integration tests only.
- * All keys are treated as relative paths inside rootDir.
- * Path traversal (keys containing '..') is rejected.
+ * Each storageKey is treated as a relative path inside rootDir.
+ *
+ * Security: keys are validated on every call. Keys containing '..'
+ * or starting with '/' are rejected before any filesystem access.
+ *
+ * Concurrency: no locking. Simultaneous writes to the same key produce
+ * last-writer-wins semantics from the OS. Acceptable for development;
+ * production providers implement their own consistency guarantees.
  */
 export class LocalStorageProvider implements StorageProvider {
   readonly name = 'local';
@@ -45,7 +40,12 @@ export class LocalStorageProvider implements StorageProvider {
 
   async get(key: string): Promise<Buffer> {
     const filePath = this.resolveSafe(key);
-    return readFile(filePath);
+    try {
+      return await readFile(filePath);
+    } catch (err) {
+      if (isNoEnt(err)) throw new StorageKeyNotFoundError(key);
+      throw err;
+    }
   }
 
   async exists(key: string): Promise<boolean> {
@@ -53,31 +53,65 @@ export class LocalStorageProvider implements StorageProvider {
       const filePath = this.resolveSafe(key);
       await stat(filePath);
       return true;
-    } catch {
+    } catch (err) {
+      if (err instanceof StorageKeyError) throw err;
       return false;
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async stat(key: string): Promise<StorageMeta> {
+    const filePath = this.resolveSafe(key);
     try {
-      const filePath = this.resolveSafe(key);
+      const s = await stat(filePath);
+      return {
+        key,
+        sizeBytes: s.size,
+        lastModified: s.mtime,
+      };
+    } catch (err) {
+      if (isNoEnt(err)) throw new StorageKeyNotFoundError(key);
+      throw err;
+    }
+  }
+
+  async delete(key: string): Promise<void> {
+    const filePath = this.resolveSafe(key);
+    try {
       await unlink(filePath);
-    } catch {
-      // No-op if not found
+    } catch (err) {
+      if (isNoEnt(err)) return;
+      throw err;
     }
   }
 
   getPublicUrl(key: string): string {
+    this.resolveSafe(key);
     return `${this.baseUrl}/${key}`;
   }
 
+  /**
+   * Resolve a storageKey to an absolute filesystem path.
+   * Validates the key and guards against path traversal.
+   * Throws StorageKeyError on any violation — never performs I/O.
+   */
   private resolveSafe(key: string): string {
-    const normalised = key.replace(/\\/g, '/').replace(/^\/+/, '');
+    validateStorageKey(key);
 
-    if (normalised.includes('..')) {
-      throw new Error(`Path traversal rejected for key: ${key}`);
+    const abs = join(this.rootDir, key);
+
+    if (!abs.startsWith(this.rootDir + '/') && abs !== this.rootDir) {
+      throw new StorageKeyError(`Path traversal rejected for key: ${key}`);
     }
 
-    return join(this.rootDir, normalised);
+    return abs;
   }
+}
+
+function isNoEnt(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as NodeJS.ErrnoException).code === 'ENOENT'
+  );
 }
