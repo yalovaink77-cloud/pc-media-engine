@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { getPrismaClient, MediaAssetRepository } from '@pcme/database';
+import { getPrismaClient, MediaAssetRepository, ProcessingJobRepository } from '@pcme/database';
 import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
@@ -39,7 +39,11 @@ export async function startServer(config: Config): Promise<void> {
     );
   }
 
-  const app = buildApp({ config, checkDatabase, assetRepository, storageProvider });
+  // Sprint 10: wire a real processing job scheduler when upload is active.
+  const jobScheduler =
+    assetRepository && storageProvider ? new ProcessingJobRepository() : undefined;
+
+  const app = buildApp({ config, checkDatabase, assetRepository, storageProvider, jobScheduler });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
     app.log.info({ signal }, 'Shutdown signal received — closing server');

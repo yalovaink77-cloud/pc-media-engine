@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import Fastify from 'fastify';
 
 import type { Config } from './config.js';
+import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
@@ -32,6 +33,12 @@ export type AppOptions = {
    * Pass a mock in tests; production creates a real LocalStorageProvider.
    */
   storageProvider?: FileStorer;
+  /**
+   * Injected processing job scheduler (Sprint 10+).
+   * Undefined → processingJobs array in response will be empty (backward compatible).
+   * Pass a mock in tests; production creates a real ProcessingJobRepository.
+   */
+  jobScheduler?: JobScheduler;
 };
 
 /**
@@ -42,7 +49,7 @@ export type AppOptions = {
  * without needing a live network socket.
  */
 export function buildApp(options: AppOptions) {
-  const { config, checkDatabase, assetRepository, storageProvider } = options;
+  const { config, checkDatabase, assetRepository, storageProvider, jobScheduler } = options;
 
   const app = Fastify({
     logger: {
@@ -84,6 +91,7 @@ export function buildApp(options: AppOptions) {
     app.register(mediaRoutes, {
       assetRepository,
       storageProvider,
+      jobScheduler,
       organizationId: config.defaultOrgId,
       projectId: config.defaultProjectId,
       projectSlug: config.defaultProjectSlug,

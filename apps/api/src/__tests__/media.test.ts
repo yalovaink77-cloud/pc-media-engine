@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 
 import type { AppOptions } from '../app.js';
 import { buildApp } from '../app.js';
+import type { JobScheduler, ScheduledJob } from '../orchestration/processing.orchestrator.js';
 import type { AssetCreator, StoredAsset, UploadResponse } from '../routes/media.js';
 import { UPLOAD_ALLOWED_MIME_TYPES } from '../routes/media.js';
 
@@ -69,16 +70,23 @@ const baseConfig = {
 
 let tmpDir: string;
 let mockCreate: ReturnType<typeof vi.fn>;
+let mockFindByAssetAndType: ReturnType<typeof vi.fn>;
+let mockJobCreate: ReturnType<typeof vi.fn>;
 let app: ReturnType<typeof buildApp>;
 
 function makeApp(overrides: Partial<AppOptions> = {}): ReturnType<typeof buildApp> {
   const storageProvider = new LocalStorageProvider({ rootDir: tmpDir });
   const assetRepository: AssetCreator = { create: mockCreate };
+  const jobScheduler: JobScheduler = {
+    findByAssetAndType: mockFindByAssetAndType,
+    create: mockJobCreate,
+  };
 
   return buildApp({
     config: { ...baseConfig, storageLocalRoot: tmpDir },
     assetRepository,
     storageProvider,
+    jobScheduler,
     ...overrides,
   });
 }
@@ -112,6 +120,17 @@ beforeEach(() => {
           }),
         ),
     );
+
+  // Sprint 10 processing job mocks: by default no pre-existing job
+  mockFindByAssetAndType = vi.fn().mockResolvedValue(null);
+  mockJobCreate = vi.fn().mockImplementation((input: { assetId: string; processingType: string }) =>
+    Promise.resolve<ScheduledJob>({
+      id: `job-${input.processingType}-${input.assetId.slice(0, 8)}`,
+      processingType: input.processingType,
+      status: 'pending',
+    }),
+  );
+
   app = makeApp();
 });
 
@@ -178,13 +197,20 @@ describe('POST /media — successful upload', () => {
     expect(exists).toBe(true);
   });
 
-  it('does NOT call any ProcessingJob repository', async () => {
+  it('does NOT call the processing job scheduler when no scheduler is injected', async () => {
+    // Build an app without a jobScheduler — backward-compat check
+    const noSchedulerApp = makeApp({ jobScheduler: undefined });
     const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
-    await app.inject({ method: 'POST', url: '/media', headers: multipartHeaders(), body });
-    expect(mockCreate).toHaveBeenCalledTimes(1);
-    // Only create() on the asset repo — no processing repo call
-    const args = mockCreate.mock.calls[0]![0] as { storageProvider: string };
-    expect(args.storageProvider).toBe('local');
+    const res = await noSchedulerApp.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    await noSchedulerApp.close();
+    expect(res.statusCode).toBe(201);
+    // mockJobCreate was never reached
+    expect(mockJobCreate).not.toHaveBeenCalled();
   });
 
   it('accepts image/png', async () => {
@@ -297,5 +323,105 @@ describe('UPLOAD_ALLOWED_MIME_TYPES', () => {
   it('does not contain image/gif or application/pdf', () => {
     expect(UPLOAD_ALLOWED_MIME_TYPES.has('image/gif' as never)).toBe(false);
     expect(UPLOAD_ALLOWED_MIME_TYPES.has('application/pdf' as never)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /media — Sprint 10: processing orchestration
+// ---------------------------------------------------------------------------
+
+describe('POST /media — processing orchestration', () => {
+  it('response includes processingJobs array', async () => {
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    const res = await app.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    const json = res.json<UploadResponse>();
+    expect(json).toHaveProperty('processingJobs');
+    expect(Array.isArray(json.processingJobs)).toBe(true);
+  });
+
+  it('creates exactly one pending thumbnail ProcessingJob on upload', async () => {
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    await app.inject({ method: 'POST', url: '/media', headers: multipartHeaders(), body });
+
+    // scheduler.create called once for thumbnail
+    expect(mockJobCreate).toHaveBeenCalledTimes(1);
+    expect(mockJobCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ processingType: 'thumbnail' }),
+    );
+  });
+
+  it('returned processingJobs contains the thumbnail job with status pending', async () => {
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    const res = await app.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    const json = res.json<UploadResponse>();
+    expect(json.processingJobs).toHaveLength(1);
+    expect(json.processingJobs[0]).toMatchObject({
+      id: expect.any(String),
+      processingType: 'thumbnail',
+      status: 'pending',
+    });
+  });
+
+  it('does not create a duplicate job when one already exists (idempotent)', async () => {
+    // Pre-seed findByAssetAndType to return an existing job
+    const existingJob: ScheduledJob = {
+      id: 'existing-job-id',
+      processingType: 'thumbnail',
+      status: 'pending',
+    };
+    mockFindByAssetAndType.mockResolvedValue(existingJob);
+
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    const res = await app.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    const json = res.json<UploadResponse>();
+
+    // create() was never called on the scheduler
+    expect(mockJobCreate).not.toHaveBeenCalled();
+    // existing job is returned in the array
+    expect(json.processingJobs).toHaveLength(1);
+    expect(json.processingJobs[0]!.id).toBe('existing-job-id');
+  });
+
+  it('does not call job scheduler when upload validation fails (unsupported MIME)', async () => {
+    const body = buildMultipartBody('bad.gif', 'image/gif', Buffer.from('gif'));
+    await app.inject({ method: 'POST', url: '/media', headers: multipartHeaders(), body });
+    expect(mockJobCreate).not.toHaveBeenCalled();
+    expect(mockFindByAssetAndType).not.toHaveBeenCalled();
+  });
+
+  it('does not call job scheduler when upload validation fails (empty file)', async () => {
+    const body = buildMultipartBody('empty.jpg', 'image/jpeg', Buffer.alloc(0));
+    await app.inject({ method: 'POST', url: '/media', headers: multipartHeaders(), body });
+    expect(mockJobCreate).not.toHaveBeenCalled();
+    expect(mockFindByAssetAndType).not.toHaveBeenCalled();
+  });
+
+  it('processingJobs is empty array when no scheduler is injected', async () => {
+    const noSchedulerApp = makeApp({ jobScheduler: undefined });
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    const res = await noSchedulerApp.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    await noSchedulerApp.close();
+    const json = res.json<UploadResponse>();
+    expect(json.processingJobs).toEqual([]);
   });
 });

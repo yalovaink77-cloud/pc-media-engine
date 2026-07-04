@@ -5,6 +5,9 @@ import type { AssetStatus, CreateMediaAssetInput } from '@pcme/database';
 import { buildStorageKeyPlaceholder } from '@pcme/database';
 import type { FastifyInstance } from 'fastify';
 
+import type { JobScheduler, ScheduledJob } from '../orchestration/processing.orchestrator.js';
+import { scheduleDefaultJobs } from '../orchestration/processing.orchestrator.js';
+
 // ---------------------------------------------------------------------------
 // Injection interfaces (kept minimal so tests can pass plain objects)
 // ---------------------------------------------------------------------------
@@ -48,6 +51,11 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024;
 export type MediaRouteOptions = {
   assetRepository: AssetCreator;
   storageProvider: FileStorer;
+  /**
+   * Optional processing job scheduler.
+   * If omitted, no ProcessingJob records are created (backward compatible).
+   */
+  jobScheduler?: JobScheduler;
   organizationId: string;
   projectId: string;
   projectSlug: string;
@@ -57,6 +65,12 @@ export type MediaRouteOptions = {
 // Response shape
 // ---------------------------------------------------------------------------
 
+export type ProcessingJobSummary = {
+  id: string;
+  processingType: string;
+  status: string;
+};
+
 export type UploadResponse = {
   id: string;
   filename: string;
@@ -64,6 +78,7 @@ export type UploadResponse = {
   sizeBytes: number;
   storageKey: string;
   status: string;
+  processingJobs: ProcessingJobSummary[];
 };
 
 // ---------------------------------------------------------------------------
@@ -89,6 +104,17 @@ export async function mediaRoutes(app: FastifyInstance, options: MediaRouteOptio
               sizeBytes: { type: 'number' },
               storageKey: { type: 'string' },
               status: { type: 'string' },
+              processingJobs: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    processingType: { type: 'string' },
+                    status: { type: 'string' },
+                  },
+                },
+              },
             },
           },
         },
@@ -164,7 +190,20 @@ export async function mediaRoutes(app: FastifyInstance, options: MediaRouteOptio
       });
 
       // -------------------------------------------------------------------
-      // 8. Return 201 — no ProcessingJob created here
+      // 8. Schedule processing jobs (Sprint 10+)
+      //    No execution — jobs remain pending until a worker picks them up.
+      // -------------------------------------------------------------------
+      let processingJobs: ScheduledJob[] = [];
+      if (options.jobScheduler) {
+        processingJobs = await scheduleDefaultJobs(options.jobScheduler, {
+          organizationId: options.organizationId,
+          projectId: options.projectId,
+          assetId: asset.id,
+        });
+      }
+
+      // -------------------------------------------------------------------
+      // 9. Return 201
       // -------------------------------------------------------------------
       return reply.status(201).send({
         id: asset.id,
@@ -173,6 +212,11 @@ export async function mediaRoutes(app: FastifyInstance, options: MediaRouteOptio
         sizeBytes: asset.sizeBytes,
         storageKey: asset.storageKey,
         status: asset.status,
+        processingJobs: processingJobs.map((j) => ({
+          id: j.id,
+          processingType: j.processingType,
+          status: j.status,
+        })),
       });
     },
   );
