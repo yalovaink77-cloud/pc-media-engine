@@ -38,6 +38,21 @@ export type PublishingRequest = {
   categories?: string[];
   /** ID of the asset to use as the featured / hero image. */
   featuredAssetId?: string;
+
+  // ---- Raw media payload (for binary-upload publishers) ------------------
+
+  /**
+   * Raw binary content for publishers that upload files directly
+   * (e.g. WordPressMediaPublisher → POST /wp/v2/media).
+   * Text-only publishers (MockPublisher, etc.) ignore this field.
+   */
+  mediaBuffer?: Buffer;
+
+  /** MIME type of the binary payload. Defaults to application/octet-stream. */
+  mediaMimeType?: string;
+
+  /** Filename sent in Content-Disposition. Defaults to request.slug. */
+  mediaFilename?: string;
 };
 
 // ---------------------------------------------------------------------------
