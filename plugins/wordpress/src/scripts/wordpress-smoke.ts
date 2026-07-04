@@ -1,23 +1,21 @@
 /**
- * WordPress plugin smoke script — Sprint 14.
+ * WordPress plugin smoke script — Sprint 14/15.
  *
- * Verifies the WordPressMediaPublisher end-to-end using a fake in-process
- * HTTP implementation. No real WordPress credentials are required.
+ * Verifies WordPressMediaPublisher end-to-end using a fake in-process HTTP
+ * implementation. No real WordPress credentials are required.
  *
  * The fake simulates a WordPress REST API server that:
  *   - Responds 200 to GET  /wp-json/wp/v2/users/me  (health check)
  *   - Responds 201 to POST /wp-json/wp/v2/media     (media upload)
+ *   - Responds 201 to POST /wp-json/wp/v2/posts     (draft post creation)
  *   - Responds 401 to any request with bad credentials (error path test)
- *
- * Real WordPress smoke (opt-in):
- *   Set WORDPRESS_BASE_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD
- *   then run: WP_REAL_SMOKE=1 pnpm --filter @pcme/plugin-wordpress smoke
  *
  * Run:
  *   pnpm --filter @pcme/plugin-wordpress smoke
  */
 
 import type { Publisher } from '@pcme/publishing';
+import { PublishingValidationError } from '@pcme/publishing';
 
 import type { WordPressConfig } from '../config.js';
 import { loadWordPressConfig, WordPressConfigError } from '../config.js';
@@ -49,11 +47,13 @@ function fail(msg: string, err?: unknown): never {
 
 const FAKE_BASE_URL = 'https://fake-wp.example.com';
 const FAKE_ATTACHMENT_ID = 1337;
+const FAKE_POST_ID = 2048;
 const FAKE_SOURCE_URL = `${FAKE_BASE_URL}/wp-content/uploads/smoke-photo.jpg`;
+const FAKE_POST_URL = `${FAKE_BASE_URL}/?p=${FAKE_POST_ID}`;
 const FAKE_USER_NAME = 'smoke-admin';
 
 function fakeWpServer(goodCredentials: boolean): FetchFunction {
-  return async (url) => {
+  return async (url, init) => {
     const urlStr = String(url);
 
     if (!goodCredentials) {
@@ -82,6 +82,25 @@ function fakeWpServer(goodCredentials: boolean): FetchFunction {
       );
     }
 
+    if (urlStr.includes('/wp-json/wp/v2/posts') && init?.method === 'POST') {
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      if (body['status'] !== 'draft') {
+        return new Response(
+          JSON.stringify({ code: 'invalid_status', message: 'Only draft posts are supported.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          id: FAKE_POST_ID,
+          link: FAKE_POST_URL,
+          date: '2024-06-02T12:00:00',
+          status: 'draft',
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response('Not Found', { status: 404 });
   };
 }
@@ -97,7 +116,7 @@ const FAKE_CONFIG: WordPressConfig = {
 // ---------------------------------------------------------------------------
 
 async function smoke(): Promise<void> {
-  process.stdout.write('═══ Sprint 14 WordPress Media Upload Smoke ═══\n');
+  process.stdout.write('═══ Sprint 15 WordPress Draft Post Smoke ═══\n');
 
   // -------------------------------------------------------------------------
   // Step 1 — Fake health check (ok path)
@@ -200,7 +219,6 @@ async function smoke(): Promise<void> {
   // -------------------------------------------------------------------------
   section('Step 6 — publishMedia() — validation (missing mediaBuffer)');
 
-  const { PublishingValidationError } = await import('@pcme/publishing');
   let caughtValidation = false;
   try {
     await publisherOk.publishMedia({ title: 'Photo', slug: 'photo' });
@@ -211,10 +229,76 @@ async function smoke(): Promise<void> {
   ok('Missing mediaBuffer → PublishingValidationError');
 
   // -------------------------------------------------------------------------
-  // Step 7 — Real WordPress smoke (opt-in only)
+  // Step 7 — publishPost (success path)
+  // -------------------------------------------------------------------------
+  section('Step 7 — publishPost() — draft creation (fake HTTP)');
+
+  const postResult = await publisherOk.publishPost({
+    title: 'Aftercare Guide: Industrial Piercings',
+    slug: 'aftercare-guide-industrial-piercings',
+    excerpt: 'Keep your new industrial clean and healthy.',
+    body: '<p>Clean twice daily with saline solution.</p>',
+    tags: ['aftercare', 'industrial'],
+    categories: ['12'],
+    featuredMediaId: FAKE_ATTACHMENT_ID,
+  });
+
+  if (!postResult.success) fail('publishPost returned success=false');
+  ok(`success = ${postResult.success}`);
+
+  if (postResult.externalId !== String(FAKE_POST_ID)) {
+    fail(`Expected externalId=${FAKE_POST_ID}, got ${postResult.externalId}`);
+  }
+  ok(`externalId = ${postResult.externalId}`);
+
+  if (postResult.url !== FAKE_POST_URL) {
+    fail(`Expected url=${FAKE_POST_URL}, got ${postResult.url}`);
+  }
+  ok(`url = ${postResult.url}`);
+
+  if (!(postResult.publishedAt instanceof Date)) fail('publishedAt is not a Date');
+  ok(`publishedAt = ${postResult.publishedAt.toISOString()}`);
+  ok(`message = ${postResult.message ?? '(none)'}`);
+
+  // -------------------------------------------------------------------------
+  // Step 8 — publishPost error path (401)
+  // -------------------------------------------------------------------------
+  section('Step 8 — publishPost() — error path (401 from fake WordPress)');
+
+  let caughtPostApiError = false;
+  try {
+    await publisherBadCreds.publishPost({
+      title: 'Draft',
+      slug: 'draft',
+      body: '<p>Body</p>',
+    });
+  } catch (err) {
+    if (err instanceof WordPressApiError) {
+      caughtPostApiError = true;
+      ok(`WordPressApiError thrown (status=${err.status}, code=${err.code})`);
+    }
+  }
+  if (!caughtPostApiError) fail('Expected WordPressApiError from publishPost 401');
+
+  // -------------------------------------------------------------------------
+  // Step 9 — publishPost validation (missing body)
+  // -------------------------------------------------------------------------
+  section('Step 9 — publishPost() — validation (missing body)');
+
+  let caughtPostValidation = false;
+  try {
+    await publisherOk.publishPost({ title: 'Draft', slug: 'draft' });
+  } catch (err) {
+    if (err instanceof PublishingValidationError) caughtPostValidation = true;
+  }
+  if (!caughtPostValidation) fail('Expected PublishingValidationError for missing body');
+  ok('Missing body → PublishingValidationError');
+
+  // -------------------------------------------------------------------------
+  // Step 10 — Real WordPress smoke (opt-in only)
   // -------------------------------------------------------------------------
   if (process.env['WP_REAL_SMOKE'] === '1') {
-    section('Step 7 — Real WordPress smoke (WP_REAL_SMOKE=1)');
+    section('Step 10 — Real WordPress smoke (WP_REAL_SMOKE=1)');
     try {
       const realConfig = loadWordPressConfig(process.env as Record<string, string>);
       const realPublisher = new WordPressMediaPublisher(realConfig);
@@ -229,7 +313,9 @@ async function smoke(): Promise<void> {
       }
     }
   } else {
-    process.stdout.write('\n  ℹ Step 7 (real WordPress) skipped — set WP_REAL_SMOKE=1 to enable\n');
+    process.stdout.write(
+      '\n  ℹ Step 10 (real WordPress) skipped — set WP_REAL_SMOKE=1 to enable\n',
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -237,13 +323,12 @@ async function smoke(): Promise<void> {
   // -------------------------------------------------------------------------
   process.stdout.write(`
 ╔══════════════════════════════════════════════════════════════════╗
-║  ✅  WordPress Smoke PASSED — Sprint 14 media upload            ║
+║  ✅  WordPress Smoke PASSED — Sprint 15 draft post creation       ║
 ╚══════════════════════════════════════════════════════════════════╝
 
 Publisher: WordPressMediaPublisher
 HTTP:      fake in-process server (no real WordPress required)
-Steps:     health(ok) / health(down) / health(no-config) /
-           publishMedia(ok) / publishMedia(401) / validation
+Steps:     health / publishMedia / publishPost(draft) / validation / errors
 `);
 }
 

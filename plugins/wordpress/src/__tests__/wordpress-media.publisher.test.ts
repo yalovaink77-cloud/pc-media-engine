@@ -46,6 +46,23 @@ const WP_USER_RESPONSE = {
   name: 'Admin User',
 };
 
+const VALID_POST_REQUEST = {
+  title: 'Aftercare Guide: Industrial Piercings',
+  slug: 'aftercare-guide-industrial-piercings',
+  excerpt: 'Keep your new industrial clean and healthy.',
+  body: '<p>Clean twice daily with saline solution.</p>',
+  tags: ['aftercare', 'industrial'],
+  categories: ['12', '34'],
+  featuredMediaId: 42,
+};
+
+const WP_POST_RESPONSE = {
+  id: 99,
+  link: 'https://example.com/?p=99',
+  date: '2024-06-02T10:00:00',
+  status: 'draft',
+};
+
 // ---------------------------------------------------------------------------
 // auth — buildBasicAuth
 // ---------------------------------------------------------------------------
@@ -387,5 +404,198 @@ describe('WordPressMediaPublisher.health', () => {
     const result = await pub.health();
     expect(result.status).toBe('down');
     expect(result.message).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WordPressMediaPublisher — publishPost (draft creation)
+// ---------------------------------------------------------------------------
+
+describe('WordPressMediaPublisher.publishPost — success', () => {
+  it('returns PublishingResult with success=true', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.success).toBe(true);
+  });
+
+  it('maps externalId from WordPress post id', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.externalId).toBe('99');
+  });
+
+  it('maps url from link', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.url).toBe(WP_POST_RESPONSE.link);
+  });
+
+  it('maps publishedAt to a Date', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.publishedAt).toBeInstanceOf(Date);
+    expect(result.publishedAt.toISOString()).toMatch(/^2024-06-02/);
+  });
+
+  it('includes draft status in the message', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.message).toContain('draft');
+    expect(result.message).toContain('99');
+  });
+});
+
+describe('WordPressMediaPublisher.publishPost — request payload', () => {
+  it('always sends status=draft', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost(VALID_POST_REQUEST);
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const body = JSON.parse(init?.body as string) as Record<string, unknown>;
+    expect(body['status']).toBe('draft');
+  });
+
+  it('sends title, slug, content, excerpt, categories, tags, featured_media', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost(VALID_POST_REQUEST);
+
+    const [url, init] = mockFetch.mock.calls[0]!;
+    expect(String(url)).toContain('/wp-json/wp/v2/posts');
+    const body = JSON.parse(init?.body as string) as Record<string, unknown>;
+    expect(body['title']).toBe(VALID_POST_REQUEST.title);
+    expect(body['slug']).toBe(VALID_POST_REQUEST.slug);
+    expect(body['content']).toBe(VALID_POST_REQUEST.body);
+    expect(body['excerpt']).toBe(VALID_POST_REQUEST.excerpt);
+    expect(body['categories']).toEqual([12, 34]);
+    expect(body['tags']).toEqual(['aftercare', 'industrial']);
+    expect(body['featured_media']).toBe(42);
+  });
+
+  it('maps featuredAssetId when it is a numeric WordPress media id', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost({
+      ...VALID_POST_REQUEST,
+      featuredMediaId: undefined,
+      featuredAssetId: '77',
+    });
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const body = JSON.parse(init?.body as string) as Record<string, unknown>;
+    expect(body['featured_media']).toBe(77);
+  });
+
+  it('prefers featuredMediaId over featuredAssetId', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost({
+      ...VALID_POST_REQUEST,
+      featuredMediaId: 55,
+      featuredAssetId: '77',
+    });
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const body = JSON.parse(init?.body as string) as Record<string, unknown>;
+    expect(body['featured_media']).toBe(55);
+  });
+
+  it('omits featured_media when no featured id is provided', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost({
+      title: 'Title',
+      slug: 'title',
+      body: '<p>Body</p>',
+    });
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const body = JSON.parse(init?.body as string) as Record<string, unknown>;
+    expect(body['featured_media']).toBeUndefined();
+  });
+});
+
+describe('WordPressMediaPublisher.publishPost — auth header', () => {
+  it('sends Authorization header with correct Basic credentials', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost(VALID_POST_REQUEST);
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const headers = init?.headers as Record<string, string>;
+    const expected = buildBasicAuth(VALID_CONFIG.username, VALID_CONFIG.appPassword);
+    expect(headers['Authorization']).toBe(expected);
+  });
+
+  it('sends Content-Type application/json', async () => {
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(jsonResponse(WP_POST_RESPONSE, 201));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await pub.publishPost(VALID_POST_REQUEST);
+
+    const [, init] = mockFetch.mock.calls[0]!;
+    const headers = init?.headers as Record<string, string>;
+    expect(headers['Content-Type']).toBe('application/json');
+  });
+});
+
+describe('WordPressMediaPublisher.publishPost — validation', () => {
+  it('throws PublishingValidationError when config is incomplete', async () => {
+    const pub = new WordPressMediaPublisher(
+      { baseUrl: '', username: '', appPassword: '' },
+      vi.fn(),
+    );
+    await expect(pub.publishPost(VALID_POST_REQUEST)).rejects.toThrow(PublishingValidationError);
+  });
+
+  it('throws PublishingValidationError when title is empty', async () => {
+    const mockFetch = vi.fn<FetchFunction>();
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await expect(pub.publishPost({ ...VALID_POST_REQUEST, title: '' })).rejects.toThrow(
+      PublishingValidationError,
+    );
+  });
+
+  it('throws PublishingValidationError when slug is empty', async () => {
+    const mockFetch = vi.fn<FetchFunction>();
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await expect(pub.publishPost({ ...VALID_POST_REQUEST, slug: '' })).rejects.toThrow(
+      PublishingValidationError,
+    );
+  });
+
+  it('throws PublishingValidationError when body is empty', async () => {
+    const mockFetch = vi.fn<FetchFunction>();
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await expect(pub.publishPost({ ...VALID_POST_REQUEST, body: '' })).rejects.toThrow(
+      PublishingValidationError,
+    );
+  });
+});
+
+describe('WordPressMediaPublisher.publishPost — WordPress error responses', () => {
+  it('throws WordPressApiError on 401 Unauthorized', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse({ code: 'rest_cannot_create', message: 'Sorry, you are not allowed.' }, 401),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await expect(pub.publishPost(VALID_POST_REQUEST)).rejects.toThrow(WordPressApiError);
+  });
+});
+
+describe('WordPressMediaPublisher.publishPost — network failure', () => {
+  it('propagates fetch errors from publishPost', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockRejectedValue(new TypeError('fetch failed: ECONNREFUSED'));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG, mockFetch);
+    await expect(pub.publishPost(VALID_POST_REQUEST)).rejects.toThrow('ECONNREFUSED');
   });
 });

@@ -39,6 +39,12 @@ export type PublishingRequest = {
   /** ID of the asset to use as the featured / hero image. */
   featuredAssetId?: string;
 
+  /**
+   * Platform media attachment ID (e.g. WordPress media id from a prior upload).
+   * When set, publishers map this to destination-specific featured image fields.
+   */
+  featuredMediaId?: number;
+
   // ---- Raw media payload (for binary-upload publishers) ------------------
 
   /**

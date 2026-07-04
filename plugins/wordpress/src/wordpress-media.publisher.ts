@@ -1,13 +1,13 @@
 /**
- * WordPressMediaPublisher — uploads binary media to the WordPress REST API.
+ * WordPressMediaPublisher — WordPress REST API publishing provider.
  *
  * Implements the Publisher interface from @pcme/publishing.
  *
- * Sprint scope (Sprint 14):
+ * Sprint scope:
  *   ✓ health()       — GET  /wp-json/wp/v2/users/me
  *   ✓ publishMedia() — POST /wp-json/wp/v2/media
- *   ✗ publishPost()  — deferred to Sprint 15
- *   ✗ publish()      — defers to publishMedia when mediaBuffer present
+ *   ✓ publishPost()  — POST /wp-json/wp/v2/posts (status=draft only)
+ *   ✓ publish()      — routes to publishMedia or publishPost
  *
  * HTTP client:
  *   Uses the standard Fetch API. Pass a custom fetchFn to the constructor for
@@ -55,6 +55,24 @@ type WpUserResponse = {
   name: string;
 };
 
+type WpPostResponse = {
+  id: number;
+  link: string;
+  date: string;
+  status: string;
+};
+
+type WpPostPayload = {
+  title: string;
+  slug: string;
+  content: string;
+  status: 'draft';
+  excerpt?: string;
+  categories?: number[];
+  tags?: string[];
+  featured_media?: number;
+};
+
 // ---------------------------------------------------------------------------
 // WordPressMediaPublisher
 // ---------------------------------------------------------------------------
@@ -83,6 +101,76 @@ export class WordPressMediaPublisher implements Publisher {
     return `${this.config.baseUrl}/wp-json/wp/v2/users/me`;
   }
 
+  private postsUrl(): string {
+    return `${this.config.baseUrl}/wp-json/wp/v2/posts`;
+  }
+
+  private assertConfigComplete(): void {
+    if (!isConfigComplete(this.config)) {
+      throw new PublishingValidationError(
+        'WordPressMediaPublisher: incomplete configuration — check WORDPRESS_BASE_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD',
+      );
+    }
+  }
+
+  private validatePostFields(request: PublishingRequest): void {
+    if (!request.title || request.title.trim() === '') {
+      throw new PublishingValidationError('PublishingRequest.title is required');
+    }
+    if (!request.slug || request.slug.trim() === '') {
+      throw new PublishingValidationError('PublishingRequest.slug is required');
+    }
+    if (!request.body || request.body.trim() === '') {
+      throw new PublishingValidationError('PublishingRequest.body is required');
+    }
+  }
+
+  /** Resolve WordPress featured_media id from explicit id or numeric featuredAssetId. */
+  private resolveFeaturedMediaId(request: PublishingRequest): number | undefined {
+    if (request.featuredMediaId !== undefined && request.featuredMediaId > 0) {
+      return request.featuredMediaId;
+    }
+    if (request.featuredAssetId) {
+      const parsed = Number.parseInt(request.featuredAssetId, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    return undefined;
+  }
+
+  private buildPostPayload(request: PublishingRequest): WpPostPayload {
+    const payload: WpPostPayload = {
+      title: request.title.trim(),
+      slug: request.slug.trim(),
+      content: request.body!.trim(),
+      status: 'draft',
+    };
+
+    if (request.excerpt?.trim()) {
+      payload.excerpt = request.excerpt.trim();
+    }
+
+    const categories = (request.categories ?? [])
+      .map((value) => Number.parseInt(value, 10))
+      .filter((id) => !Number.isNaN(id) && id > 0);
+    if (categories.length > 0) {
+      payload.categories = categories;
+    }
+
+    const tags = (request.tags ?? []).map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+    if (tags.length > 0) {
+      payload.tags = tags;
+    }
+
+    const featuredMediaId = this.resolveFeaturedMediaId(request);
+    if (featuredMediaId !== undefined) {
+      payload.featured_media = featuredMediaId;
+    }
+
+    return payload;
+  }
+
   private async parseErrorResponse(response: Response): Promise<WordPressApiError> {
     let code = 'unknown';
     let message = `WordPress returned HTTP ${response.status}`;
@@ -101,11 +189,7 @@ export class WordPressMediaPublisher implements Publisher {
   // -------------------------------------------------------------------------
 
   async publishMedia(request: PublishingRequest): Promise<PublishingResult> {
-    if (!isConfigComplete(this.config)) {
-      throw new PublishingValidationError(
-        'WordPressMediaPublisher: incomplete configuration — check WORDPRESS_BASE_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD',
-      );
-    }
+    this.assertConfigComplete();
 
     if (!request.title || request.title.trim() === '') {
       throw new PublishingValidationError('PublishingRequest.title is required');
@@ -147,8 +231,34 @@ export class WordPressMediaPublisher implements Publisher {
     };
   }
 
-  async publishPost(_request: PublishingRequest): Promise<PublishingResult> {
-    throw new Error('WordPress post creation is not implemented — deferred to Sprint 15');
+  async publishPost(request: PublishingRequest): Promise<PublishingResult> {
+    this.assertConfigComplete();
+    this.validatePostFields(request);
+
+    const payload = this.buildPostPayload(request);
+
+    const response = await this.fetchFn(this.postsUrl(), {
+      method: 'POST',
+      headers: {
+        Authorization: this.authHeader(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw await this.parseErrorResponse(response);
+    }
+
+    const data = (await response.json()) as WpPostResponse;
+
+    return {
+      success: true,
+      externalId: String(data.id),
+      url: data.link,
+      publishedAt: new Date(data.date),
+      message: `Draft post created in WordPress (id=${data.id}, status=${data.status})`,
+    };
   }
 
   async publish(request: PublishingRequest): Promise<PublishingResult> {
