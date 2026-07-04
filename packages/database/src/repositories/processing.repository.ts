@@ -92,6 +92,14 @@ export class ProcessingJobRepository {
     });
   }
 
+  /**
+   * Find a job by ID without project scoping.
+   * Intended for internal use by workers that receive only a job ID from the queue.
+   */
+  findByIdGlobal(jobId: string): Promise<ProcessingJob | null> {
+    return this.client.processingJob.findUnique({ where: { id: jobId } });
+  }
+
   findByAsset(projectId: string, assetId: string): Promise<ProcessingJob[]> {
     return this.client.processingJob.findMany({
       where: {
