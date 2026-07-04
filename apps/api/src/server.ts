@@ -1,4 +1,7 @@
-import { getPrismaClient } from '@pcme/database';
+import { resolve } from 'node:path';
+
+import { getPrismaClient, MediaAssetRepository } from '@pcme/database';
+import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
 import type { Config } from './config.js';
@@ -23,7 +26,20 @@ function buildDatabaseCheck(_databaseUrl: string): () => Promise<DatabaseStatus>
 export async function startServer(config: Config): Promise<void> {
   const checkDatabase = config.databaseUrl ? buildDatabaseCheck(config.databaseUrl) : undefined;
 
-  const app = buildApp({ config, checkDatabase });
+  const assetRepository =
+    config.defaultOrgId && config.defaultProjectId ? new MediaAssetRepository() : undefined;
+
+  const storageProvider = config.storageLocalRoot
+    ? new LocalStorageProvider({ rootDir: resolve(config.storageLocalRoot) })
+    : undefined;
+
+  if (!assetRepository || !storageProvider) {
+    console.warn(
+      '[api] Upload route disabled — set PCME_DEFAULT_ORG_ID, PCME_DEFAULT_PROJECT_ID, STORAGE_LOCAL_ROOT',
+    );
+  }
+
+  const app = buildApp({ config, checkDatabase, assetRepository, storageProvider });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
     app.log.info({ signal }, 'Shutdown signal received — closing server');

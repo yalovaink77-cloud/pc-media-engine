@@ -16,7 +16,9 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@fastify/multipart": "^8.3.1",
     "@pcme/database": "workspace:*",
+    "@pcme/media": "workspace:*",
     "dotenv": "^16.4.7",
     "fastify": "^4.29.0"
   },

@@ -5,6 +5,8 @@ import Fastify from 'fastify';
 import type { Config } from './config.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
+import type { AssetCreator, FileStorer } from './routes/media.js';
+import { mediaRoutes } from './routes/media.js';
 import { rootRoutes } from './routes/root.js';
 import { versionRoutes } from './routes/version.js';
 
@@ -15,9 +17,21 @@ export type AppOptions = {
    * - undefined → skip DB check (tests, no DATABASE_URL configured)
    * - function  → called on every /health request
    *
-   * Production wiring passes buildDatabaseCheck(config.databaseUrl).
+   * Production wiring passes buildDatabaseCheck(config.databaseUrl) in server.ts.
    */
   checkDatabase?: () => Promise<DatabaseStatus>;
+  /**
+   * Injected asset repository (Sprint 9+).
+   * Undefined → /media route is not registered.
+   * Pass a mock in tests; production creates a real MediaAssetRepository.
+   */
+  assetRepository?: AssetCreator;
+  /**
+   * Injected storage provider (Sprint 9+).
+   * Undefined → /media route is not registered.
+   * Pass a mock in tests; production creates a real LocalStorageProvider.
+   */
+  storageProvider?: FileStorer;
 };
 
 /**
@@ -28,7 +42,7 @@ export type AppOptions = {
  * without needing a live network socket.
  */
 export function buildApp(options: AppOptions) {
-  const { config, checkDatabase } = options;
+  const { config, checkDatabase, assetRepository, storageProvider } = options;
 
   const app = Fastify({
     logger: {
@@ -65,6 +79,16 @@ export function buildApp(options: AppOptions) {
     version: config.version,
     env: config.env,
   });
+
+  if (assetRepository && storageProvider) {
+    app.register(mediaRoutes, {
+      assetRepository,
+      storageProvider,
+      organizationId: config.defaultOrgId,
+      projectId: config.defaultProjectId,
+      projectSlug: config.defaultProjectSlug,
+    });
+  }
 
   return app;
 }

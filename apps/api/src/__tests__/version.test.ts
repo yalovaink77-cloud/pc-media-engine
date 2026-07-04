@@ -10,6 +10,10 @@ const baseConfig = {
   env: 'test',
   version: '1.2.3-test',
   databaseUrl: undefined,
+  storageLocalRoot: '',
+  defaultOrgId: '',
+  defaultProjectId: '',
+  defaultProjectSlug: 'piercingconnect',
 };
 
 let app: ReturnType<typeof buildApp>;
