@@ -125,6 +125,14 @@ export class MediaAssetRepository {
     });
   }
 
+  /**
+   * Find an asset by ID without project scoping.
+   * Intended for internal use by workers that know only the asset ID.
+   */
+  findByIdGlobal(assetId: string): Promise<Asset | null> {
+    return this.client.asset.findUnique({ where: { id: assetId } });
+  }
+
   findByStorageKey(projectId: string, storageKey: string): Promise<Asset | null> {
     validateStorageKey(storageKey);
 

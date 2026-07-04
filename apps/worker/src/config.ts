@@ -5,6 +5,7 @@
 export type WorkerConfig = {
   redisUrl: string;
   databaseUrl: string;
+  storageLocalRoot: string;
   concurrency: number;
   logLevel: string;
 };
@@ -25,6 +26,7 @@ export function loadWorkerConfig(): WorkerConfig {
   return {
     redisUrl: process.env['REDIS_URL'] ?? 'redis://localhost:6379',
     databaseUrl: process.env['DATABASE_URL'] ?? '',
+    storageLocalRoot: process.env['STORAGE_LOCAL_ROOT'] ?? '',
     concurrency: parseInt(process.env['WORKER_CONCURRENCY'] ?? '5', 10),
     logLevel: process.env['LOG_LEVEL'] ?? 'info',
   };

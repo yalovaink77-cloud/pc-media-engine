@@ -14,6 +14,7 @@ function makeMockClient(): PrismaClient {
     },
     processingArtifact: {
       create: vi.fn(),
+      upsert: vi.fn(),
       findFirst: vi.fn(),
       findMany: vi.fn(),
     },
@@ -212,5 +213,54 @@ describe('ProcessingArtifactRepository', () => {
         storageKeyPlaceholder: '/absolute/not/allowed.jpg',
       }),
     ).toThrow(ProcessingValidationError);
+  });
+
+  it('upsertByJobAndType uses the compound unique index to avoid duplicates', async () => {
+    vi.mocked(client.processingArtifact.upsert).mockResolvedValue({
+      ...sampleArtifact,
+      storageKey: 'piercingconnect/clmasset001/thumb-cover_thumb.webp',
+      mimeType: 'image/webp',
+    });
+
+    const result = await repo.upsertByJobAndType({
+      organizationId: ORG_ID,
+      projectId: PROJECT_ID,
+      processingJobId: JOB_ID,
+      assetId: ASSET_ID,
+      processingType: 'thumbnail',
+      artifactType: 'thumbnail',
+      mimeType: 'image/webp',
+      storageKeyPlaceholder: `${PROJECT_ID}/${ASSET_ID}/thumbnail-pending`,
+      storageKey: 'piercingconnect/clmasset001/thumb-cover_thumb.webp',
+      sizeBytes: 4096,
+    });
+
+    expect(result.mimeType).toBe('image/webp');
+    expect(client.processingArtifact.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          processingJobId_artifactType: {
+            processingJobId: JOB_ID,
+            artifactType: 'thumbnail',
+          },
+        },
+      }),
+    );
+  });
+
+  it('upsertByJobAndType rejects invalid MIME types', () => {
+    expect(() =>
+      repo.upsertByJobAndType({
+        organizationId: ORG_ID,
+        projectId: PROJECT_ID,
+        processingJobId: JOB_ID,
+        assetId: ASSET_ID,
+        processingType: 'thumbnail',
+        artifactType: 'thumbnail',
+        mimeType: 'not-valid',
+        storageKeyPlaceholder: `${PROJECT_ID}/${ASSET_ID}/thumbnail-pending`,
+      }),
+    ).toThrow(ProcessingValidationError);
+    expect(client.processingArtifact.upsert).not.toHaveBeenCalled();
   });
 });

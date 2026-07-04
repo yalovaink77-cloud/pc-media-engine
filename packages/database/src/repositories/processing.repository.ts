@@ -209,6 +209,57 @@ export class ProcessingArtifactRepository {
     });
   }
 
+  /**
+   * Create or update the artifact for a given (processingJobId, artifactType) pair.
+   *
+   * If a placeholder artifact already exists (e.g. from a seed or a previous attempt),
+   * this overwrites its `storageKey`, `mimeType`, `storageKeyPlaceholder`, `sizeBytes`,
+   * and `checksum` with the real values from the completed processor run.
+   *
+   * Uses the compound unique index `@@unique([processingJobId, artifactType])`.
+   */
+  upsertByJobAndType(input: CreateProcessingArtifactInput): Promise<ProcessingArtifact> {
+    validateArtifactCompatibility(input.processingType, input.artifactType);
+    validateArtifactMimeType(input.mimeType);
+    validateStorageKeyPlaceholder(input.storageKeyPlaceholder);
+
+    if (input.checksum !== undefined) {
+      validateArtifactChecksum(input.checksum);
+    }
+
+    if (input.sizeBytes !== undefined && input.sizeBytes < 0) {
+      throw new Error('sizeBytes must be non-negative');
+    }
+
+    return this.client.processingArtifact.upsert({
+      where: {
+        processingJobId_artifactType: {
+          processingJobId: input.processingJobId,
+          artifactType: input.artifactType,
+        },
+      },
+      create: {
+        organizationId: input.organizationId,
+        projectId: requireProjectId(input.projectId),
+        processingJobId: input.processingJobId,
+        assetId: input.assetId,
+        artifactType: input.artifactType,
+        mimeType: input.mimeType.trim().toLowerCase(),
+        storageKeyPlaceholder: input.storageKeyPlaceholder.trim(),
+        storageKey: input.storageKey ?? null,
+        checksum: input.checksum?.toLowerCase() ?? null,
+        sizeBytes: input.sizeBytes ?? null,
+      },
+      update: {
+        mimeType: input.mimeType.trim().toLowerCase(),
+        storageKeyPlaceholder: input.storageKeyPlaceholder.trim(),
+        storageKey: input.storageKey ?? null,
+        sizeBytes: input.sizeBytes ?? null,
+        checksum: input.checksum?.toLowerCase() ?? null,
+      },
+    });
+  }
+
   finalise(
     projectId: string,
     artifactId: string,
