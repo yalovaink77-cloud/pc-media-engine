@@ -7,6 +7,7 @@ export type CreatePublishedContentInput = {
   organizationId: string;
   projectId: string;
   assetId: string;
+  slug: string;
   publisher: string;
   externalId: string;
   url: string;
@@ -23,6 +24,7 @@ export class PublishedContentRepository {
         organizationId: input.organizationId,
         projectId: requireProjectId(input.projectId),
         assetId: input.assetId,
+        slug: input.slug.trim(),
         publisher: input.publisher.trim(),
         externalId: input.externalId.trim(),
         url: input.url.trim(),
@@ -55,6 +57,25 @@ export class PublishedContentRepository {
   findLatestByProject(projectId: string): Promise<PublishedContent | null> {
     return this.client.publishedContent.findFirst({
       where: { projectId: requireProjectId(projectId) },
+      orderBy: { publishedAt: 'desc' },
+    });
+  }
+
+  /**
+   * Find the latest record matching (projectId, publisher, slug).
+   * Used for duplicate detection before publishing.
+   */
+  findDuplicate(
+    projectId: string,
+    publisher: string,
+    slug: string,
+  ): Promise<PublishedContent | null> {
+    return this.client.publishedContent.findFirst({
+      where: {
+        projectId: requireProjectId(projectId),
+        publisher: publisher.trim(),
+        slug: slug.trim(),
+      },
       orderBy: { publishedAt: 'desc' },
     });
   }

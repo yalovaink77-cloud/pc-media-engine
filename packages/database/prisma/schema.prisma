@@ -502,6 +502,7 @@ model PublishedContent {
   organizationId String                 @map("organization_id")
   projectId      String                 @map("project_id")
   assetId        String                 @map("asset_id")
+  slug           String
   publisher      String
   externalId     String                 @map("external_id")
   url            String
@@ -519,6 +520,7 @@ model PublishedContent {
   @@index([publishedAt])
   @@index([projectId, assetId])
   @@index([publisher, externalId])
+  @@index([projectId, publisher, slug])
   @@map("published_content")
 }
 

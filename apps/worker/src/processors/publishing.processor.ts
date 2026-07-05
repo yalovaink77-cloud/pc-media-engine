@@ -48,6 +48,22 @@ export async function processPublishingJob(
 ): Promise<PublishingFlowResult> {
   const env = deps.env ?? process.env;
   const publisherDriver = deps.publisherDriver ?? resolvePublisherDriver(env);
+
+  // Duplicate detection — runs before the orchestrator so no Publisher is invoked.
+  if (deps.publishedContentRepo && payload.projectId) {
+    const duplicate = await deps.publishedContentRepo.findDuplicate(
+      payload.projectId,
+      publisherDriver,
+      payload.slug,
+    );
+    if (duplicate) {
+      console.log(
+        `[publishing] ⤼ slug=${payload.slug} publisher=${publisherDriver} — duplicate detected, skipping`,
+      );
+      return { success: false, skipped: true, reason: 'duplicate' };
+    }
+  }
+
   const orchestrator = buildOrchestrator(deps);
   const result = await orchestrator.publish(toPublishingRequest(payload));
 

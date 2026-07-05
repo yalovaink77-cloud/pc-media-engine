@@ -30,6 +30,7 @@ describe('buildPublishedContentInput', () => {
       organizationId: 'org-1',
       projectId: 'proj-1',
       assetId: 'asset-1',
+      slug: 'aftercare-guide',
       publisher: 'mock',
       externalId: 'post-1',
       url: 'https://mock/posts/1',

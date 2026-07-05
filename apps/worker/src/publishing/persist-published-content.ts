@@ -5,7 +5,7 @@ import type { PublishingJobPayload } from '../queue/publishing-payload.js';
 import { buildPublishedContentInput } from './published-content-mapper.js';
 import type { PublisherDriver } from './publisher-driver.js';
 
-export type PublishedContentWriter = Pick<PublishedContentRepository, 'create'>;
+export type PublishedContentWriter = Pick<PublishedContentRepository, 'create' | 'findDuplicate'>;
 
 export async function persistPublishedContentIfSuccessful(
   payload: PublishingJobPayload,

@@ -152,10 +152,11 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
       status: 'draft',
       publishedAt: new Date(),
     });
+    const findDuplicate = vi.fn().mockResolvedValue(null);
 
     await processPublishingJob(SCOPED_PAYLOAD, {
       publisherDriver: 'mock',
-      publishedContentRepo: { create },
+      publishedContentRepo: { create, findDuplicate },
     });
 
     expect(create).toHaveBeenCalledTimes(1);
@@ -163,6 +164,7 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
       organizationId: 'org-1',
       projectId: 'proj-1',
       assetId: 'asset-1',
+      slug: 'aftercare-guide',
       publisher: 'mock',
       status: 'draft',
     });
@@ -171,6 +173,7 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
 
   it('persists PublishedContent when wordpress publisher succeeds (mocked)', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'pub-wp' });
+    const findDuplicate = vi.fn().mockResolvedValue(null);
     const fakePublisher = {
       name: 'FakeWordPress',
       publishMedia: vi.fn().mockResolvedValue({
@@ -192,7 +195,7 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
     await processPublishingJob(SCOPED_PAYLOAD, {
       publisherDriver: 'wordpress',
       createPublisher: () => fakePublisher,
-      publishedContentRepo: { create },
+      publishedContentRepo: { create, findDuplicate },
     });
 
     expect(create).toHaveBeenCalledOnce();
@@ -206,6 +209,7 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
 
   it('does not persist PublishedContent when publishing fails', async () => {
     const create = vi.fn();
+    const findDuplicate = vi.fn().mockResolvedValue(null);
     const orchestrator = {
       publish: vi.fn().mockResolvedValue({
         success: false,
@@ -215,7 +219,7 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
 
     await processPublishingJob(SCOPED_PAYLOAD, {
       createOrchestrator: () => orchestrator,
-      publishedContentRepo: { create },
+      publishedContentRepo: { create, findDuplicate },
     });
 
     expect(create).not.toHaveBeenCalled();
@@ -224,5 +228,86 @@ describe('processPublishingJob — publishing history (Sprint 22)', () => {
   it('does not persist PublishedContent when repo is not injected', async () => {
     const result = await processPublishingJob(SCOPED_PAYLOAD, { publisherDriver: 'mock' });
     expect(result.success).toBe(true);
+  });
+});
+
+describe('processPublishingJob — duplicate detection (Sprint 23)', () => {
+  it('returns skipped=true and does not call publisher when duplicate exists', async () => {
+    const publishMedia = vi.fn();
+    const publishPost = vi.fn();
+    const create = vi.fn();
+    const findDuplicate = vi.fn().mockResolvedValue({
+      id: 'pub-existing',
+      projectId: 'proj-1',
+      publisher: 'mock',
+      slug: 'aftercare-guide',
+    });
+
+    const result = await processPublishingJob(SCOPED_PAYLOAD, {
+      publisherDriver: 'mock',
+      createPublisher: () => ({
+        publishMedia,
+        publishPost,
+        publish: vi.fn(),
+        health: vi.fn(),
+        name: 'mock',
+      }),
+      publishedContentRepo: { create, findDuplicate },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.skipped).toBe(true);
+    expect(result.reason).toBe('duplicate');
+    expect(publishMedia).not.toHaveBeenCalled();
+    expect(publishPost).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('proceeds normally when no duplicate exists', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'pub-new' });
+    const findDuplicate = vi.fn().mockResolvedValue(null);
+
+    const result = await processPublishingJob(SCOPED_PAYLOAD, {
+      publisherDriver: 'mock',
+      publishedContentRepo: { create, findDuplicate },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.skipped).toBeUndefined();
+    expect(create).toHaveBeenCalledOnce();
+  });
+
+  it('skips duplicate check when publishedContentRepo is not injected', async () => {
+    const result = await processPublishingJob(SCOPED_PAYLOAD, { publisherDriver: 'mock' });
+    expect(result.success).toBe(true);
+    expect(result.skipped).toBeUndefined();
+  });
+
+  it('skips duplicate check when projectId is absent from payload', async () => {
+    const findDuplicate = vi.fn();
+    const create = vi.fn().mockResolvedValue({ id: 'pub-1' });
+    const payloadWithoutProject: PublishingJobPayload = {
+      ...VALID_PAYLOAD,
+    };
+
+    const result = await processPublishingJob(payloadWithoutProject, {
+      publisherDriver: 'mock',
+      publishedContentRepo: { create, findDuplicate },
+    });
+
+    expect(result.success).toBe(true);
+    expect(findDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('history row is NOT created for a skipped duplicate', async () => {
+    const create = vi.fn();
+    const findDuplicate = vi.fn().mockResolvedValue({ id: 'pub-existing' });
+
+    await processPublishingJob(SCOPED_PAYLOAD, {
+      publisherDriver: 'mock',
+      publishedContentRepo: { create, findDuplicate },
+    });
+
+    expect(create).not.toHaveBeenCalled();
   });
 });

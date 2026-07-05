@@ -24,6 +24,7 @@ const sampleRecord: PublishedContent = {
   organizationId: ORG_ID,
   projectId: PROJECT_ID,
   assetId: ASSET_ID,
+  slug: 'aftercare-guide',
   publisher: 'mock',
   externalId: 'post-abc123',
   url: 'https://mock.example.com/posts/abc123',
@@ -49,6 +50,7 @@ describe('PublishedContentRepository', () => {
       organizationId: ORG_ID,
       projectId: PROJECT_ID,
       assetId: ASSET_ID,
+      slug: 'aftercare-guide',
       publisher: 'mock',
       externalId: 'post-abc123',
       url: 'https://mock.example.com/posts/abc123',
@@ -62,6 +64,7 @@ describe('PublishedContentRepository', () => {
         organizationId: ORG_ID,
         projectId: PROJECT_ID,
         assetId: ASSET_ID,
+        slug: 'aftercare-guide',
         publisher: 'mock',
         externalId: 'post-abc123',
         url: 'https://mock.example.com/posts/abc123',
@@ -121,6 +124,7 @@ describe('PublishedContentRepository', () => {
         organizationId: ORG_ID,
         projectId: '',
         assetId: ASSET_ID,
+        slug: 'aftercare-guide',
         publisher: 'mock',
         externalId: 'post-1',
         url: 'https://mock/posts/1',
@@ -129,5 +133,45 @@ describe('PublishedContentRepository', () => {
       }),
     ).toThrow('projectId is required');
     expect(client.publishedContent.create).not.toHaveBeenCalled();
+  });
+
+  describe('findDuplicate', () => {
+    it('returns existing record when (projectId, publisher, slug) matches', async () => {
+      vi.mocked(client.publishedContent.findFirst).mockResolvedValue(sampleRecord);
+
+      const result = await repo.findDuplicate(PROJECT_ID, 'mock', 'aftercare-guide');
+
+      expect(result).toEqual(sampleRecord);
+      expect(client.publishedContent.findFirst).toHaveBeenCalledWith({
+        where: { projectId: PROJECT_ID, publisher: 'mock', slug: 'aftercare-guide' },
+        orderBy: { publishedAt: 'desc' },
+      });
+    });
+
+    it('returns null when no record matches', async () => {
+      vi.mocked(client.publishedContent.findFirst).mockResolvedValue(null);
+
+      const result = await repo.findDuplicate(PROJECT_ID, 'mock', 'new-article');
+
+      expect(result).toBeNull();
+    });
+
+    it('trims whitespace from publisher and slug arguments', async () => {
+      vi.mocked(client.publishedContent.findFirst).mockResolvedValue(null);
+
+      await repo.findDuplicate(PROJECT_ID, '  mock  ', '  aftercare-guide  ');
+
+      expect(client.publishedContent.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { projectId: PROJECT_ID, publisher: 'mock', slug: 'aftercare-guide' },
+        }),
+      );
+    });
+
+    it('rejects lookup when projectId is missing', () => {
+      expect(() => repo.findDuplicate('', 'mock', 'aftercare-guide')).toThrow(
+        'projectId is required',
+      );
+    });
   });
 });

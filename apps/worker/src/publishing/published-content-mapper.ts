@@ -14,6 +14,7 @@ export type PublishedContentWriteInput = {
   organizationId: string;
   projectId: string;
   assetId: string;
+  slug: string;
   publisher: PublisherDriver;
   externalId: string;
   url: string;
@@ -49,6 +50,7 @@ export function buildPublishedContentInput(
     organizationId: payload.organizationId,
     projectId: payload.projectId,
     assetId: payload.assetId,
+    slug: payload.slug,
     publisher,
     externalId: result.post.externalId,
     url: result.post.url,

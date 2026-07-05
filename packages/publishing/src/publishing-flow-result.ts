@@ -10,6 +10,13 @@ export type PublishingFlowStep = {
 export type PublishingFlowResult = {
   /** True only when both media upload and draft creation succeed. */
   success: boolean;
+  /**
+   * True when the job was intentionally skipped rather than executed.
+   * The BullMQ job still completes successfully; no publisher was called.
+   */
+  skipped?: boolean;
+  /** Machine-readable skip reason, e.g. "duplicate". */
+  reason?: string;
   /** Present when media upload succeeded. */
   media?: PublishingFlowStep;
   /** Present when draft creation was attempted (may be empty on failure). */

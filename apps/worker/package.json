@@ -18,6 +18,7 @@
     "publishing:smoke:wordpress": "dotenv -e ../../.env -- tsx scripts/publishing-smoke-wordpress.ts",
     "e2e:smoke": "dotenv -e ../../.env -- tsx scripts/e2e-smoke.ts",
     "publishing-history:smoke": "dotenv -e ../../.env -- tsx scripts/publishing-history-smoke.ts",
+    "duplicate:smoke": "tsx scripts/duplicate-smoke.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
