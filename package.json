@@ -29,7 +29,8 @@
     "e2e:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker e2e:smoke",
     "publishing-history:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker publishing-history:smoke",
     "duplicate:smoke": "pnpm --filter @pcme/worker duplicate:smoke",
-    "retry:smoke": "pnpm --filter @pcme/worker retry:smoke"
+    "retry:smoke": "pnpm --filter @pcme/worker retry:smoke",
+    "scheduler:smoke": "pnpm --filter @pcme/worker scheduler:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

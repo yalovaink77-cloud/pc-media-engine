@@ -15,6 +15,21 @@ export type PublishingEnqueueOptions = {
   backoffMs?: number;
 };
 
+/**
+ * Compute the BullMQ job delay in ms from an optional scheduledFor datetime.
+ *
+ * - Absent / empty string → 0 (immediate)
+ * - Past or present       → 0 (immediate)
+ * - Future                → positive ms from now
+ *
+ * Callers are responsible for validating the datetime string before calling
+ * this function (see `validatePublishingJobPayload`).
+ */
+export function computeScheduleDelay(scheduledFor: string | undefined): number {
+  if (!scheduledFor) return 0;
+  return Math.max(0, new Date(scheduledFor).getTime() - Date.now());
+}
+
 export function createPublishingEnqueuer(
   connection: { host: string; port: number },
   options: PublishingEnqueueOptions = {},
@@ -31,7 +46,8 @@ export function createPublishingEnqueuer(
 
   return {
     async enqueue(payload: PublishingJobPayload): Promise<void> {
-      await queue.add('publish', payload);
+      const delay = computeScheduleDelay(payload.scheduledFor);
+      await queue.add('publish', payload, delay > 0 ? { delay } : undefined);
     },
     async close(): Promise<void> {
       await queue.close();

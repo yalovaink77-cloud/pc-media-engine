@@ -20,6 +20,7 @@
     "publishing-history:smoke": "dotenv -e ../../.env -- tsx scripts/publishing-history-smoke.ts",
     "duplicate:smoke": "tsx scripts/duplicate-smoke.ts",
     "retry:smoke": "tsx scripts/retry-smoke.ts",
+    "scheduler:smoke": "tsx scripts/scheduler-smoke.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {

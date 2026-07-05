@@ -25,6 +25,12 @@ export type PublishingJobPayload = {
   mediaBuffer?: string;
   /** Plain mock media content (utf8). */
   mediaData?: string;
+  /**
+   * ISO 8601 datetime for scheduled publishing (Sprint 25).
+   * When set and in the future, the BullMQ job is delayed until that time.
+   * When absent, past, or equal to now, the job runs immediately.
+   */
+  scheduledFor?: string;
 };
 
 export class PublishingPayloadValidationError extends Error {
@@ -113,6 +119,17 @@ export function validatePublishingJobPayload(data: unknown): PublishingJobPayloa
   }
   if (typeof obj['processingJobId'] === 'string' && obj['processingJobId'].trim()) {
     payload.processingJobId = obj['processingJobId'].trim();
+  }
+
+  if (typeof obj['scheduledFor'] === 'string' && obj['scheduledFor'].trim()) {
+    const raw = obj['scheduledFor'].trim();
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new PublishingPayloadValidationError(
+        `scheduledFor must be a valid ISO 8601 datetime, got: "${raw}"`,
+      );
+    }
+    payload.scheduledFor = raw;
   }
 
   // Validate media resolves to non-empty buffer
