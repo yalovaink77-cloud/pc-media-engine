@@ -118,7 +118,21 @@ importers:
         specifier: ^3.0.5
         version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
-  packages/ai: {}
+  packages/ai:
+    dependencies:
+      '@pcme/seo':
+        specifier: workspace:*
+        version: link:../seo
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.20.0
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.5
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
   packages/analytics: {}
 
@@ -223,7 +237,24 @@ importers:
 
   providers/ai/openai: {}
 
-  providers/ai/openrouter: {}
+  providers/ai/openrouter:
+    dependencies:
+      '@pcme/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
+      '@pcme/seo':
+        specifier: workspace:*
+        version: link:../../../packages/seo
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.20.0
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.5
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
   providers/storage/cloudflare-r2: {}
 
