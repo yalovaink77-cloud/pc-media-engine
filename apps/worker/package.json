@@ -14,11 +14,13 @@
     "dev": "dotenv -e ../../.env -- tsx src/index.ts",
     "start": "node dist/index.js",
     "smoke": "dotenv -e ../../.env -- tsx src/scripts/worker-smoke.ts",
+    "publishing:smoke": "dotenv -e ../../.env -- tsx src/scripts/publishing-smoke.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@pcme/database": "workspace:*",
     "@pcme/media": "workspace:*",
+    "@pcme/publishing": "workspace:*",
     "bullmq": "^5.79.2",
     "dotenv": "^16.4.7",
     "sharp": "^0.35.3"
