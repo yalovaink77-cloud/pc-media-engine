@@ -8,3 +8,5 @@ export type {
   PublishingResult,
 } from './publisher.js';
 export { PublishingValidationError } from './publisher.js';
+export type { PublishingFlowResult, PublishingFlowStep } from './publishing-flow-result.js';
+export { PublishingOrchestrator } from './publishing-orchestrator.js';

@@ -1,9 +1,7 @@
 /**
- * Publishing smoke script — Sprint 13 (publishing foundation).
+ * Publishing smoke script — Sprint 16 (publishing orchestrator).
  *
- * Verifies the MockPublisher end-to-end:
- *   PublishingRequest → MockPublisher → PublishingResult → deterministic URL
- *
+ * Verifies MockPublisher and PublishingOrchestrator end-to-end.
  * No database, no Redis, no HTTP requests.
  *
  * Run:
@@ -15,6 +13,7 @@ import { createHash } from 'node:crypto';
 import { MockPublisher } from '../mock.publisher.js';
 import type { Publisher, PublishingRequest } from '../publisher.js';
 import { PublishingValidationError } from '../publisher.js';
+import { PublishingOrchestrator } from '../publishing-orchestrator.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -43,7 +42,7 @@ function deterministicId(slug: string): string {
 // ---------------------------------------------------------------------------
 
 async function smoke(): Promise<void> {
-  process.stdout.write('═══ Sprint 13 Publishing Smoke (MockPublisher) ═══\n');
+  process.stdout.write('═══ Sprint 16 Publishing Smoke (Orchestrator) ═══\n');
 
   const publisher: Publisher = new MockPublisher();
 
@@ -188,15 +187,58 @@ async function smoke(): Promise<void> {
   ok('Empty slug → PublishingValidationError');
 
   // -------------------------------------------------------------------------
+  // Step 7 — PublishingOrchestrator (full flow)
+  // -------------------------------------------------------------------------
+  section('Step 7 — PublishingOrchestrator (media → draft)');
+
+  const orchestrator = new PublishingOrchestrator(new MockPublisher());
+  const flowRequest: PublishingRequest = {
+    title: 'Industrial Aftercare Guide',
+    slug: 'industrial-aftercare-guide',
+    body: '<p>Clean twice daily with saline solution.</p>',
+    excerpt: 'Everything you need to know.',
+    tags: ['aftercare', 'industrial'],
+    mediaBuffer: Buffer.from('smoke-image-bytes'),
+    mediaMimeType: 'image/jpeg',
+    mediaFilename: 'industrial-aftercare.jpg',
+  };
+
+  const flowResult = await orchestrator.publish(flowRequest);
+
+  if (!flowResult.success) fail('Orchestrator returned success=false');
+  ok(`success = ${flowResult.success}`);
+
+  if (!flowResult.media?.externalId) fail('Missing media.externalId');
+  ok(`media.externalId = ${flowResult.media.externalId}`);
+  ok(`media.url = ${flowResult.media.url}`);
+
+  if (!flowResult.post?.externalId) fail('Missing post.externalId');
+  ok(`post.externalId = ${flowResult.post.externalId}`);
+  ok(`post.url = ${flowResult.post.url}`);
+
+  if (!(flowResult.publishedAt instanceof Date)) fail('publishedAt is not a Date');
+  ok(`publishedAt = ${flowResult.publishedAt.toISOString()}`);
+
+  const mediaId = deterministicId(flowRequest.slug);
+  if (flowResult.media.externalId !== `media-${mediaId}`) {
+    fail(`Expected media id media-${mediaId}, got ${flowResult.media.externalId}`);
+  }
+  if (flowResult.post.externalId !== `post-${mediaId}`) {
+    fail(`Expected post id post-${mediaId}, got ${flowResult.post.externalId}`);
+  }
+  ok('Media and draft IDs are deterministic');
+
+  // -------------------------------------------------------------------------
   // Done
   // -------------------------------------------------------------------------
   process.stdout.write(`
 ╔══════════════════════════════════════════════════════════════════╗
-║  ✅  Publishing Smoke PASSED — Sprint 13 MockPublisher          ║
+║  ✅  Publishing Smoke PASSED — Sprint 16 Orchestrator           ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-Publisher: ${publisher.name}
-Steps:     health / publishMedia / publishPost / routing / determinism / validation
+Publisher:    MockPublisher
+Orchestrator: PublishingOrchestrator
+Flow:         media upload → draft post → combined result
 `);
 }
 
