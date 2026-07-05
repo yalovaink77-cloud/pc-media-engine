@@ -2,6 +2,7 @@
 // Worker configuration
 // ---------------------------------------------------------------------------
 
+import { parseEnvFlag } from './env-flags.js';
 import { type PublisherDriver, resolvePublisherDriver } from './publishing/publisher-driver.js';
 
 export type WorkerConfig = {
@@ -11,6 +12,8 @@ export type WorkerConfig = {
   concurrency: number;
   logLevel: string;
   publisherDriver: PublisherDriver;
+  /** When true, enqueue publishing after thumbnail success. Default: false. */
+  autoEnqueuePublishing: boolean;
 };
 
 /**
@@ -33,5 +36,6 @@ export function loadWorkerConfig(): WorkerConfig {
     concurrency: parseInt(process.env['WORKER_CONCURRENCY'] ?? '5', 10),
     logLevel: process.env['LOG_LEVEL'] ?? 'info',
     publisherDriver: resolvePublisherDriver(process.env),
+    autoEnqueuePublishing: parseEnvFlag(process.env['PCME_AUTO_ENQUEUE_PUBLISHING']),
   };
 }

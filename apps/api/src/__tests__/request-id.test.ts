@@ -13,6 +13,8 @@ const baseConfig = {
   defaultOrgId: '',
   defaultProjectId: '',
   defaultProjectSlug: 'piercingconnect',
+  redisUrl: undefined,
+  autoEnqueueProcessing: false,
 };
 
 let app: ReturnType<typeof buildApp>;

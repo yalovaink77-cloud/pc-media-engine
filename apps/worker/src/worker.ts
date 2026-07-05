@@ -11,9 +11,11 @@ import { Worker } from 'bullmq';
 
 import type { WorkerConfig } from './config.js';
 import { parseRedisConnection } from './config.js';
+import { enqueuePublishingAfterThumbnail } from './pipeline/post-thumbnail.js';
 import { dispatchJob } from './processors/dispatch.js';
 import { PROCESSING_QUEUE } from './queue/names.js';
 import { validateJobPayload } from './queue/payload.js';
+import { createPublishingEnqueuer } from './queue/publishing-enqueue.js';
 
 /**
  * Create and start a BullMQ Worker connected to the `processing` queue.
@@ -41,6 +43,10 @@ export function startWorker(config: WorkerConfig): Worker {
     rootDir: resolve(config.storageLocalRoot || '/tmp/pcme-storage'),
   });
 
+  const publishingEnqueuer = config.autoEnqueuePublishing
+    ? createPublishingEnqueuer(connection)
+    : undefined;
+
   const worker = new Worker(
     PROCESSING_QUEUE,
     async (job) => {
@@ -51,6 +57,15 @@ export function startWorker(config: WorkerConfig): Worker {
         assetRepo,
         storageProvider,
         artifactRepo,
+        onThumbnailComplete: publishingEnqueuer
+          ? async (ctx) => {
+              await enqueuePublishingAfterThumbnail(ctx, {
+                storageProvider,
+                publishingEnqueuer,
+                env: process.env,
+              });
+            }
+          : undefined,
       });
     },
     {

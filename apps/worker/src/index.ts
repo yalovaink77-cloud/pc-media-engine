@@ -16,17 +16,23 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 loadDotenv({ path: resolve(__dirname, '../../../.env'), override: false });
 
 import { loadWorkerConfig } from './config.js';
-import { PROCESSING_QUEUE } from './queue/names.js';
+import { startPublishingWorker } from './publishing-worker.js';
+import { PROCESSING_QUEUE, PUBLISHING_QUEUE } from './queue/names.js';
 import { startWorker } from './worker.js';
 
 const config = loadWorkerConfig();
-const worker = startWorker(config);
+const processingWorker = startWorker(config);
+const publishingWorker = config.autoEnqueuePublishing ? startPublishingWorker(config) : undefined;
 
 console.log(`[worker] Started — queue: ${PROCESSING_QUEUE}, concurrency: ${config.concurrency}`);
+if (publishingWorker) {
+  console.log(`[worker] Publishing worker started — queue: ${PUBLISHING_QUEUE}`);
+}
 
 async function shutdown(signal: string): Promise<void> {
   console.log(`[worker] ${signal} received — shutting down`);
-  await worker.close();
+  await processingWorker.close();
+  await publishingWorker?.close();
   process.exit(0);
 }
 

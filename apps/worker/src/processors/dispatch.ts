@@ -1,8 +1,9 @@
 import type { ProcessingJobAttemptRepository, ProcessingJobRepository } from '@pcme/database';
 import type { StorageProvider } from '@pcme/media';
 
+import type { ThumbnailCompleteContext } from '../pipeline/post-thumbnail.js';
 import type { ThumbnailArtifactRepo, ThumbnailAssetRepo } from './thumbnail.processor.js';
-import { thumbnailProcessor } from './thumbnail.processor.js';
+import { buildThumbnailKey, thumbnailProcessor } from './thumbnail.processor.js';
 
 export { ProcessingJobNotFoundError } from './noop.processor.js';
 
@@ -22,6 +23,8 @@ export type DispatchDeps = {
   assetRepo: ThumbnailAssetRepo;
   storageProvider: Pick<StorageProvider, 'get' | 'put'>;
   artifactRepo: ThumbnailArtifactRepo;
+  /** Sprint 21 — optional hook after successful thumbnail generation. */
+  onThumbnailComplete?: (ctx: ThumbnailCompleteContext) => Promise<void>;
 };
 
 // ---------------------------------------------------------------------------
@@ -76,6 +79,15 @@ export async function dispatchJob(processingJobId: string, deps: DispatchDeps): 
           storageProvider: deps.storageProvider,
           artifactRepo: deps.artifactRepo,
         });
+        if (deps.onThumbnailComplete) {
+          const asset = await deps.assetRepo.findByIdGlobal(job.assetId);
+          if (asset) {
+            await deps.onThumbnailComplete({
+              asset: { filename: asset.filename, storageKey: asset.storageKey },
+              thumbnailKey: buildThumbnailKey(asset.storageKey),
+            });
+          }
+        }
         break;
 
       default:

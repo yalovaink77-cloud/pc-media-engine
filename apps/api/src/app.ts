@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 
 import type { Config } from './config.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
+import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
@@ -39,6 +40,11 @@ export type AppOptions = {
    * Pass a mock in tests; production creates a real ProcessingJobRepository.
    */
   jobScheduler?: JobScheduler;
+  /**
+   * Optional processing queue enqueuer (Sprint 21+).
+   * Undefined → jobs remain pending until manually enqueued.
+   */
+  processingEnqueuer?: ProcessingEnqueuer;
 };
 
 /**
@@ -49,7 +55,14 @@ export type AppOptions = {
  * without needing a live network socket.
  */
 export function buildApp(options: AppOptions) {
-  const { config, checkDatabase, assetRepository, storageProvider, jobScheduler } = options;
+  const {
+    config,
+    checkDatabase,
+    assetRepository,
+    storageProvider,
+    jobScheduler,
+    processingEnqueuer,
+  } = options;
 
   const app = Fastify({
     logger: {
@@ -92,6 +105,7 @@ export function buildApp(options: AppOptions) {
       assetRepository,
       storageProvider,
       jobScheduler,
+      processingEnqueuer,
       organizationId: config.defaultOrgId,
       projectId: config.defaultProjectId,
       projectSlug: config.defaultProjectSlug,

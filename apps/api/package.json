@@ -20,7 +20,8 @@
     "@pcme/database": "workspace:*",
     "@pcme/media": "workspace:*",
     "dotenv": "^16.4.7",
-    "fastify": "^4.29.0"
+    "fastify": "^4.29.0",
+    "bullmq": "^5.79.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",

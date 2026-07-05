@@ -19,6 +19,8 @@ const baseConfig = {
   defaultOrgId: '',
   defaultProjectId: '',
   defaultProjectSlug: 'piercingconnect',
+  redisUrl: undefined,
+  autoEnqueueProcessing: false,
 };
 
 function makeApp(overrides: Partial<AppOptions> = {}) {

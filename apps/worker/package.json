@@ -16,13 +16,16 @@
     "smoke": "dotenv -e ../../.env -- tsx src/scripts/worker-smoke.ts",
     "publishing:smoke": "dotenv -e ../../.env -- tsx src/scripts/publishing-smoke.ts",
     "publishing:smoke:wordpress": "dotenv -e ../../.env -- tsx src/scripts/publishing-smoke-wordpress.ts",
+    "e2e:smoke": "dotenv -e ../../.env -- tsx src/scripts/e2e-smoke.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@pcme/ai": "workspace:*",
     "@pcme/database": "workspace:*",
     "@pcme/media": "workspace:*",
     "@pcme/plugin-wordpress": "workspace:*",
     "@pcme/publishing": "workspace:*",
+    "@pcme/seo": "workspace:*",
     "bullmq": "^5.79.2",
     "dotenv": "^16.4.7",
     "sharp": "^0.35.3"

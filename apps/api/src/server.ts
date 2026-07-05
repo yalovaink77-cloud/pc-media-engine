@@ -5,6 +5,7 @@ import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
 import type { Config } from './config.js';
+import { buildProcessingEnqueuer } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
 
 /**
@@ -43,7 +44,16 @@ export async function startServer(config: Config): Promise<void> {
   const jobScheduler =
     assetRepository && storageProvider ? new ProcessingJobRepository() : undefined;
 
-  const app = buildApp({ config, checkDatabase, assetRepository, storageProvider, jobScheduler });
+  const processingEnqueuer = buildProcessingEnqueuer(config.redisUrl, config.autoEnqueueProcessing);
+
+  const app = buildApp({
+    config,
+    checkDatabase,
+    assetRepository,
+    storageProvider,
+    jobScheduler,
+    processingEnqueuer,
+  });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
     app.log.info({ signal }, 'Shutdown signal received — closing server');

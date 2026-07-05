@@ -7,6 +7,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { JobScheduler, ScheduledJob } from '../orchestration/processing.orchestrator.js';
 import { scheduleDefaultJobs } from '../orchestration/processing.orchestrator.js';
+import type { ProcessingEnqueuer } from '../queue/processing-enqueue.js';
 
 // ---------------------------------------------------------------------------
 // Injection interfaces (kept minimal so tests can pass plain objects)
@@ -19,7 +20,7 @@ export type StoredAsset = {
   mimeType: string;
   sizeBytes: number;
   storageKey: string;
-  /** String value from AssetStatus enum (e.g. 'active', 'pending'). */
+  /** String value from AssetStatus enum (e.g. 'pending', 'ready'). */
   status: string;
 };
 
@@ -56,6 +57,11 @@ export type MediaRouteOptions = {
    * If omitted, no ProcessingJob records are created (backward compatible).
    */
   jobScheduler?: JobScheduler;
+  /**
+   * Optional BullMQ enqueuer (Sprint 21+).
+   * When set, pending processing jobs are enqueued after upload.
+   */
+  processingEnqueuer?: ProcessingEnqueuer;
   organizationId: string;
   projectId: string;
   projectSlug: string;
@@ -186,7 +192,7 @@ export async function mediaRoutes(app: FastifyInstance, options: MediaRouteOptio
         storageProvider: 'local',
         storageKey,
         sizeBytes: buffer.length,
-        status: 'active' as AssetStatus,
+        status: 'pending' as AssetStatus,
       });
 
       // -------------------------------------------------------------------
@@ -200,6 +206,16 @@ export async function mediaRoutes(app: FastifyInstance, options: MediaRouteOptio
           projectId: options.projectId,
           assetId: asset.id,
         });
+      }
+
+      if (options.processingEnqueuer && processingJobs.length > 0) {
+        await options.processingEnqueuer.enqueueProcessingJobs(
+          processingJobs.map((j) => ({
+            id: j.id,
+            processingType: j.processingType,
+            status: j.status,
+          })),
+        );
       }
 
       // -------------------------------------------------------------------

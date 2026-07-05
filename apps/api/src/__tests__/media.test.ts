@@ -8,6 +8,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import type { AppOptions } from '../app.js';
 import { buildApp } from '../app.js';
 import type { JobScheduler, ScheduledJob } from '../orchestration/processing.orchestrator.js';
+import type { ProcessingEnqueuer } from '../queue/processing-enqueue.js';
 import type { AssetCreator, StoredAsset, UploadResponse } from '../routes/media.js';
 import { UPLOAD_ALLOWED_MIME_TYPES } from '../routes/media.js';
 
@@ -46,7 +47,7 @@ function makeAssetMock(overrides: Partial<StoredAsset> = {}): StoredAsset {
     mimeType: 'image/jpeg',
     sizeBytes: 100,
     storageKey: 'piercingconnect/aabbccddeeff00112233445566778899/test.jpg',
-    status: 'active',
+    status: 'pending',
     ...overrides,
   };
 }
@@ -66,6 +67,8 @@ const baseConfig = {
   defaultOrgId: 'org-test',
   defaultProjectId: 'proj-test',
   defaultProjectSlug: 'piercingconnect',
+  redisUrl: undefined,
+  autoEnqueueProcessing: false,
 };
 
 let tmpDir: string;
@@ -170,7 +173,7 @@ describe('POST /media — successful upload', () => {
       mimeType: 'image/jpeg',
       sizeBytes: expect.any(Number),
       storageKey: expect.stringMatching(/^piercingconnect\/.+\/photo\.jpg$/),
-      status: 'active',
+      status: 'pending',
     });
   });
 
@@ -423,5 +426,64 @@ describe('POST /media — processing orchestration', () => {
     await noSchedulerApp.close();
     const json = res.json<UploadResponse>();
     expect(json.processingJobs).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /media — Sprint 21: optional processing enqueue
+// ---------------------------------------------------------------------------
+
+describe('POST /media — processing enqueue (Sprint 21)', () => {
+  it('does not call processingEnqueuer when not injected', async () => {
+    const mockEnqueuer: ProcessingEnqueuer = {
+      enqueueProcessingJobs: vi.fn().mockResolvedValue(undefined),
+    };
+    const noEnqueuerApp = makeApp();
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    await noEnqueuerApp.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    await noEnqueuerApp.close();
+    expect(mockEnqueuer.enqueueProcessingJobs).not.toHaveBeenCalled();
+  });
+
+  it('enqueues processing jobs when processingEnqueuer is injected', async () => {
+    const mockEnqueuer: ProcessingEnqueuer = {
+      enqueueProcessingJobs: vi.fn().mockResolvedValue(undefined),
+    };
+    const enqueueApp = makeApp({ processingEnqueuer: mockEnqueuer });
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    const res = await enqueueApp.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    await enqueueApp.close();
+
+    expect(res.statusCode).toBe(201);
+    expect(mockEnqueuer.enqueueProcessingJobs).toHaveBeenCalledTimes(1);
+    expect(mockEnqueuer.enqueueProcessingJobs).toHaveBeenCalledWith([
+      expect.objectContaining({ processingType: 'thumbnail', status: 'pending' }),
+    ]);
+  });
+
+  it('does not enqueue when job scheduler is absent', async () => {
+    const mockEnqueuer: ProcessingEnqueuer = {
+      enqueueProcessingJobs: vi.fn().mockResolvedValue(undefined),
+    };
+    const noSchedulerApp = makeApp({ jobScheduler: undefined, processingEnqueuer: mockEnqueuer });
+    const body = buildMultipartBody('photo.jpg', 'image/jpeg', Buffer.from('bytes'));
+    await noSchedulerApp.inject({
+      method: 'POST',
+      url: '/media',
+      headers: multipartHeaders(),
+      body,
+    });
+    await noSchedulerApp.close();
+    expect(mockEnqueuer.enqueueProcessingJobs).not.toHaveBeenCalled();
   });
 });

@@ -24,7 +24,8 @@
     "db:migrate": "pnpm --filter @pcme/database db:migrate",
     "db:migrate:dev": "pnpm --filter @pcme/database db:migrate:dev",
     "db:seed": "pnpm --filter @pcme/database db:seed",
-    "db:health": "pnpm --filter @pcme/database db:health"
+    "db:health": "pnpm --filter @pcme/database db:health",
+    "e2e:smoke": "pnpm --filter @pcme/worker e2e:smoke"
   },
   "lint-staged": {
     "*.{ts,js,mjs,cjs}": [

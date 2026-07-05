@@ -54,7 +54,15 @@ export type Config = {
    * Default: piercingconnect (the seeded development project).
    */
   defaultProjectSlug: string;
+
+  /** Redis URL for optional BullMQ enqueue (Sprint 21). */
+  redisUrl: string | undefined;
+
+  /** When true, enqueue processing jobs after POST /media. Default: false. */
+  autoEnqueueProcessing: boolean;
 };
+
+import { parseEnvFlag } from './env-flags.js';
 
 export function loadConfig(): Config {
   return {
@@ -68,5 +76,7 @@ export function loadConfig(): Config {
     defaultOrgId: process.env['PCME_DEFAULT_ORG_ID'] ?? '',
     defaultProjectId: process.env['PCME_DEFAULT_PROJECT_ID'] ?? '',
     defaultProjectSlug: process.env['PCME_DEFAULT_PROJECT_SLUG'] ?? 'piercingconnect',
+    redisUrl: process.env['REDIS_URL'],
+    autoEnqueueProcessing: parseEnvFlag(process.env['PCME_AUTO_ENQUEUE_PROCESSING']),
   };
 }

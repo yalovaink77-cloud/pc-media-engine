@@ -171,4 +171,32 @@ describe('dispatchJob', () => {
     // thumbnailProcessor should NOT have been called
     expect(thumbnailProcessor).not.toHaveBeenCalled();
   });
+
+  it('calls onThumbnailComplete after successful thumbnail processing', async () => {
+    const onThumbnailComplete = vi.fn().mockResolvedValue(undefined);
+    (deps.assetRepo.findByIdGlobal as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: 'asset-001',
+      filename: 'photo.jpg',
+      storageKey: 'piercingconnect/asset-001/photo.jpg',
+    });
+
+    await dispatchJob('job-dispatch-001', { ...deps, onThumbnailComplete });
+
+    expect(onThumbnailComplete).toHaveBeenCalledTimes(1);
+    expect(onThumbnailComplete).toHaveBeenCalledWith({
+      asset: { filename: 'photo.jpg', storageKey: 'piercingconnect/asset-001/photo.jpg' },
+      thumbnailKey: 'piercingconnect/asset-001/photo_thumb.webp',
+    });
+  });
+
+  it('does not call onThumbnailComplete when thumbnailProcessor fails', async () => {
+    const onThumbnailComplete = vi.fn().mockResolvedValue(undefined);
+    (thumbnailProcessor as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('fail'));
+
+    await expect(dispatchJob('job-dispatch-001', { ...deps, onThumbnailComplete })).rejects.toThrow(
+      'fail',
+    );
+
+    expect(onThumbnailComplete).not.toHaveBeenCalled();
+  });
 });
