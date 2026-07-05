@@ -3,6 +3,14 @@ import type { PrismaClient, PublishedContent, PublishedContentStatus } from '@pr
 import { getPrismaClient } from '../client.js';
 import { requireProjectId } from './scoped-query.js';
 
+export type FindPublishedContentHistoryOptions = {
+  projectId?: string;
+  assetId?: string;
+  publisher?: string;
+  /** Maximum number of records to return. Caller is responsible for clamping. */
+  limit: number;
+};
+
 export type CreatePublishedContentInput = {
   organizationId: string;
   projectId: string;
@@ -78,5 +86,30 @@ export class PublishedContentRepository {
       },
       orderBy: { publishedAt: 'desc' },
     });
+  }
+
+  /**
+   * Paginated history with optional filters — used by the publishing API.
+   * Ordered newest-first. Caller is responsible for validating/clamping limit.
+   */
+  findHistory(opts: FindPublishedContentHistoryOptions): Promise<PublishedContent[]> {
+    const where: Record<string, unknown> = {};
+    if (opts.projectId) where['projectId'] = requireProjectId(opts.projectId);
+    if (opts.assetId) where['assetId'] = opts.assetId.trim();
+    if (opts.publisher) where['publisher'] = opts.publisher.trim();
+
+    return this.client.publishedContent.findMany({
+      where,
+      orderBy: { publishedAt: 'desc' },
+      take: opts.limit,
+    });
+  }
+
+  /**
+   * Look up a single published-content record by its primary key.
+   * Returns null when not found (route maps to 404).
+   */
+  findById(id: string): Promise<PublishedContent | null> {
+    return this.client.publishedContent.findUnique({ where: { id: id.trim() } });
   }
 }

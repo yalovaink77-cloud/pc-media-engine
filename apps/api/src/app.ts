@@ -9,6 +9,8 @@ import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
+import type { PublishedContentFinder } from './routes/publishing.js';
+import { publishingRoutes } from './routes/publishing.js';
 import { rootRoutes } from './routes/root.js';
 import { versionRoutes } from './routes/version.js';
 
@@ -45,6 +47,12 @@ export type AppOptions = {
    * Undefined → jobs remain pending until manually enqueued.
    */
   processingEnqueuer?: ProcessingEnqueuer;
+  /**
+   * Optional publishing history repository (Sprint 26+).
+   * When provided, the /publishing/* routes serve live data.
+   * When absent, history/detail endpoints return 503.
+   */
+  publishedContentRepo?: PublishedContentFinder;
 };
 
 /**
@@ -62,6 +70,7 @@ export function buildApp(options: AppOptions) {
     storageProvider,
     jobScheduler,
     processingEnqueuer,
+    publishedContentRepo,
   } = options;
 
   const app = Fastify({
@@ -111,6 +120,11 @@ export function buildApp(options: AppOptions) {
       projectSlug: config.defaultProjectSlug,
     });
   }
+
+  app.register(publishingRoutes, {
+    publishedContentRepo,
+    publishingConfig: config,
+  });
 
   return app;
 }

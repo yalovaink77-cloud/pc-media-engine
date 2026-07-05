@@ -60,6 +60,21 @@ export type Config = {
 
   /** When true, enqueue processing jobs after POST /media. Default: false. */
   autoEnqueueProcessing: boolean;
+
+  // ---------------------------------------------------------------------------
+  // Publishing system config (Sprint 26 — read-only API surface)
+  // ---------------------------------------------------------------------------
+
+  /** Publisher driver in use, e.g. "mock" or "wordpress". Default: mock. */
+  publisherDriver?: string;
+  /** When true, the publishing queue is enabled (PCME_AUTO_ENQUEUE_PUBLISHING). */
+  autoEnqueuePublishing?: boolean;
+  /** Maximum publishing retries (PCME_PUBLISHING_MAX_RETRIES). Default: 3. */
+  publishingMaxRetries?: number;
+  /** Initial backoff in ms for retry engine (PCME_PUBLISHING_BACKOFF_MS). Default: 5000. */
+  publishingBackoffMs?: number;
+  /** AI metadata provider in use, e.g. "openrouter" or "none". */
+  aiMetadataProvider?: string;
 };
 
 import { parseEnvFlag } from './env-flags.js';
@@ -78,5 +93,10 @@ export function loadConfig(): Config {
     defaultProjectSlug: process.env['PCME_DEFAULT_PROJECT_SLUG'] ?? 'piercingconnect',
     redisUrl: process.env['REDIS_URL'],
     autoEnqueueProcessing: parseEnvFlag(process.env['PCME_AUTO_ENQUEUE_PROCESSING']),
+    publisherDriver: process.env['PUBLISHER_DRIVER'] ?? 'mock',
+    autoEnqueuePublishing: parseEnvFlag(process.env['PCME_AUTO_ENQUEUE_PUBLISHING']),
+    publishingMaxRetries: parseInt(process.env['PCME_PUBLISHING_MAX_RETRIES'] ?? '3', 10),
+    publishingBackoffMs: parseInt(process.env['PCME_PUBLISHING_BACKOFF_MS'] ?? '5000', 10),
+    aiMetadataProvider: process.env['AI_METADATA_PROVIDER'] ?? 'none',
   };
 }

@@ -23,7 +23,8 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "publishing-api:smoke": "tsx scripts/publishing-api-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

@@ -1,6 +1,11 @@
 import { resolve } from 'node:path';
 
-import { getPrismaClient, MediaAssetRepository, ProcessingJobRepository } from '@pcme/database';
+import {
+  getPrismaClient,
+  MediaAssetRepository,
+  ProcessingJobRepository,
+  PublishedContentRepository,
+} from '@pcme/database';
 import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
@@ -46,6 +51,8 @@ export async function startServer(config: Config): Promise<void> {
 
   const processingEnqueuer = buildProcessingEnqueuer(config.redisUrl, config.autoEnqueueProcessing);
 
+  const publishedContentRepo = config.databaseUrl ? new PublishedContentRepository() : undefined;
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -53,6 +60,7 @@ export async function startServer(config: Config): Promise<void> {
     storageProvider,
     jobScheduler,
     processingEnqueuer,
+    publishedContentRepo,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

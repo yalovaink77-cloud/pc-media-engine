@@ -64,6 +64,7 @@ export {
   type CreateProcessingJobInput,
   type CreatePublishedContentInput,
   type FinaliseProcessingArtifactInput,
+  type FindPublishedContentHistoryOptions,
   IngestionJobRepository,
   IngestionSourceRepository,
   MediaAssetRepository,

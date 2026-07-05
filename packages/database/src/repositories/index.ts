@@ -41,6 +41,7 @@ export {
 } from './processing-attempt.repository.js';
 export {
   type CreatePublishedContentInput,
+  type FindPublishedContentHistoryOptions,
   PublishedContentRepository,
 } from './published-content.repository.js';
 export {
