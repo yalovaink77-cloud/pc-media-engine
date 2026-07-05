@@ -9,7 +9,7 @@ import { validatePublishingJobPayload } from './queue/publishing-payload.js';
 /**
  * Create and start a BullMQ Worker connected to the `publishing` queue.
  *
- * Uses MockPublisher via PublishingOrchestrator (Sprint 17).
+ * Publisher is selected via PUBLISHER_DRIVER (default: mock).
  * Returns the Worker instance so callers can close it on shutdown.
  */
 export function startPublishingWorker(config: WorkerConfig): Worker {
@@ -19,7 +19,9 @@ export function startPublishingWorker(config: WorkerConfig): Worker {
     PUBLISHING_QUEUE,
     async (job) => {
       const payload = validatePublishingJobPayload(job.data);
-      const result = await processPublishingJob(payload);
+      const result = await processPublishingJob(payload, {
+        publisherDriver: config.publisherDriver,
+      });
       return result;
     },
     {

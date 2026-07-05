@@ -2,12 +2,15 @@
 // Worker configuration
 // ---------------------------------------------------------------------------
 
+import { type PublisherDriver, resolvePublisherDriver } from './publishing/publisher-driver.js';
+
 export type WorkerConfig = {
   redisUrl: string;
   databaseUrl: string;
   storageLocalRoot: string;
   concurrency: number;
   logLevel: string;
+  publisherDriver: PublisherDriver;
 };
 
 /**
@@ -29,5 +32,6 @@ export function loadWorkerConfig(): WorkerConfig {
     storageLocalRoot: process.env['STORAGE_LOCAL_ROOT'] ?? '',
     concurrency: parseInt(process.env['WORKER_CONCURRENCY'] ?? '5', 10),
     logLevel: process.env['LOG_LEVEL'] ?? 'info',
+    publisherDriver: resolvePublisherDriver(process.env),
   };
 }

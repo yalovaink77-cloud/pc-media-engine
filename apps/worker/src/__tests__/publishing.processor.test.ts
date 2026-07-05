@@ -16,7 +16,7 @@ const VALID_PAYLOAD: PublishingJobPayload = {
 
 describe('processPublishingJob — happy path', () => {
   it('returns combined media and post result using MockPublisher', async () => {
-    const result = await processPublishingJob(VALID_PAYLOAD);
+    const result = await processPublishingJob(VALID_PAYLOAD, { publisherDriver: 'mock' });
 
     expect(result.success).toBe(true);
     expect(result.media?.externalId).toMatch(/^media-/);
@@ -47,10 +47,43 @@ describe('processPublishingJob — orchestrator invocation', () => {
     expect(publish.mock.calls[0]![0].mediaBuffer?.toString('utf8')).toBe('mock-image-bytes');
   });
 
-  it('uses MockPublisher by default', async () => {
-    const createOrchestrator = vi.fn(() => new PublishingOrchestrator(new MockPublisher()));
-    await processPublishingJob(VALID_PAYLOAD, { createOrchestrator });
-    expect(createOrchestrator).toHaveBeenCalledOnce();
+  it('uses MockPublisher when publisherDriver is mock', async () => {
+    const createPublisherFn = vi.fn(() => new MockPublisher());
+    await processPublishingJob(VALID_PAYLOAD, {
+      publisherDriver: 'mock',
+      createPublisher: createPublisherFn,
+    });
+    expect(createPublisherFn).toHaveBeenCalledOnce();
+  });
+
+  it('uses injected publisher when wordpress driver is selected', async () => {
+    const fakePublisher = {
+      name: 'FakeWordPress',
+      publishMedia: vi.fn().mockResolvedValue({
+        success: true,
+        externalId: '42',
+        url: 'https://wp/media/42',
+        publishedAt: new Date(),
+      }),
+      publishPost: vi.fn().mockResolvedValue({
+        success: true,
+        externalId: '99',
+        url: 'https://wp/posts/99',
+        publishedAt: new Date(),
+      }),
+      publish: vi.fn(),
+      health: vi.fn(),
+    };
+
+    const result = await processPublishingJob(VALID_PAYLOAD, {
+      createPublisher: () => fakePublisher,
+    });
+
+    expect(fakePublisher.publishMedia).toHaveBeenCalledOnce();
+    expect(fakePublisher.publishPost).toHaveBeenCalledOnce();
+    expect(result.success).toBe(true);
+    expect(result.media?.externalId).toBe('42');
+    expect(result.post?.externalId).toBe('99');
   });
 });
 

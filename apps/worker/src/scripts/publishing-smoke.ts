@@ -33,6 +33,9 @@ import { PUBLISHING_QUEUE } from '../queue/names.js';
 import type { PublishingJobPayload } from '../queue/publishing-payload.js';
 import { validatePublishingJobPayload } from '../queue/publishing-payload.js';
 
+/** Always mock — ignores PUBLISHER_DRIVER in environment. */
+const MOCK_DRIVER = { publisherDriver: 'mock' as const };
+
 const REDIS_URL = process.env['REDIS_URL'] ?? 'redis://localhost:6379';
 const connection = parseRedisConnection(REDIS_URL);
 
@@ -70,7 +73,7 @@ const worker = new Worker<PublishingJobPayload>(
   PUBLISHING_QUEUE,
   async (job) => {
     const payload = validatePublishingJobPayload(job.data);
-    return processPublishingJob(payload);
+    return processPublishingJob(payload, MOCK_DRIVER);
   },
   { connection, concurrency: 1 },
 );

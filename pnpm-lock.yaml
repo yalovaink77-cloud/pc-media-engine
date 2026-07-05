@@ -89,6 +89,9 @@ importers:
       '@pcme/media':
         specifier: workspace:*
         version: link:../../packages/media
+      '@pcme/plugin-wordpress':
+        specifier: workspace:*
+        version: link:../../plugins/wordpress
       '@pcme/publishing':
         specifier: workspace:*
         version: link:../../packages/publishing
