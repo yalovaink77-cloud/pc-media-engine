@@ -83,6 +83,10 @@ export async function dispatchJob(processingJobId: string, deps: DispatchDeps): 
           const asset = await deps.assetRepo.findByIdGlobal(job.assetId);
           if (asset) {
             await deps.onThumbnailComplete({
+              organizationId: job.organizationId,
+              projectId: job.projectId,
+              assetId: job.assetId,
+              processingJobId: job.id,
               asset: { filename: asset.filename, storageKey: asset.storageKey },
               thumbnailKey: buildThumbnailKey(asset.storageKey),
             });

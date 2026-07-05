@@ -45,6 +45,7 @@ model Project {
   ingestionSources     IngestionSource[]
   ingestionJobs        IngestionJob[]
   processingJobs       ProcessingJob[]
+  publishedContent     PublishedContent[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -190,6 +191,7 @@ model Asset {
   mediaSources     MediaSource[]
   metadataRecords  MetadataRecord[]
   processingJobs   ProcessingJob[]
+  publishedContent PublishedContent[]
 
   @@unique([projectId, storageKey])
   @@index([projectId])
@@ -487,6 +489,37 @@ model PublishRecord {
   @@index([contentItemId])
   @@index([projectId, channel])
   @@map("publish_records")
+}
+
+enum PublishedContentStatus {
+  draft
+  published
+  failed
+}
+
+model PublishedContent {
+  id             String                 @id @default(cuid())
+  organizationId String                 @map("organization_id")
+  projectId      String                 @map("project_id")
+  assetId        String                 @map("asset_id")
+  publisher      String
+  externalId     String                 @map("external_id")
+  url            String
+  status         PublishedContentStatus
+  publishedAt    DateTime               @map("published_at")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@index([projectId])
+  @@index([publisher])
+  @@index([publishedAt])
+  @@index([projectId, assetId])
+  @@index([publisher, externalId])
+  @@map("published_content")
 }
 
 // ---------------------------------------------------------------------------

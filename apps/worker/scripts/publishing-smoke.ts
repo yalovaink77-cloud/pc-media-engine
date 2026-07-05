@@ -22,16 +22,16 @@ import { fileURLToPath } from 'node:url';
 import { config as loadDotenv } from 'dotenv';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-loadDotenv({ path: resolve(__dirname, '../../../../.env'), override: false });
+loadDotenv({ path: resolve(__dirname, '../../.env'), override: false });
 
 import type { PublishingFlowResult } from '@pcme/publishing';
 import { Queue, QueueEvents, Worker } from 'bullmq';
 
-import { parseRedisConnection } from '../config.js';
-import { processPublishingJob } from '../processors/publishing.processor.js';
-import { PUBLISHING_QUEUE } from '../queue/names.js';
-import type { PublishingJobPayload } from '../queue/publishing-payload.js';
-import { validatePublishingJobPayload } from '../queue/publishing-payload.js';
+import { parseRedisConnection } from '../src/config.js';
+import { processPublishingJob } from '../src/processors/publishing.processor.js';
+import { PUBLISHING_QUEUE } from '../src/queue/names.js';
+import type { PublishingJobPayload } from '../src/queue/publishing-payload.js';
+import { validatePublishingJobPayload } from '../src/queue/publishing-payload.js';
 
 /** Always mock — ignores PUBLISHER_DRIVER in environment. */
 const MOCK_DRIVER = { publisherDriver: 'mock' as const };

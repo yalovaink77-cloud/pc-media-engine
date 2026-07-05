@@ -184,6 +184,10 @@ describe('dispatchJob', () => {
 
     expect(onThumbnailComplete).toHaveBeenCalledTimes(1);
     expect(onThumbnailComplete).toHaveBeenCalledWith({
+      organizationId: 'org-001',
+      projectId: 'proj-001',
+      assetId: 'asset-001',
+      processingJobId: 'job-dispatch-001',
       asset: { filename: 'photo.jpg', storageKey: 'piercingconnect/asset-001/photo.jpg' },
       thumbnailKey: 'piercingconnect/asset-001/photo_thumb.webp',
     });

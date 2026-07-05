@@ -12,6 +12,10 @@ export type PublishingEnqueuer = {
 };
 
 export type ThumbnailCompleteContext = {
+  organizationId: string;
+  projectId: string;
+  assetId: string;
+  processingJobId: string;
   asset: { filename: string; storageKey: string };
   thumbnailKey: string;
 };
@@ -34,6 +38,10 @@ export async function enqueuePublishingAfterThumbnail(
   const thumbBuffer = await deps.storageProvider.get(ctx.thumbnailKey);
   const build = deps.buildPayload ?? buildEnrichedPublishingPayload;
   const payload = await build({
+    organizationId: ctx.organizationId,
+    projectId: ctx.projectId,
+    assetId: ctx.assetId,
+    processingJobId: ctx.processingJobId,
     filename: ctx.asset.filename,
     thumbnailBuffer: thumbBuffer,
     thumbnailStorageKey: ctx.thumbnailKey,

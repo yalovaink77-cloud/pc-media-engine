@@ -133,3 +133,96 @@ describe('processPublishingJob — invalid payload', () => {
     await expect(processPublishingJob({ ...VALID_PAYLOAD, body: '' })).rejects.toThrow(/body/);
   });
 });
+
+const SCOPED_PAYLOAD: PublishingJobPayload = {
+  ...VALID_PAYLOAD,
+  organizationId: 'org-1',
+  projectId: 'proj-1',
+  assetId: 'asset-1',
+  processingJobId: 'job-1',
+};
+
+describe('processPublishingJob — publishing history (Sprint 22)', () => {
+  it('persists PublishedContent after successful MockPublisher flow', async () => {
+    const create = vi.fn().mockResolvedValue({
+      id: 'pub-1',
+      publisher: 'mock',
+      externalId: 'post-abc',
+      url: 'https://mock/posts/abc',
+      status: 'draft',
+      publishedAt: new Date(),
+    });
+
+    await processPublishingJob(SCOPED_PAYLOAD, {
+      publisherDriver: 'mock',
+      publishedContentRepo: { create },
+    });
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0]![0]).toMatchObject({
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisher: 'mock',
+      status: 'draft',
+    });
+    expect(create.mock.calls[0]![0].externalId).toMatch(/^post-/);
+  });
+
+  it('persists PublishedContent when wordpress publisher succeeds (mocked)', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'pub-wp' });
+    const fakePublisher = {
+      name: 'FakeWordPress',
+      publishMedia: vi.fn().mockResolvedValue({
+        success: true,
+        externalId: '42',
+        url: 'https://wp/media/42',
+        publishedAt: new Date(),
+      }),
+      publishPost: vi.fn().mockResolvedValue({
+        success: true,
+        externalId: '99',
+        url: 'https://wp/posts/99',
+        publishedAt: new Date(),
+      }),
+      publish: vi.fn(),
+      health: vi.fn(),
+    };
+
+    await processPublishingJob(SCOPED_PAYLOAD, {
+      publisherDriver: 'wordpress',
+      createPublisher: () => fakePublisher,
+      publishedContentRepo: { create },
+    });
+
+    expect(create).toHaveBeenCalledOnce();
+    expect(create.mock.calls[0]![0]).toMatchObject({
+      publisher: 'wordpress',
+      externalId: '99',
+      url: 'https://wp/posts/99',
+      status: 'draft',
+    });
+  });
+
+  it('does not persist PublishedContent when publishing fails', async () => {
+    const create = vi.fn();
+    const orchestrator = {
+      publish: vi.fn().mockResolvedValue({
+        success: false,
+        message: 'Media upload failed: quota exceeded',
+      } satisfies PublishingFlowResult),
+    } as unknown as PublishingOrchestrator;
+
+    await processPublishingJob(SCOPED_PAYLOAD, {
+      createOrchestrator: () => orchestrator,
+      publishedContentRepo: { create },
+    });
+
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('does not persist PublishedContent when repo is not injected', async () => {
+    const result = await processPublishingJob(SCOPED_PAYLOAD, { publisherDriver: 'mock' });
+    expect(result.success).toBe(true);
+  });
+});

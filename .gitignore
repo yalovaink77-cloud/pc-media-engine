@@ -8,6 +8,12 @@ out/
 build/
 .turbo/
 
+# Accidental TypeScript emit written beside sources (never commit)
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts
+**/src/**/*.d.ts.map
+
 # Environment
 .env
 .env.local

@@ -114,6 +114,9 @@ importers:
         specifier: ^0.35.3
         version: 0.35.3(@types/node@22.20.0)
     devDependencies:
+      '@pcme/api':
+        specifier: workspace:*
+        version: link:../api
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0

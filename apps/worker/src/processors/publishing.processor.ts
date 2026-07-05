@@ -8,10 +8,13 @@
 import type { Publisher, PublishingFlowResult } from '@pcme/publishing';
 import { PublishingOrchestrator } from '@pcme/publishing';
 
+import type { PublishedContentWriter } from '../publishing/persist-published-content.js';
+import { persistPublishedContentIfSuccessful } from '../publishing/persist-published-content.js';
 import {
   createPublisher,
   type CreatePublisherOptions,
   type PublisherDriver,
+  resolvePublisherDriver,
 } from '../publishing/publisher-driver.js';
 import type { PublishingJobPayload } from '../queue/publishing-payload.js';
 import { toPublishingRequest } from '../queue/publishing-payload.js';
@@ -21,6 +24,7 @@ export type PublishingProcessorDeps = {
   createPublisher?: () => Publisher;
   publisherDriver?: PublisherDriver;
   env?: Record<string, string | undefined>;
+  publishedContentRepo?: PublishedContentWriter;
 };
 
 function buildOrchestrator(deps: PublishingProcessorDeps): PublishingOrchestrator {
@@ -42,6 +46,8 @@ export async function processPublishingJob(
   payload: PublishingJobPayload,
   deps: PublishingProcessorDeps = {},
 ): Promise<PublishingFlowResult> {
+  const env = deps.env ?? process.env;
+  const publisherDriver = deps.publisherDriver ?? resolvePublisherDriver(env);
   const orchestrator = buildOrchestrator(deps);
   const result = await orchestrator.publish(toPublishingRequest(payload));
 
@@ -51,6 +57,20 @@ export async function processPublishingJob(
 
   if (result.message) {
     console.log(`[publishing]   ${result.message}`);
+  }
+
+  if (deps.publishedContentRepo) {
+    const record = await persistPublishedContentIfSuccessful(
+      payload,
+      result,
+      publisherDriver,
+      deps.publishedContentRepo,
+    );
+    if (record) {
+      console.log(
+        `[publishing] history saved — publisher=${record.publisher} externalId=${record.externalId}`,
+      );
+    }
   }
 
   return result;

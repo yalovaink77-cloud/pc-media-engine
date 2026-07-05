@@ -7,16 +7,17 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist && find src -type f \\( -name '*.js' -o -name '*.d.ts' -o -name '*.js.map' -o -name '*.d.ts.map' \\) -delete 2>/dev/null || true",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "dev": "dotenv -e ../../.env -- tsx src/index.ts",
     "start": "node dist/index.js",
-    "smoke": "dotenv -e ../../.env -- tsx src/scripts/worker-smoke.ts",
-    "publishing:smoke": "dotenv -e ../../.env -- tsx src/scripts/publishing-smoke.ts",
-    "publishing:smoke:wordpress": "dotenv -e ../../.env -- tsx src/scripts/publishing-smoke-wordpress.ts",
-    "e2e:smoke": "dotenv -e ../../.env -- tsx src/scripts/e2e-smoke.ts",
+    "smoke": "dotenv -e ../../.env -- tsx scripts/worker-smoke.ts",
+    "publishing:smoke": "dotenv -e ../../.env -- tsx scripts/publishing-smoke.ts",
+    "publishing:smoke:wordpress": "dotenv -e ../../.env -- tsx scripts/publishing-smoke-wordpress.ts",
+    "e2e:smoke": "dotenv -e ../../.env -- tsx scripts/e2e-smoke.ts",
+    "publishing-history:smoke": "dotenv -e ../../.env -- tsx scripts/publishing-history-smoke.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "sharp": "^0.35.3"
   },
   "devDependencies": {
+    "@pcme/api": "workspace:*",
     "@types/node": "^22.10.7",
     "dotenv-cli": "^8.0.0",
     "tsx": "^4.19.2",

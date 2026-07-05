@@ -8,6 +8,10 @@ const THUMB = Buffer.from('fake-webp-bytes');
 describe('buildEnrichedPublishingPayload', () => {
   it('applies deterministic metadata enrichment', async () => {
     const payload = await buildEnrichedPublishingPayload({
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      processingJobId: 'job-1',
       filename: 'industrial-aftercare.jpg',
       thumbnailBuffer: THUMB,
       thumbnailStorageKey: 'piercingconnect/asset1/industrial-aftercare_thumb.webp',
@@ -24,6 +28,10 @@ describe('buildEnrichedPublishingPayload', () => {
 
   it('merges mock AI suggestions when mock provider is used', async () => {
     const payload = await buildEnrichedPublishingPayload({
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      processingJobId: 'job-1',
       filename: 'helix-guide.jpg',
       thumbnailBuffer: THUMB,
       thumbnailStorageKey: 'piercingconnect/asset1/helix-guide_thumb.webp',
@@ -36,6 +44,10 @@ describe('buildEnrichedPublishingPayload', () => {
 
   it('uses none provider by default via env', async () => {
     const payload = await buildEnrichedPublishingPayload({
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      processingJobId: 'job-1',
       filename: 'lobe-care.jpg',
       thumbnailBuffer: THUMB,
       thumbnailStorageKey: 'piercingconnect/asset1/lobe-care_thumb.webp',

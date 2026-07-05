@@ -6,7 +6,17 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/.turbo/**', '**/coverage/**', '**/.next/**'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/.turbo/**',
+      '**/coverage/**',
+      '**/.next/**',
+      '**/src/**/*.js',
+      '**/src/**/*.d.ts',
+      '**/src/**/*.js.map',
+      '**/src/**/*.d.ts.map',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

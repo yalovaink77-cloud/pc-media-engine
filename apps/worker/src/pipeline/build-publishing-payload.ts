@@ -6,6 +6,10 @@ import { THUMBNAIL_MIME } from '../processors/thumbnail.processor.js';
 import { encodeMediaBuffer, type PublishingJobPayload } from '../queue/publishing-payload.js';
 
 export type BuildPublishingPayloadInput = {
+  organizationId: string;
+  projectId: string;
+  assetId: string;
+  processingJobId: string;
   filename: string;
   thumbnailBuffer: Buffer;
   thumbnailStorageKey: string;
@@ -41,6 +45,10 @@ export async function buildEnrichedPublishingPayload(
   });
 
   return {
+    organizationId: input.organizationId,
+    projectId: input.projectId,
+    assetId: input.assetId,
+    processingJobId: input.processingJobId,
     title: metadata.seoTitle,
     slug: metadata.slug,
     body,

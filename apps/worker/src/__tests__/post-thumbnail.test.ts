@@ -14,6 +14,10 @@ describe('enqueuePublishingAfterThumbnail', () => {
     const enqueue = vi.fn().mockResolvedValue(undefined);
     const payload = await enqueuePublishingAfterThumbnail(
       {
+        organizationId: 'org-001',
+        projectId: 'proj-001',
+        assetId: 'asset-001',
+        processingJobId: 'job-001',
         asset: { filename: 'smoke-test.jpg', storageKey: 'proj/id/smoke-test.jpg' },
         thumbnailKey: 'proj/id/smoke-test_thumb.webp',
       },

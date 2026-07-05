@@ -14,6 +14,11 @@ export type PublishingJobPayload = {
   title: string;
   slug: string;
   body: string;
+  /** Scope fields for publishing history (Sprint 22). */
+  organizationId?: string;
+  projectId?: string;
+  assetId?: string;
+  processingJobId?: string;
   mediaMimeType?: string;
   mediaFilename?: string;
   /** Base64-encoded binary content. */
@@ -95,6 +100,19 @@ export function validatePublishingJobPayload(data: unknown): PublishingJobPayloa
   }
   if (typeof obj['mediaFilename'] === 'string' && obj['mediaFilename'].trim()) {
     payload.mediaFilename = obj['mediaFilename'].trim();
+  }
+
+  if (typeof obj['organizationId'] === 'string' && obj['organizationId'].trim()) {
+    payload.organizationId = obj['organizationId'].trim();
+  }
+  if (typeof obj['projectId'] === 'string' && obj['projectId'].trim()) {
+    payload.projectId = obj['projectId'].trim();
+  }
+  if (typeof obj['assetId'] === 'string' && obj['assetId'].trim()) {
+    payload.assetId = obj['assetId'].trim();
+  }
+  if (typeof obj['processingJobId'] === 'string' && obj['processingJobId'].trim()) {
+    payload.processingJobId = obj['processingJobId'].trim();
   }
 
   // Validate media resolves to non-empty buffer

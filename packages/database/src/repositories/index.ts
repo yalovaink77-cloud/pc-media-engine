@@ -40,6 +40,10 @@ export {
   type UpdateProcessingJobAttemptInput,
 } from './processing-attempt.repository.js';
 export {
+  type CreatePublishedContentInput,
+  PublishedContentRepository,
+} from './published-content.repository.js';
+export {
   activeRecordsFilter,
   ProjectScopeError,
   requireOrganizationId,

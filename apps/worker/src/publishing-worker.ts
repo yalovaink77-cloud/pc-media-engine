@@ -1,3 +1,4 @@
+import { PublishedContentRepository } from '@pcme/database';
 import { Worker } from 'bullmq';
 
 import type { WorkerConfig } from './config.js';
@@ -14,6 +15,7 @@ import { validatePublishingJobPayload } from './queue/publishing-payload.js';
  */
 export function startPublishingWorker(config: WorkerConfig): Worker {
   const connection = parseRedisConnection(config.redisUrl);
+  const publishedContentRepo = new PublishedContentRepository();
 
   const worker = new Worker(
     PUBLISHING_QUEUE,
@@ -21,6 +23,7 @@ export function startPublishingWorker(config: WorkerConfig): Worker {
       const payload = validatePublishingJobPayload(job.data);
       const result = await processPublishingJob(payload, {
         publisherDriver: config.publisherDriver,
+        publishedContentRepo,
       });
       return result;
     },

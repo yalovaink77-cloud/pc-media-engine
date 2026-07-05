@@ -10,7 +10,8 @@
   "scripts": {
     "prepare": "husky",
     "build": "turbo build",
-    "clean": "turbo clean",
+    "clean": "turbo clean && pnpm clean:src-artifacts",
+    "clean:src-artifacts": "find apps packages plugins providers -path '*/src/*' -type f \\( -name '*.js' -o -name '*.d.ts' -o -name '*.js.map' -o -name '*.d.ts.map' \\) -delete 2>/dev/null || true",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
@@ -25,14 +26,19 @@
     "db:migrate:dev": "pnpm --filter @pcme/database db:migrate:dev",
     "db:seed": "pnpm --filter @pcme/database db:seed",
     "db:health": "pnpm --filter @pcme/database db:health",
-    "e2e:smoke": "pnpm --filter @pcme/worker e2e:smoke"
+    "e2e:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker e2e:smoke",
+    "publishing-history:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker publishing-history:smoke"
   },
   "lint-staged": {
-    "*.{ts,js,mjs,cjs}": [
+    "*.{ts,tsx}": [
       "eslint --fix --max-warnings=0",
       "prettier --write"
     ],
     "*.{json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.mjs": [
+      "eslint --fix --max-warnings=0",
       "prettier --write"
     ]
   },

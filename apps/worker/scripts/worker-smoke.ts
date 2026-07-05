@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { config as loadDotenv } from 'dotenv';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-loadDotenv({ path: resolve(__dirname, '../../../../.env'), override: false });
+loadDotenv({ path: resolve(__dirname, '../../.env'), override: false });
 
 import {
   getPrismaClient,
@@ -41,10 +41,10 @@ import { LocalStorageProvider } from '@pcme/media';
 import { Queue, QueueEvents, Worker } from 'bullmq';
 import sharp from 'sharp';
 
-import { parseRedisConnection } from '../config.js';
-import { dispatchJob } from '../processors/dispatch.js';
-import { PROCESSING_QUEUE } from '../queue/names.js';
-import type { ProcessingJobPayload } from '../queue/payload.js';
+import { parseRedisConnection } from '../src/config.js';
+import { dispatchJob } from '../src/processors/dispatch.js';
+import { PROCESSING_QUEUE } from '../src/queue/names.js';
+import type { ProcessingJobPayload } from '../src/queue/payload.js';
 
 // ---------------------------------------------------------------------------
 // Config
