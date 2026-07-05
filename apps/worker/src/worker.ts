@@ -44,7 +44,10 @@ export function startWorker(config: WorkerConfig): Worker {
   });
 
   const publishingEnqueuer = config.autoEnqueuePublishing
-    ? createPublishingEnqueuer(connection)
+    ? createPublishingEnqueuer(connection, {
+        maxRetries: config.publishingMaxRetries,
+        backoffMs: config.publishingBackoffMs,
+      })
     : undefined;
 
   const worker = new Worker(

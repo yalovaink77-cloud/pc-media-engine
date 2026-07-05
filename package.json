@@ -28,7 +28,8 @@
     "db:health": "pnpm --filter @pcme/database db:health",
     "e2e:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker e2e:smoke",
     "publishing-history:smoke": "pnpm --filter @pcme/api build && pnpm --filter @pcme/worker publishing-history:smoke",
-    "duplicate:smoke": "pnpm --filter @pcme/worker duplicate:smoke"
+    "duplicate:smoke": "pnpm --filter @pcme/worker duplicate:smoke",
+    "retry:smoke": "pnpm --filter @pcme/worker retry:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

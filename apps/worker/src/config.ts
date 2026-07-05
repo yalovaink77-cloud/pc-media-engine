@@ -14,6 +14,10 @@ export type WorkerConfig = {
   publisherDriver: PublisherDriver;
   /** When true, enqueue publishing after thumbnail success. Default: false. */
   autoEnqueuePublishing: boolean;
+  /** Total retry attempts for failed publishing jobs (not counting the initial attempt). */
+  publishingMaxRetries: number;
+  /** Initial backoff delay in ms for exponential retry. Doubles each attempt. */
+  publishingBackoffMs: number;
 };
 
 /**
@@ -37,5 +41,7 @@ export function loadWorkerConfig(): WorkerConfig {
     logLevel: process.env['LOG_LEVEL'] ?? 'info',
     publisherDriver: resolvePublisherDriver(process.env),
     autoEnqueuePublishing: parseEnvFlag(process.env['PCME_AUTO_ENQUEUE_PUBLISHING']),
+    publishingMaxRetries: parseInt(process.env['PCME_PUBLISHING_MAX_RETRIES'] ?? '3', 10),
+    publishingBackoffMs: parseInt(process.env['PCME_PUBLISHING_BACKOFF_MS'] ?? '5000', 10),
   };
 }
