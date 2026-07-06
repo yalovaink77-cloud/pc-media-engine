@@ -110,20 +110,34 @@ const metricsFixture = {
 };
 
 function makeFixtureClient(): DashboardApiClient {
+  const noop = async () => ({ ok: true, status: 200, message: 'OK' });
   return {
     fetchHealth: async () => healthFixture,
     fetchSummary: async () => summaryFixture,
     fetchRecent: async () => recentFixture,
     fetchMetrics: async () => metricsFixture,
+    fetchQueueStatus: async () => null,
+    pauseQueue: noop,
+    resumeQueue: noop,
+    drainQueue: noop,
+    retryJob: noop,
+    removeJob: noop,
   };
 }
 
 function makeErrorClient(): DashboardApiClient {
+  const fail = async () => ({ ok: false, status: 401, message: 'Unauthorized' });
   return {
     fetchHealth: async () => null,
     fetchSummary: async () => null,
     fetchRecent: async () => null,
     fetchMetrics: async () => null,
+    fetchQueueStatus: async () => null,
+    pauseQueue: fail,
+    resumeQueue: fail,
+    drainQueue: fail,
+    retryJob: fail,
+    removeJob: fail,
   };
 }
 

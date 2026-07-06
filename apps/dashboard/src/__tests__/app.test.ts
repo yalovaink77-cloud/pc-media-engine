@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildDashboardApp } from '../app.js';
 import type { DashboardApiClient } from '../client.js';
-import type { DashboardHealthData, DashboardRecentData, DashboardSummaryData } from '../types.js';
+import type {
+  DashboardHealthData,
+  DashboardRecentData,
+  DashboardSummaryData,
+  QueueActionResult,
+} from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -76,6 +81,12 @@ const queueFixture = {
   failed: 0,
 };
 
+const okAction = async (): Promise<QueueActionResult> => ({
+  ok: true,
+  status: 200,
+  message: 'OK',
+});
+
 function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiClient {
   return {
     fetchHealth: async () => healthFixture,
@@ -83,17 +94,32 @@ function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardA
     fetchRecent: async () => recentFixture,
     fetchMetrics: async () => metricsFixture,
     fetchQueueStatus: async () => queueFixture,
+    pauseQueue: okAction,
+    resumeQueue: okAction,
+    drainQueue: okAction,
+    retryJob: async (jobId) => ({ ok: true, status: 200, message: `Retried ${jobId}` }),
+    removeJob: async (jobId) => ({ ok: true, status: 200, message: `Removed ${jobId}` }),
     ...overrides,
   };
 }
 
 function makeErrorClient(): DashboardApiClient {
+  const failAction = async (): Promise<QueueActionResult> => ({
+    ok: false,
+    status: 401,
+    message: 'Unauthorized — configure DASHBOARD_API_KEY',
+  });
   return {
     fetchHealth: async () => null,
     fetchSummary: async () => null,
     fetchRecent: async () => null,
     fetchMetrics: async () => null,
     fetchQueueStatus: async () => null,
+    pauseQueue: failAction,
+    resumeQueue: failAction,
+    drainQueue: failAction,
+    retryJob: failAction,
+    removeJob: failAction,
   };
 }
 
@@ -197,5 +223,108 @@ describe('GET / — partial API failure', () => {
     expect(res.body).toContain('data-testid="health-cards"');
     expect(res.body).toContain('data-testid="summary-unavailable"');
     expect(res.body).toContain('data-testid="recent-table"');
+  });
+});
+
+describe('GET / — operations panel', () => {
+  beforeEach(() => {
+    app = buildDashboardApp({ client: makeFullClient(), logLevel: 'silent' });
+  });
+
+  it('renders queue operations panel', async () => {
+    const res = await app.inject({ method: 'GET', url: '/' });
+    expect(res.body).toContain('data-testid="queue-operations-panel"');
+  });
+});
+
+describe('POST /ops/queue/* — queue actions', () => {
+  it('pause redirects with success flash', async () => {
+    app = buildDashboardApp({
+      client: makeFullClient({
+        pauseQueue: async () => ({ ok: true, status: 200, message: 'Queue paused' }),
+      }),
+      logLevel: 'silent',
+    });
+    const res = await app.inject({ method: 'POST', url: '/ops/queue/pause' });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flash=Queue%20paused');
+    expect(res.headers.location).toContain('flashType=ok');
+  });
+
+  it('resume redirects with success flash', async () => {
+    app = buildDashboardApp({
+      client: makeFullClient({
+        resumeQueue: async () => ({ ok: true, status: 200, message: 'Queue resumed' }),
+      }),
+      logLevel: 'silent',
+    });
+    const res = await app.inject({ method: 'POST', url: '/ops/queue/resume' });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flashType=ok');
+  });
+
+  it('drain redirects with success flash', async () => {
+    app = buildDashboardApp({
+      client: makeFullClient({
+        drainQueue: async () => ({ ok: true, status: 200, message: 'Queue drained' }),
+      }),
+      logLevel: 'silent',
+    });
+    const res = await app.inject({ method: 'POST', url: '/ops/queue/drain' });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flashType=ok');
+  });
+
+  it('retry job redirects with job id in flash', async () => {
+    app = buildDashboardApp({ client: makeFullClient(), logLevel: 'silent' });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/ops/queue/retry',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      payload: 'jobId=job-42',
+    });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('job-42');
+  });
+
+  it('remove job redirects on success', async () => {
+    app = buildDashboardApp({ client: makeFullClient(), logLevel: 'silent' });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/ops/queue/remove',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      payload: 'jobId=job-99',
+    });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flashType=ok');
+  });
+
+  it('retry without job id shows validation error flash', async () => {
+    app = buildDashboardApp({ client: makeFullClient(), logLevel: 'silent' });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/ops/queue/retry',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      payload: '',
+    });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flashType=err');
+  });
+});
+
+describe('POST /ops/queue/* — unauthorized', () => {
+  it('pause shows unauthorized flash when API returns 401', async () => {
+    app = buildDashboardApp({ client: makeErrorClient(), logLevel: 'silent' });
+    const res = await app.inject({ method: 'POST', url: '/ops/queue/pause' });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('flashType=err');
+
+    const page = await app.inject({
+      method: 'GET',
+      url: res.headers.location ?? '/',
+    });
+    expect(page.statusCode).toBe(200);
+    expect(page.body).toContain('Unauthorized');
+    expect(page.body).toContain('data-testid="flash-banner"');
   });
 });

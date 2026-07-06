@@ -89,6 +89,7 @@ function makePageData(overrides: Partial<DashboardPageData> = {}): DashboardPage
     queueStatus: null,
     fetchedAt: NOW_ISO,
     errors: [],
+    apiKeyConfigured: false,
     ...overrides,
   };
 }
@@ -374,5 +375,71 @@ describe('renderDashboardPage — XSS escaping', () => {
     );
     expect(html).not.toContain(xssPublisher);
     expect(html).toContain('&lt;img');
+  });
+});
+
+describe('renderDashboardPage — queue operations panel (Sprint 36)', () => {
+  it('renders queue operations panel', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="queue-operations-panel"');
+  });
+
+  it('renders pause, resume, and drain forms', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="form-pause"');
+    expect(html).toContain('data-testid="form-resume"');
+    expect(html).toContain('data-testid="form-drain"');
+    expect(html).toContain('action="/ops/queue/pause"');
+    expect(html).toContain('action="/ops/queue/resume"');
+    expect(html).toContain('action="/ops/queue/drain"');
+  });
+
+  it('renders retry and remove job forms', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="form-retry"');
+    expect(html).toContain('data-testid="form-remove"');
+    expect(html).toContain('name="jobId"');
+  });
+
+  it('shows api key missing hint when not configured', () => {
+    const html = renderDashboardPage(makePageData({ apiKeyConfigured: false }));
+    expect(html).toContain('data-testid="api-key-missing"');
+    expect(html).toContain('DASHBOARD_API_KEY');
+  });
+
+  it('shows api key configured hint when configured', () => {
+    const html = renderDashboardPage(makePageData({ apiKeyConfigured: true }));
+    expect(html).toContain('data-testid="api-key-configured"');
+  });
+
+  it('renders success flash banner', () => {
+    const html = renderDashboardPage(
+      makePageData({ flash: { message: 'Queue paused', type: 'ok' } }),
+    );
+    expect(html).toContain('data-testid="flash-banner"');
+    expect(html).toContain('Queue paused');
+    expect(html).toContain('data-flash-type="ok"');
+  });
+
+  it('renders error flash banner for unauthorized', () => {
+    const html = renderDashboardPage(
+      makePageData({
+        flash: {
+          message: 'Unauthorized — configure DASHBOARD_API_KEY',
+          type: 'err',
+        },
+      }),
+    );
+    expect(html).toContain('data-testid="flash-banner"');
+    expect(html).toContain('Unauthorized');
+    expect(html).toContain('data-flash-type="err"');
+  });
+
+  it('escapes HTML in flash messages', () => {
+    const html = renderDashboardPage(
+      makePageData({ flash: { message: '<script>x</script>', type: 'err' } }),
+    );
+    expect(html).not.toContain('<script>x</script>');
+    expect(html).toContain('&lt;script&gt;');
   });
 });

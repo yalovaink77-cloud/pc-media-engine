@@ -49,6 +49,18 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
+function renderFlash(flash: DashboardPageData['flash']): string {
+  if (!flash) return '';
+  const cls = flash.type === 'ok' ? 'flash-ok' : 'flash-err';
+  return `
+  <section>
+    <div class="flash-banner ${cls}" data-testid="flash-banner" data-flash-type="${esc(flash.type)}">
+      <strong>${flash.type === 'ok' ? 'Success' : 'Error'}</strong>
+      <p style="margin-top:.35rem">${esc(flash.message)}</p>
+    </div>
+  </section>`;
+}
+
 function renderHealth(data: DashboardPageData): string {
   const h = data.health;
   if (!h) {
@@ -216,8 +228,49 @@ function renderRecent(data: DashboardPageData): string {
 }
 
 // ---------------------------------------------------------------------------
-// Metrics section (Sprint 29)
+// Queue operations panel (Sprint 36)
 // ---------------------------------------------------------------------------
+
+function renderQueueOperations(data: DashboardPageData): string {
+  const keyHint = data.apiKeyConfigured
+    ? '<p class="ops-hint ok" data-testid="api-key-configured">API key configured — queue operations will authenticate via DASHBOARD_API_KEY.</p>'
+    : '<p class="ops-hint warn" data-testid="api-key-missing">No DASHBOARD_API_KEY configured. Queue operations may return 401 Unauthorized when API auth is enabled.</p>';
+
+  return `
+  <section>
+    <h2>Queue Operations</h2>
+    ${keyHint}
+    <div class="ops-panel" data-testid="queue-operations-panel">
+      <div class="ops-row">
+        <form method="POST" action="/ops/queue/pause" data-testid="form-pause">
+          <button type="submit" class="btn btn-warn">Pause Queue</button>
+        </form>
+        <form method="POST" action="/ops/queue/resume" data-testid="form-resume">
+          <button type="submit" class="btn btn-ok">Resume Queue</button>
+        </form>
+        <form method="POST" action="/ops/queue/drain" data-testid="form-drain">
+          <button type="submit" class="btn btn-neutral">Drain Queue</button>
+        </form>
+      </div>
+      <div class="ops-row ops-forms">
+        <form method="POST" action="/ops/queue/retry" class="ops-form" data-testid="form-retry">
+          <label for="retry-job-id">Retry failed job</label>
+          <div class="ops-input-row">
+            <input id="retry-job-id" name="jobId" type="text" placeholder="Job ID" required />
+            <button type="submit" class="btn btn-neutral">Retry</button>
+          </div>
+        </form>
+        <form method="POST" action="/ops/queue/remove" class="ops-form" data-testid="form-remove">
+          <label for="remove-job-id">Remove job</label>
+          <div class="ops-input-row">
+            <input id="remove-job-id" name="jobId" type="text" placeholder="Job ID" required />
+            <button type="submit" class="btn btn-danger">Remove</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>`;
+}
 
 function renderMetrics(data: DashboardPageData): string {
   const m = data.metrics;
@@ -358,6 +411,24 @@ const CSS = `
   a{color:#2563eb;text-decoration:none}a:hover{text-decoration:underline}
   .empty{color:#9ca3af;font-style:italic;padding:1.5rem;text-align:center;display:block}
   .error-banner{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:1rem 1.25rem;color:#991b1b}
+  .flash-banner{border-radius:8px;padding:1rem 1.25rem;margin-bottom:0}
+  .flash-ok{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+  .flash-err{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+  .ops-panel{background:#fff;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .ops-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+  .ops-forms{gap:1.5rem}
+  .ops-form{flex:1;min-width:220px}
+  .ops-form label{display:block;font-size:.75rem;color:#6b7280;margin-bottom:.35rem}
+  .ops-input-row{display:flex;gap:.5rem}
+  .ops-input-row input{flex:1;padding:.45rem .6rem;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem}
+  .ops-hint{font-size:.8rem;margin-bottom:.75rem;padding:.5rem .75rem;border-radius:6px}
+  .ops-hint.ok{background:#ecfdf5;color:#065f46}
+  .ops-hint.warn{background:#fffbeb;color:#92400e}
+  .btn{padding:.45rem 1rem;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer}
+  .btn-ok{background:#059669;color:#fff}
+  .btn-warn{background:#d97706;color:#fff}
+  .btn-neutral{background:#e5e7eb;color:#374151}
+  .btn-danger{background:#dc2626;color:#fff}
   footer{max-width:1200px;margin:0 auto;padding:0 2rem 2rem;font-size:.75rem;color:#9ca3af}
 `.trim();
 
@@ -376,15 +447,17 @@ export function renderDashboardPage(data: DashboardPageData): string {
 <body>
   <header>
     <h1>PC Media Engine — Dashboard</h1>
-    <p>Read-only &middot; No auth &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    <p>Operations UI &middot; Queue controls &middot; Last fetched: ${esc(data.fetchedAt)}</p>
   </header>
   <main>
     ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
     ${renderHealth(data)}
-    ${renderSummary(data)}
     ${renderMetrics(data)}
-    ${renderQueueStatus(data)}
+    ${renderSummary(data)}
     ${renderRecent(data)}
+    ${renderQueueStatus(data)}
+    ${renderQueueOperations(data)}
   </main>
   <footer>
     <p>Version: ${esc(version)} &middot; Env: ${esc(env)} &middot; Reload to refresh</p>

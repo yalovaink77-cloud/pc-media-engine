@@ -87,4 +87,21 @@ export type DashboardPageData = {
   queueStatus: DashboardQueueData | null;
   /** One or more user-visible error messages when any fetch failed. */
   errors: string[];
+  /** Flash message after a queue operation (Sprint 36). */
+  flash?: DashboardFlash;
+  /** Whether DASHBOARD_API_KEY is configured (Sprint 36). */
+  apiKeyConfigured: boolean;
+};
+
+/** Result message shown after a queue operation redirect. */
+export type DashboardFlash = {
+  message: string;
+  type: 'ok' | 'err';
+};
+
+/** Result of a queue management API call. */
+export type QueueActionResult = {
+  ok: boolean;
+  status: number;
+  message: string;
 };

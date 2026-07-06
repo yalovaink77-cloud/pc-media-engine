@@ -39,7 +39,8 @@
     "queue:smoke": "pnpm --filter @pcme/api queue:smoke",
     "wordpress:smoke": "pnpm --filter @pcme/plugin-wordpress smoke:s33",
     "publisher-sdk:smoke": "pnpm --filter @pcme/publisher-sdk smoke",
-    "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke"
+    "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
+    "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
