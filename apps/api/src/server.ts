@@ -13,6 +13,7 @@ import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
 import { buildProcessingEnqueuer } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
+import { assertNoFatalErrors, logApiStartupSummary, validateApiConfig } from './startup.js';
 
 /**
  * Build a live database health check function using Prisma.
@@ -31,6 +32,13 @@ function buildDatabaseCheck(_databaseUrl: string): () => Promise<DatabaseStatus>
 }
 
 export async function startServer(config: Config): Promise<void> {
+  const startedAt = new Date().toISOString();
+
+  // Validate configuration before any I/O — fail fast on fatal errors.
+  const diagnostic = validateApiConfig(config);
+  assertNoFatalErrors(diagnostic);
+  logApiStartupSummary(config, startedAt);
+
   const checkDatabase = config.databaseUrl ? buildDatabaseCheck(config.databaseUrl) : undefined;
 
   const assetRepository =
@@ -65,19 +73,30 @@ export async function startServer(config: Config): Promise<void> {
     publishedContentRepo,
     dashboardRepo: publishedContentRepo,
     metricsService,
+    startedAt,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
-    app.log.info({ signal }, 'Shutdown signal received — closing server');
+    app.log.info({ signal }, '[api] Shutdown signal received — draining connections');
     try {
       await app.close();
-      app.log.info('Server closed cleanly');
+      app.log.info('[api] Server closed cleanly');
       process.exit(0);
     } catch (err) {
-      app.log.error({ err }, 'Error during shutdown');
+      app.log.error({ err }, '[api] Error during shutdown');
       process.exit(1);
     }
   };
+
+  process.on('uncaughtException', (err) => {
+    app.log.fatal({ err }, '[api] Uncaught exception — shutting down');
+    void gracefulShutdown('uncaughtException');
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    app.log.fatal({ reason }, '[api] Unhandled rejection — shutting down');
+    void gracefulShutdown('unhandledRejection');
+  });
 
   process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => void gracefulShutdown('SIGINT'));

@@ -33,7 +33,8 @@
     "scheduler:smoke": "pnpm --filter @pcme/worker scheduler:smoke",
     "publishing-api:smoke": "pnpm --filter @pcme/api publishing-api:smoke",
     "dashboard-api:smoke": "pnpm --filter @pcme/api dashboard-api:smoke",
-    "metrics:smoke": "pnpm --filter @pcme/api metrics:smoke"
+    "metrics:smoke": "pnpm --filter @pcme/api metrics:smoke",
+    "beta:smoke": "pnpm --filter @pcme/api beta:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -10,6 +10,8 @@ export type HealthResponse = {
   database: DatabaseStatus;
   /** True when the in-process MetricsService is wired in (Sprint 29+). */
   metricsEnabled: boolean;
+  /** ISO timestamp of when this process started (Sprint 30+). */
+  startedAt: string;
 };
 
 export type HealthRouteOptions = {
@@ -22,6 +24,8 @@ export type HealthRouteOptions = {
   checkDatabase?: () => Promise<DatabaseStatus>;
   /** Whether the MetricsService is available (Sprint 29+). */
   metricsEnabled?: boolean;
+  /** ISO timestamp of when this process started (Sprint 30+). */
+  startedAt?: string;
 };
 
 export async function healthRoutes(
@@ -42,6 +46,7 @@ export async function healthRoutes(
               version: { type: 'string' },
               database: { type: 'string' },
               metricsEnabled: { type: 'boolean' },
+              startedAt: { type: 'string' },
             },
           },
         },
@@ -59,6 +64,7 @@ export async function healthRoutes(
         version: options.version,
         database,
         metricsEnabled: options.metricsEnabled ?? false,
+        startedAt: options.startedAt ?? new Date().toISOString(),
       };
 
       return reply.status(200).send(body);

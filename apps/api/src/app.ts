@@ -75,6 +75,8 @@ export type AppOptions = {
    * When provided, queue depth gauges are populated on GET /metrics.
    */
   queueMetricsProvider?: QueueMetricsProvider;
+  /** ISO timestamp of when this process started (Sprint 30+). */
+  startedAt?: string;
 };
 
 /**
@@ -96,6 +98,7 @@ export function buildApp(options: AppOptions) {
     dashboardRepo,
     metricsService,
     queueMetricsProvider,
+    startedAt,
   } = options;
 
   const app = Fastify({
@@ -138,6 +141,7 @@ export function buildApp(options: AppOptions) {
     env: config.env,
     checkDatabase,
     metricsEnabled: !!metricsService,
+    startedAt,
   });
   app.register(versionRoutes, {
     version: config.version,
