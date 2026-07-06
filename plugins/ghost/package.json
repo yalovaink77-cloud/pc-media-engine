@@ -1,0 +1,32 @@
+{
+  "name": "@pcme/plugin-ghost",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "smoke": "tsx src/scripts/ghost-smoke.ts"
+  },
+  "dependencies": {
+    "@pcme/publisher-sdk": "workspace:*",
+    "@pcme/publishing": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "vitest": "^3.0.5"
+  }
+}
