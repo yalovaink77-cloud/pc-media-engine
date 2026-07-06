@@ -5,6 +5,8 @@ import Fastify from 'fastify';
 import type { Config } from './config.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
+import type { DashboardDataProvider } from './routes/dashboard.js';
+import { dashboardRoutes } from './routes/dashboard.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
@@ -53,6 +55,13 @@ export type AppOptions = {
    * When absent, history/detail endpoints return 503.
    */
   publishedContentRepo?: PublishedContentFinder;
+  /**
+   * Optional dashboard data provider (Sprint 27+).
+   * Satisfies the DashboardDataProvider interface.
+   * When absent, summary/recent endpoints return 503.
+   * In production the same PublishedContentRepository instance fulfils both roles.
+   */
+  dashboardRepo?: DashboardDataProvider;
 };
 
 /**
@@ -71,6 +80,7 @@ export function buildApp(options: AppOptions) {
     jobScheduler,
     processingEnqueuer,
     publishedContentRepo,
+    dashboardRepo,
   } = options;
 
   const app = Fastify({
@@ -123,6 +133,12 @@ export function buildApp(options: AppOptions) {
 
   app.register(publishingRoutes, {
     publishedContentRepo,
+    publishingConfig: config,
+  });
+
+  app.register(dashboardRoutes, {
+    repo: dashboardRepo,
+    checkDatabase,
     publishingConfig: config,
   });
 

@@ -11,6 +11,19 @@ export type FindPublishedContentHistoryOptions = {
   limit: number;
 };
 
+export type PublishedContentPublisherCount = {
+  publisher: string;
+  count: number;
+};
+
+export type PublishedContentSummaryStats = {
+  totalPublished: number;
+  totalDrafts: number;
+  totalFailed: number;
+  latestPublishedAt: Date | null;
+  publishers: PublishedContentPublisherCount[];
+};
+
 export type CreatePublishedContentInput = {
   organizationId: string;
   projectId: string;
@@ -111,5 +124,52 @@ export class PublishedContentRepository {
    */
   findById(id: string): Promise<PublishedContent | null> {
     return this.client.publishedContent.findUnique({ where: { id: id.trim() } });
+  }
+
+  /**
+   * Aggregate statistics for the dashboard summary endpoint.
+   * Runs three lightweight queries: status group-by, publisher group-by, latest row.
+   */
+  async getSummaryStats(): Promise<PublishedContentSummaryStats> {
+    const [statusCounts, publisherCounts, latestRow] = await Promise.all([
+      this.client.publishedContent.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
+      this.client.publishedContent.groupBy({
+        by: ['publisher'],
+        _count: { _all: true },
+        orderBy: { _count: { publisher: 'desc' } },
+      }),
+      this.client.publishedContent.findFirst({
+        orderBy: { publishedAt: 'desc' },
+        select: { publishedAt: true },
+      }),
+    ]);
+
+    const countFor = (status: PublishedContentStatus): number =>
+      statusCounts.find((r) => r.status === status)?._count._all ?? 0;
+
+    return {
+      totalPublished: countFor('published'),
+      totalDrafts: countFor('draft'),
+      totalFailed: countFor('failed'),
+      latestPublishedAt: latestRow?.publishedAt ?? null,
+      publishers: publisherCounts.map((r) => ({
+        publisher: r.publisher,
+        count: r._count._all,
+      })),
+    };
+  }
+
+  /**
+   * Return the N most-recently published rows for the dashboard feed.
+   * Ordered newest-first. Caller is responsible for validating/clamping limit.
+   */
+  findRecent(limit: number): Promise<PublishedContent[]> {
+    return this.client.publishedContent.findMany({
+      orderBy: { publishedAt: 'desc' },
+      take: limit,
+    });
   }
 }

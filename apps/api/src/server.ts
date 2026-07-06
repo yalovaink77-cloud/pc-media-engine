@@ -61,6 +61,7 @@ export async function startServer(config: Config): Promise<void> {
     jobScheduler,
     processingEnqueuer,
     publishedContentRepo,
+    dashboardRepo: publishedContentRepo,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

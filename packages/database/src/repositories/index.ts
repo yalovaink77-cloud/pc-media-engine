@@ -42,7 +42,9 @@ export {
 export {
   type CreatePublishedContentInput,
   type FindPublishedContentHistoryOptions,
+  type PublishedContentPublisherCount,
   PublishedContentRepository,
+  type PublishedContentSummaryStats,
 } from './published-content.repository.js';
 export {
   activeRecordsFilter,

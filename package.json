@@ -31,7 +31,8 @@
     "duplicate:smoke": "pnpm --filter @pcme/worker duplicate:smoke",
     "retry:smoke": "pnpm --filter @pcme/worker retry:smoke",
     "scheduler:smoke": "pnpm --filter @pcme/worker scheduler:smoke",
-    "publishing-api:smoke": "pnpm --filter @pcme/api publishing-api:smoke"
+    "publishing-api:smoke": "pnpm --filter @pcme/api publishing-api:smoke",
+    "dashboard-api:smoke": "pnpm --filter @pcme/api dashboard-api:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
