@@ -9,6 +9,7 @@ import {
 import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
+import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
 import { buildProcessingEnqueuer } from './queue/redis-enqueue.js';
@@ -60,6 +61,21 @@ export async function startServer(config: Config): Promise<void> {
 
   const processingEnqueuer = buildProcessingEnqueuer(config.redisUrl, config.autoEnqueueProcessing);
 
+  const authConfig = loadAuthConfig();
+  const authDiag = validateAuthConfig(authConfig);
+  // Auth warnings are informational — never fatal at API startup.
+  for (const w of authDiag.warnings) console.warn(`[api/auth] ⚠  ${w}`);
+  for (const e of authDiag.errors) console.error(`[api/auth] ✗  ${e}`);
+  // Fatal auth errors do not abort startup — auth simply stays disabled.
+  if (authDiag.errors.length > 0) {
+    console.error(
+      '[api/auth] Auth errors detected — authentication layer may not function correctly',
+    );
+  }
+  console.log(
+    `[api/auth] enabled=${authConfig.enabled} jwt=${authConfig.jwtEnabled} apiKey=${authConfig.apiKeyEnabled}`,
+  );
+
   const publishedContentRepo = config.databaseUrl ? new PublishedContentRepository() : undefined;
   const metricsService = new MetricsService();
 
@@ -74,6 +90,7 @@ export async function startServer(config: Config): Promise<void> {
     dashboardRepo: publishedContentRepo,
     metricsService,
     startedAt,
+    authConfig,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

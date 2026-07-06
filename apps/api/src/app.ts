@@ -2,10 +2,14 @@ import { randomUUID } from 'node:crypto';
 
 import Fastify from 'fastify';
 
+import type { AuthConfig } from './auth/index.js';
+import { createAuthMiddleware } from './auth/middleware.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
+import type { AuthRouteOptions } from './routes/auth.js';
+import { authRoutes } from './routes/auth.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import type { DatabaseStatus } from './routes/health.js';
@@ -77,6 +81,11 @@ export type AppOptions = {
   queueMetricsProvider?: QueueMetricsProvider;
   /** ISO timestamp of when this process started (Sprint 30+). */
   startedAt?: string;
+  /**
+   * Authentication configuration (Sprint 31+).
+   * When absent, auth is disabled and GET /auth/health reports authEnabled: false.
+   */
+  authConfig?: AuthConfig;
 };
 
 /**
@@ -99,7 +108,19 @@ export function buildApp(options: AppOptions) {
     metricsService,
     queueMetricsProvider,
     startedAt,
+    authConfig,
   } = options;
+
+  const defaultAuthConfig: AuthConfig = {
+    enabled: false,
+    jwtEnabled: false,
+    jwtSecret: '',
+    jwtExpiresInSeconds: 3600,
+    apiKeyEnabled: false,
+    apiKeys: [],
+  };
+  const resolvedAuthConfig = authConfig ?? defaultAuthConfig;
+  const authMiddleware = createAuthMiddleware(resolvedAuthConfig);
 
   const app = Fastify({
     logger: {
@@ -121,6 +142,9 @@ export function buildApp(options: AppOptions) {
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'reqId',
   });
+
+  // Global optional-auth hook — populates request.auth when valid credentials present.
+  app.addHook('onRequest', authMiddleware.authenticateRequest);
 
   app.addHook('onSend', async (request, reply) => {
     void reply.header('x-request-id', request.id);
@@ -175,6 +199,13 @@ export function buildApp(options: AppOptions) {
     metricsService,
     queueMetricsProvider,
   });
+
+  const authRouteOptions: AuthRouteOptions = {
+    authConfig: resolvedAuthConfig,
+    version: config.version,
+    middleware: authMiddleware,
+  };
+  app.register(authRoutes, authRouteOptions);
 
   return app;
 }
