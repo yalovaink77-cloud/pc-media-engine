@@ -27,6 +27,7 @@ const composerAsset = {
   validationWarnings: [],
   compatiblePublishers: [
     { id: 'wordpress', displayName: 'WordPress', enabled: true, compatible: true, gaps: [] },
+    { id: 'ghost', displayName: 'Ghost', enabled: true, compatible: true, gaps: [] },
   ],
   publishingHistory: [],
   publishingSummary: { total: 0, publishers: [] },
@@ -54,7 +55,7 @@ function makePageData(overrides: Partial<ComposerPageData> = {}): ComposerPageDa
     },
     selectedAsset: composerAsset,
     selectedAssetId: 'asset-001',
-    validateResult: null,
+    publishResult: null,
     fetchedAt: '2024-06-01T12:00:00.000Z',
     errors: [],
     apiBaseUrl: 'http://api.test',
@@ -63,7 +64,7 @@ function makePageData(overrides: Partial<ComposerPageData> = {}): ComposerPageDa
 }
 
 describe('renderComposerPage', () => {
-  it('renders asset selector and detail sections', () => {
+  it('renders asset selector and publish controls', () => {
     const html = renderComposerPage(makePageData());
     expect(html).toContain('Content Composer');
     expect(html).toContain('data-testid="composer-asset-selector"');
@@ -72,29 +73,36 @@ describe('renderComposerPage', () => {
     expect(html).toContain('data-testid="composer-seo-section"');
     expect(html).toContain('data-testid="composer-ai-section"');
     expect(html).toContain('data-testid="composer-publisher-section"');
-    expect(html).toContain('data-testid="composer-validate-button"');
+    expect(html).toContain('data-testid="composer-publish-button"');
+    expect(html).toContain('data-testid="composer-publisher-multiselect"');
   });
 
-  it('shows validation result when present', () => {
+  it('shows confirmation dialog when confirmPublish set', () => {
     const html = renderComposerPage(
       makePageData({
-        validateResult: {
-          ready: false,
-          messages: ['Publisher is not enabled'],
-          warnings: ['Duplicate slug'],
-          publisherCompatibility: {
-            publisherId: 'wordpress',
-            compatible: false,
-            gaps: ['Not enabled'],
-          },
-          missingRequirements: ['WORDPRESS_URL'],
-        },
-        selectedPublisherId: 'wordpress',
+        confirmPublish: true,
+        selectedPublisherIds: ['wordpress', 'ghost'],
       }),
     );
-    expect(html).toContain('data-testid="composer-validation-result"');
-    expect(html).toContain('Publisher is not enabled');
-    expect(html).toContain('Duplicate slug');
+    expect(html).toContain('data-testid="composer-confirm-dialog"');
+    expect(html).toContain('data-testid="composer-confirm-button"');
+  });
+
+  it('shows publish result summary when present', () => {
+    const html = renderComposerPage(
+      makePageData({
+        publishResult: {
+          assetId: 'asset-001',
+          accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
+          skipped: [{ publisherId: 'ghost', reason: 'Duplicate slug' }],
+          failures: [{ publisherId: 'unknown', reason: 'Not registered' }],
+        },
+      }),
+    );
+    expect(html).toContain('data-testid="composer-publish-result"');
+    expect(html).toContain('data-testid="publish-queued-wordpress"');
+    expect(html).toContain('data-testid="publish-skipped-ghost"');
+    expect(html).toContain('data-testid="publish-failure-unknown"');
   });
 
   it('shows empty state without selected asset', () => {

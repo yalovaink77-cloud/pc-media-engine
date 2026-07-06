@@ -12,6 +12,7 @@ import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { PublisherManagementService } from './publishers/types.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
+import type { PublishingQueueEnqueuer } from './queue/publishing-enqueue.js';
 import type { QueueService } from './queue/queue-service.js';
 import { assetsRoutes } from './routes/assets.js';
 import type { AuthRouteOptions } from './routes/auth.js';
@@ -118,6 +119,11 @@ export type AppOptions = {
    * When absent, all /composer/* routes return 503.
    */
   composerService?: ContentComposerService;
+  /**
+   * Optional publishing queue enqueuer (Sprint 41+).
+   * When absent, POST /composer/publish returns 503.
+   */
+  publishingEnqueuer?: PublishingQueueEnqueuer;
 };
 
 /**
@@ -145,6 +151,7 @@ export function buildApp(options: AppOptions) {
     publisherService,
     assetLibrary,
     composerService,
+    publishingEnqueuer,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -266,6 +273,8 @@ export function buildApp(options: AppOptions) {
 
   app.register(composerRoutes, {
     composerService,
+    publishingEnqueuer,
+    authMiddleware,
     defaultProjectId: config.defaultProjectId,
   });
 

@@ -4,6 +4,7 @@ import type {
   AssetsPageData,
   AssetThumbnail,
   ComposerPageData,
+  ComposerPublishResult,
   DashboardPageData,
   JobDetailPageData,
   JobsPageData,
@@ -509,6 +510,9 @@ const CSS = `
   .asset-thumb{width:48px;height:48px;object-fit:cover;border-radius:4px;background:#f3f4f6;display:block}
   .asset-thumb-placeholder{width:48px;height:48px;border-radius:4px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#9ca3af}
   .asset-preview{max-width:320px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .publisher-checklist{list-style:none;padding:0;margin:.5rem 0}
+  .publisher-checklist li{margin-bottom:.35rem;font-size:.85rem}
+  .confirm-panel{border:1px solid #fcd34d;background:#fffbeb;border-radius:8px;padding:1rem 1.25rem;margin-top:1rem}
   footer{max-width:1200px;margin:0 auto;padding:0 2rem 2rem;font-size:.75rem;color:#9ca3af}
 `.trim();
 
@@ -1245,27 +1249,37 @@ function renderComposerDetail(data: ComposerPageData): string {
     : `<tr><td colspan="4" class="empty">No publishing history</td></tr>`;
 
   const publisherOptions = asset.compatiblePublishers
-    .map(
-      (p) =>
-        `<option value="${esc(p.id)}"${data.selectedPublisherId === p.id ? ' selected' : ''}>${esc(p.displayName)}</option>`,
-    )
+    .map((p) => {
+      const checked = data.selectedPublisherIds?.includes(p.id) ? ' checked' : '';
+      const disabled = !p.enabled || !p.compatible ? ' disabled' : '';
+      return `<li>
+        <label>
+          <input type="checkbox" name="publisherIds" value="${esc(p.id)}"${checked}${disabled}>
+          ${esc(p.displayName)} ${p.compatible ? badge('Compatible', 'ok') : badge('Gaps', 'warn')}
+        </label>
+      </li>`;
+    })
     .join('');
 
-  const validatePanel = data.validateResult
-    ? `<div class="detail-card" data-testid="composer-validation-result">
-        <h3>Validation Result</h3>
-        <p style="margin-bottom:.5rem">${readinessBadge(data.validateResult.ready)}</p>
-        ${
-          data.validateResult.messages.length
-            ? `<ul class="config-list">${data.validateResult.messages.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>`
-            : '<p class="empty">No blocking messages</p>'
-        }
-        ${
-          data.validateResult.warnings.length
-            ? `<p style="margin-top:.75rem;font-size:.8rem;color:#92400e"><strong>Warnings:</strong></p><ul class="config-list">${data.validateResult.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`
-            : ''
-        }
+  const confirmPanel = data.confirmPublish
+    ? `<div class="confirm-panel" data-testid="composer-confirm-dialog">
+        <h3>Confirm Publishing</h3>
+        <p>Queue publishing jobs for: <strong>${esc((data.selectedPublisherIds ?? []).join(', '))}</strong></p>
+        <p style="font-size:.85rem;color:#6b7280;margin:.5rem 0">Jobs are enqueued independently. Failures on one publisher do not block others.</p>
+        <form method="post" action="/ops/composer/publish" data-testid="composer-confirm-form">
+          <input type="hidden" name="assetId" value="${esc(asset.id)}">
+          ${(data.selectedPublisherIds ?? [])
+            .map((id) => `<input type="hidden" name="publisherIds" value="${esc(id)}">`)
+            .join('')}
+          <input type="hidden" name="confirm" value="true">
+          <button type="submit" class="btn btn-ok" data-testid="composer-confirm-button">Confirm Publish</button>
+          <a href="/composer?assetId=${esc(asset.id)}" style="margin-left:.75rem;font-size:.85rem">Cancel</a>
+        </form>
       </div>`
+    : '';
+
+  const publishResultPanel = data.publishResult
+    ? renderPublishResultSummary(data.publishResult)
     : '';
 
   const warningsList = asset.validationWarnings.length
@@ -1340,26 +1354,68 @@ function renderComposerDetail(data: ComposerPageData): string {
         </table>
       </div>
     </div>
-    <div class="detail-card ops-panel" data-testid="composer-validation-panel">
-      <h3>Validate for Publisher</h3>
-      <form method="post" action="/ops/composer/validate" data-testid="composer-validate-form">
+    <div class="detail-card ops-panel" data-testid="composer-publish-panel">
+      <h3>Publish to Publishers</h3>
+      <form method="post" action="/ops/composer/publish" data-testid="composer-publish-form">
         <input type="hidden" name="assetId" value="${esc(asset.id)}">
-        <div class="ops-row">
-          <div class="ops-form">
-            <label for="publisherId">Publisher</label>
-            <select name="publisherId" id="publisherId" required>
-              <option value="">Select publisher…</option>
-              ${publisherOptions}
-            </select>
-          </div>
-          <div class="ops-form" style="align-self:flex-end">
-            <button type="submit" class="btn btn-neutral" data-testid="composer-validate-button">Validate</button>
-          </div>
+        <p style="font-size:.85rem;color:#6b7280;margin-bottom:.75rem">Select one or more publishers. Each selection creates an independent queue job.</p>
+        <ul class="publisher-checklist" data-testid="composer-publisher-multiselect">${publisherOptions}</ul>
+        <div class="ops-row" style="margin-top:1rem">
+          <button type="submit" class="btn btn-ok" data-testid="composer-publish-button">Publish</button>
         </div>
       </form>
-      ${validatePanel}
+      ${confirmPanel}
+      ${publishResultPanel}
     </div>
   </section>`;
+}
+
+function renderPublishResultSummary(result: ComposerPublishResult): string {
+  const queued = result.accepted.length
+    ? `<ul class="config-list">${result.accepted
+        .map(
+          (a) =>
+            `<li data-testid="publish-queued-${esc(a.publisherId)}">${esc(a.publisherId)} — job <a href="/jobs/${esc(a.jobId)}">${esc(a.jobId)}</a></li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  const skipped = result.skipped.length
+    ? `<ul class="config-list">${result.skipped
+        .map(
+          (s) =>
+            `<li data-testid="publish-skipped-${esc(s.publisherId)}">${esc(s.publisherId)}: ${esc(s.reason)}</li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  const failures = result.failures.length
+    ? `<ul class="config-list">${result.failures
+        .map(
+          (f) =>
+            `<li data-testid="publish-failure-${esc(f.publisherId)}">${esc(f.publisherId)}: ${esc(f.reason)}</li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  return `
+  <div class="detail-card" style="margin-top:1rem" data-testid="composer-publish-result">
+    <h3>Publish Result</h3>
+    <div class="detail-grid">
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#065f46;margin-bottom:.35rem">Queued (${esc(result.accepted.length)})</h4>
+        ${queued}
+      </div>
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#92400e;margin-bottom:.35rem">Skipped (${esc(result.skipped.length)})</h4>
+        ${skipped}
+      </div>
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#991b1b;margin-bottom:.35rem">Validation Failures (${esc(result.failures.length)})</h4>
+        ${failures}
+      </div>
+    </div>
+  </div>`;
 }
 
 export function renderComposerPage(data: ComposerPageData): string {
@@ -1386,7 +1442,7 @@ export function renderComposerPage(data: ComposerPageData): string {
     </section>
   </main>
   <footer>
-    <p>Read-only inspection &middot; Validation only — no publish action yet</p>
+    <p>Composer publish workflow &middot; Jobs enqueue independently per publisher</p>
   </footer>
 </body>
 </html>`;

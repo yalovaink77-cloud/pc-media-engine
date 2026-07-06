@@ -154,3 +154,116 @@ describe('createContentComposerService', () => {
     expect(result.warnings.some((w) => w.includes('already published'))).toBe(true);
   });
 });
+
+function makeStorage() {
+  return {
+    exists: async () => true,
+    get: async () => Buffer.from('thumb'),
+  };
+}
+
+function makeEnqueuer(jobIds: string[] = ['job-1']) {
+  let index = 0;
+  return {
+    enqueue: async () => jobIds[index++] ?? `job-${index}`,
+    close: async () => {},
+  };
+}
+
+describe('createContentComposerService.publish', () => {
+  it('enqueues one job per publisher independently', async () => {
+    const enqueued: string[] = [];
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: {
+        enqueue: async () => {
+          const id = `job-${enqueued.length + 1}`;
+          enqueued.push(id);
+          return id;
+        },
+        close: async () => {},
+      },
+      storageProvider: makeStorage(),
+      defaultOrganizationId: 'org-1',
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+    const result = await service.publish({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress', 'wordpress'],
+    });
+    expect(result.accepted).toHaveLength(1);
+    expect(result.accepted[0]?.publisherId).toBe('wordpress');
+    expect(enqueued).toHaveLength(1);
+  });
+
+  it('skips duplicate publishers', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      findDuplicate: async () => true,
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+    const result = await service.publish({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress'],
+    });
+    expect(result.skipped).toHaveLength(1);
+    expect(result.skipped[0]?.publisherId).toBe('wordpress');
+    expect(result.accepted).toHaveLength(0);
+  });
+
+  it('records validation failures without blocking other publishers', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(false),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      env: {},
+    });
+    const result = await service.publish({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress', 'unknown'],
+    });
+    expect(result.failures.length).toBeGreaterThanOrEqual(1);
+    expect(result.accepted).toHaveLength(0);
+  });
+
+  it('fails when thumbnail media unavailable', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary({
+        getThumbnailStorageKey: async () => null,
+      }),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+    const result = await service.publish({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress'],
+    });
+    expect(result.failures[0]?.reason).toContain('Thumbnail');
+  });
+
+  it('fails when queue unavailable', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(),
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+    const result = await service.publish({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress'],
+    });
+    expect(result.failures[0]?.publisherId).toBe('*');
+    expect(result.failures[0]?.reason).toContain('queue');
+  });
+});

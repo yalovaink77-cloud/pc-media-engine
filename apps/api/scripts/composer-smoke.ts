@@ -102,6 +102,12 @@ function makeMockComposer(): ContentComposerService {
       },
       missingRequirements: [],
     }),
+    publish: async () => ({
+      assetId: 'asset-smoke-1',
+      accepted: [],
+      skipped: [],
+      failures: [],
+    }),
   };
 }
 

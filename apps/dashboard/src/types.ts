@@ -423,12 +423,20 @@ export type ComposerValidateResult = {
   missingRequirements: string[];
 };
 
+export type ComposerPublishResult = {
+  assetId: string;
+  accepted: Array<{ publisherId: string; jobId: string }>;
+  skipped: Array<{ publisherId: string; reason: string }>;
+  failures: Array<{ publisherId: string; reason: string }>;
+};
+
 export type ComposerPageData = {
   assets: ComposerAssetListResult | null;
   selectedAsset: ComposerAssetDetail | null;
   selectedAssetId?: string;
-  validateResult: ComposerValidateResult | null;
-  selectedPublisherId?: string;
+  selectedPublisherIds?: string[];
+  publishResult: ComposerPublishResult | null;
+  confirmPublish?: boolean;
   fetchedAt: string;
   errors: string[];
   apiBaseUrl: string;

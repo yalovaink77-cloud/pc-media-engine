@@ -1,21 +1,24 @@
 /**
- * Content Composer API routes — Sprint 40.
- *
- * Read-only inspection + validation. No publishing or DB mutations.
+ * Content Composer API routes — Sprint 40–41.
  *
  * Routes:
  *   GET  /composer/assets
  *   GET  /composer/assets/:id
  *   POST /composer/validate
+ *   POST /composer/publish
  */
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
 
+import type { AuthMiddleware } from '../auth/middleware.js';
 import type { ContentComposerService } from '../composer/types.js';
 import { DEFAULT_COMPOSER_LIMIT, MAX_COMPOSER_LIMIT } from '../composer/types.js';
+import type { PublishingQueueEnqueuer } from '../queue/publishing-enqueue.js';
 
 export type ComposerRouteOptions = {
   composerService?: ContentComposerService;
+  publishingEnqueuer?: PublishingQueueEnqueuer;
+  authMiddleware?: AuthMiddleware;
   defaultProjectId: string;
 };
 
@@ -30,6 +33,20 @@ type ComposerValidateBody = {
   publisherId?: string;
   projectId?: string;
 };
+
+type ComposerPublishBody = {
+  assetId?: string;
+  publisherIds?: string[] | string;
+  projectId?: string;
+};
+
+async function queueUnavailable(reply: FastifyReply): Promise<void> {
+  await reply.status(503).send({
+    error: 'Service Unavailable',
+    message: 'Publishing queue is not available (Redis not configured)',
+    statusCode: 503,
+  });
+}
 
 async function serviceUnavailable(reply: FastifyReply): Promise<void> {
   await reply.status(503).send({
@@ -59,7 +76,7 @@ export async function composerRoutes(
   app: FastifyInstance,
   options: ComposerRouteOptions,
 ): Promise<void> {
-  const { composerService, defaultProjectId } = options;
+  const { composerService, publishingEnqueuer, authMiddleware, defaultProjectId } = options;
 
   app.get<{ Querystring: ComposerListQuery }>('/composer/assets', async (request, reply) => {
     if (!composerService) return serviceUnavailable(reply);
@@ -139,10 +156,54 @@ export async function composerRoutes(
 
     return reply.status(200).send(result);
   });
+
+  app.post<{ Body: ComposerPublishBody }>(
+    '/composer/publish',
+    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    async (request, reply) => {
+      if (!composerService) return serviceUnavailable(reply);
+      if (!publishingEnqueuer) return queueUnavailable(reply);
+
+      const projectId = request.body?.projectId ?? defaultProjectId;
+      const assetId = request.body?.assetId?.trim();
+      const rawIds = request.body?.publisherIds;
+      const publisherIds = Array.isArray(rawIds)
+        ? rawIds.map((id) => id.trim()).filter(Boolean)
+        : rawIds
+          ? [rawIds.trim()]
+          : [];
+
+      if (!assetId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'assetId is required',
+          statusCode: 400,
+        });
+      }
+      if (!publisherIds.length) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'publisherIds must contain at least one publisher',
+          statusCode: 400,
+        });
+      }
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required',
+          statusCode: 400,
+        });
+      }
+
+      const result = await composerService.publish({ projectId, assetId, publisherIds });
+      return reply.status(202).send(result);
+    },
+  );
 }
 
 export type {
   ComposerAssetDetail,
   ComposerAssetListResult,
+  ComposerPublishResult,
   ComposerValidateResult,
 } from '../composer/types.js';

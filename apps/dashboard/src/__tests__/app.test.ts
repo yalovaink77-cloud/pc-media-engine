@@ -109,6 +109,7 @@ function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardA
     fetchComposerAssets: async () => null,
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
+    publishComposer: async () => null,
     ...overrides,
   };
 }
@@ -140,6 +141,7 @@ function makeErrorClient(): DashboardApiClient {
     fetchComposerAssets: async () => null,
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
+    publishComposer: async () => null,
   };
 }
 

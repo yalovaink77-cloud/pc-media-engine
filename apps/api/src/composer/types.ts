@@ -97,6 +97,34 @@ export type ComposerValidateResult = {
   missingRequirements: string[];
 };
 
+export type ComposerPublishInput = {
+  projectId: string;
+  assetId: string;
+  publisherIds: string[];
+};
+
+export type ComposerPublishAccepted = {
+  publisherId: string;
+  jobId: string;
+};
+
+export type ComposerPublishSkipped = {
+  publisherId: string;
+  reason: string;
+};
+
+export type ComposerPublishFailure = {
+  publisherId: string;
+  reason: string;
+};
+
+export type ComposerPublishResult = {
+  assetId: string;
+  accepted: ComposerPublishAccepted[];
+  skipped: ComposerPublishSkipped[];
+  failures: ComposerPublishFailure[];
+};
+
 export const DEFAULT_COMPOSER_LIMIT = 50;
 export const MAX_COMPOSER_LIMIT = 200;
 
@@ -104,4 +132,5 @@ export interface ContentComposerService {
   listEligibleAssets(query: ComposerAssetListQuery): Promise<ComposerAssetListResult>;
   getComposerAsset(projectId: string, assetId: string): Promise<ComposerAssetDetail | null>;
   validate(input: ComposerValidateInput): Promise<ComposerValidateResult>;
+  publish(input: ComposerPublishInput): Promise<ComposerPublishResult>;
 }

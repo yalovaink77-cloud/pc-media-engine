@@ -4,6 +4,7 @@ import type {
   AssetListResult,
   ComposerAssetDetail,
   ComposerAssetListResult,
+  ComposerPublishResult,
   ComposerValidateResult,
   DashboardHealthData,
   DashboardMetricsData,
@@ -54,6 +55,7 @@ export interface DashboardApiClient {
     publisherId: string,
     projectId?: string,
   ): Promise<ComposerValidateResult | null>;
+  publishComposer(assetId: string, publisherIds: string[]): Promise<ComposerPublishResult | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +209,12 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
       postJson<ComposerValidateResult>(
         `${base}/composer/validate`,
         { assetId, publisherId, projectId },
+        apiKey,
+      ),
+    publishComposer: (assetId, publisherIds) =>
+      postJson<ComposerPublishResult>(
+        `${base}/composer/publish`,
+        { assetId, publisherIds },
         apiKey,
       ),
   };

@@ -13,9 +13,11 @@ import type { PublishedContentWriter } from '../publishing/persist-published-con
 import { persistPublishedContentIfSuccessful } from '../publishing/persist-published-content.js';
 import {
   createPublisher,
+  createPublisherForRegistryId,
   type CreatePublisherOptions,
   type PublisherDriver,
   resolvePublisherDriver,
+  resolvePublisherId,
 } from '../publishing/publisher-driver.js';
 import type { PublishingJobPayload } from '../queue/publishing-payload.js';
 import { toPublishingRequest } from '../queue/publishing-payload.js';
@@ -30,17 +32,24 @@ export type PublishingProcessorDeps = {
   metricsService?: WorkerMetricsService;
 };
 
-function buildOrchestrator(deps: PublishingProcessorDeps): PublishingOrchestrator {
+function buildOrchestrator(
+  deps: PublishingProcessorDeps,
+  payload: PublishingJobPayload,
+): PublishingOrchestrator {
   if (deps.createOrchestrator) {
     return deps.createOrchestrator();
   }
 
   const publisher =
     deps.createPublisher?.() ??
-    createPublisher({
-      driver: deps.publisherDriver,
-      env: deps.env,
-    } satisfies CreatePublisherOptions);
+    (payload.publisherId
+      ? createPublisherForRegistryId(payload.publisherId, {
+          env: deps.env,
+        } satisfies CreatePublisherOptions)
+      : createPublisher({
+          driver: deps.publisherDriver,
+          env: deps.env,
+        } satisfies CreatePublisherOptions));
 
   return new PublishingOrchestrator(publisher);
 }
@@ -51,24 +60,25 @@ export async function processPublishingJob(
 ): Promise<PublishingFlowResult> {
   const env = deps.env ?? process.env;
   const publisherDriver = deps.publisherDriver ?? resolvePublisherDriver(env);
+  const publisherKey = resolvePublisherId(payload.publisherId ?? publisherDriver, env);
 
   // Duplicate detection — runs before the orchestrator so no Publisher is invoked.
   if (deps.publishedContentRepo && payload.projectId) {
     const duplicate = await deps.publishedContentRepo.findDuplicate(
       payload.projectId,
-      publisherDriver,
+      publisherKey,
       payload.slug,
     );
     if (duplicate) {
       console.log(
-        `[publishing] ⤼ slug=${payload.slug} publisher=${publisherDriver} — duplicate detected, skipping`,
+        `[publishing] ⤼ slug=${payload.slug} publisher=${publisherKey} — duplicate detected, skipping`,
       );
       deps.metricsService?.inc('duplicateSkipsTotal');
       return { success: false, skipped: true, reason: 'duplicate' };
     }
   }
 
-  const orchestrator = buildOrchestrator(deps);
+  const orchestrator = buildOrchestrator(deps, payload);
   const result = await orchestrator.publish(toPublishingRequest(payload));
 
   console.log(
@@ -83,7 +93,7 @@ export async function processPublishingJob(
     const record = await persistPublishedContentIfSuccessful(
       payload,
       result,
-      publisherDriver,
+      publisherKey,
       deps.publishedContentRepo,
     );
     if (record) {

@@ -8,14 +8,13 @@ import type { PublishedContentStatus } from '@pcme/database';
 import type { PublishingFlowResult } from '@pcme/publishing';
 
 import type { PublishingJobPayload } from '../queue/publishing-payload.js';
-import type { PublisherDriver } from './publisher-driver.js';
 
 export type PublishedContentWriteInput = {
   organizationId: string;
   projectId: string;
   assetId: string;
   slug: string;
-  publisher: PublisherDriver;
+  publisher: string;
   externalId: string;
   url: string;
   status: PublishedContentStatus;
@@ -32,7 +31,7 @@ export function resolvePublishedContentStatus(
 export function buildPublishedContentInput(
   payload: PublishingJobPayload,
   result: PublishingFlowResult,
-  publisher: PublisherDriver,
+  publisher: string,
 ): PublishedContentWriteInput | null {
   if (!result.success) {
     return null;

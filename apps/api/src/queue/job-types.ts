@@ -11,6 +11,7 @@ export type JobPayloadSummary = {
   organizationId?: string;
   projectId?: string;
   assetId?: string;
+  publisherId?: string;
   processingJobId?: string;
   scheduledFor?: string;
   mediaMimeType?: string;

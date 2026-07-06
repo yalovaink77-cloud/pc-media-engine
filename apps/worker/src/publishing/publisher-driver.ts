@@ -6,6 +6,8 @@
  *   wordpress — WordPressMediaPublisher (requires WORDPRESS_* env vars)
  */
 
+import type { GhostConfig } from '@pcme/plugin-ghost';
+import { GhostPublisher, loadGhostConfig } from '@pcme/plugin-ghost';
 import type { WordPressConfig } from '@pcme/plugin-wordpress';
 import {
   loadWordPressConfig,
@@ -15,7 +17,7 @@ import {
 import type { Publisher } from '@pcme/publishing';
 import { MockPublisher } from '@pcme/publishing';
 
-export type PublisherDriver = 'mock' | 'wordpress';
+export type PublisherDriver = 'mock' | 'wordpress' | 'ghost';
 
 export class PublisherDriverError extends Error {
   constructor(message: string) {
@@ -27,20 +29,42 @@ export class PublisherDriverError extends Error {
 export type CreatePublisherOptions = {
   driver?: PublisherDriver;
   env?: Record<string, string | undefined>;
-  /** Test hook — avoids real WordPressMediaPublisher construction. */
   createWordPressPublisher?: (config: WordPressConfig) => Publisher;
+  createGhostPublisher?: (config: GhostConfig) => Publisher;
 };
+
+export function resolvePublisherId(
+  publisherId: string | undefined,
+  env: Record<string, string | undefined> = process.env,
+): string {
+  return publisherId?.trim() || resolvePublisherDriver(env);
+}
 
 export function resolvePublisherDriver(
   env: Record<string, string | undefined> = process.env,
 ): PublisherDriver {
   const raw = (env['PUBLISHER_DRIVER'] ?? 'mock').trim().toLowerCase();
-  if (raw === 'mock' || raw === 'wordpress') {
+  if (raw === 'mock' || raw === 'wordpress' || raw === 'ghost') {
     return raw;
   }
   throw new PublisherDriverError(
-    `Invalid PUBLISHER_DRIVER="${raw}". Expected "mock" or "wordpress".`,
+    `Invalid PUBLISHER_DRIVER="${raw}". Expected "mock", "wordpress", or "ghost".`,
   );
+}
+
+function mapRegistryIdToDriver(publisherId: string): PublisherDriver {
+  if (publisherId === 'wordpress' || publisherId === 'ghost' || publisherId === 'mock') {
+    return publisherId;
+  }
+  throw new PublisherDriverError(`Unknown publisher id "${publisherId}"`);
+}
+
+export function createPublisherForRegistryId(
+  publisherId: string,
+  options: CreatePublisherOptions = {},
+): Publisher {
+  const driver = mapRegistryIdToDriver(publisherId);
+  return createPublisher({ ...options, driver });
 }
 
 export function createPublisher(options: CreatePublisherOptions = {}): Publisher {
@@ -48,6 +72,20 @@ export function createPublisher(options: CreatePublisherOptions = {}): Publisher
 
   if (driver === 'mock') {
     return new MockPublisher();
+  }
+
+  if (driver === 'ghost') {
+    try {
+      const config = loadGhostConfig(options.env);
+      if (options.createGhostPublisher) {
+        return options.createGhostPublisher(config);
+      }
+      return new GhostPublisher(config);
+    } catch (err) {
+      throw new PublisherDriverError(
+        err instanceof Error ? err.message : 'Ghost publisher configuration invalid',
+      );
+    }
   }
 
   try {

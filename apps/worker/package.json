@@ -27,6 +27,7 @@
     "@pcme/ai": "workspace:*",
     "@pcme/database": "workspace:*",
     "@pcme/media": "workspace:*",
+    "@pcme/plugin-ghost": "workspace:*",
     "@pcme/plugin-wordpress": "workspace:*",
     "@pcme/publishing": "workspace:*",
     "@pcme/seo": "workspace:*",

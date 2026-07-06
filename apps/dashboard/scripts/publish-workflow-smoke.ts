@@ -1,10 +1,14 @@
 /**
- * Content composer dashboard smoke — Sprint 40–41.
+ * Sprint 41 — Multi-Publisher Publish Workflow dashboard smoke (offline).
  */
 
 import { buildDashboardApp } from '../src/app.js';
 import type { DashboardApiClient } from '../src/client.js';
-import type { ComposerAssetDetail, ComposerAssetListResult } from '../src/types.js';
+import type {
+  ComposerAssetDetail,
+  ComposerAssetListResult,
+  ComposerPublishResult,
+} from '../src/types.js';
 
 function pass(label: string): void {
   console.log(`  ✓ ${label}`);
@@ -63,10 +67,18 @@ const assetDetail: ComposerAssetDetail = {
   validationWarnings: [],
   compatiblePublishers: [
     { id: 'wordpress', displayName: 'WordPress', enabled: true, compatible: true, gaps: [] },
+    { id: 'ghost', displayName: 'Ghost', enabled: true, compatible: true, gaps: [] },
   ],
   publishingHistory: [],
   publishingSummary: { total: 0, publishers: [] },
   preview: { title: 'Smoke', slug: 'smoke', body: '<p>Body</p>' },
+};
+
+const mixedResult: ComposerPublishResult = {
+  assetId: 'asset-smoke-1',
+  accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
+  skipped: [{ publisherId: 'ghost', reason: 'Duplicate slug "smoke" already published to ghost' }],
+  failures: [{ publisherId: 'unknown', reason: 'Publisher "unknown" is not registered' }],
 };
 
 function makeClient(): DashboardApiClient {
@@ -98,12 +110,7 @@ function makeClient(): DashboardApiClient {
       publisherCompatibility: { publisherId: 'wordpress', compatible: true, gaps: [] },
       missingRequirements: [],
     }),
-    publishComposer: async () => ({
-      assetId: 'asset-smoke-1',
-      accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
-      skipped: [],
-      failures: [],
-    }),
+    publishComposer: async () => mixedResult,
   };
 }
 
@@ -114,42 +121,60 @@ async function main(): Promise<void> {
   });
   await app.ready();
 
-  section('1 · Composer page');
+  section('1 · Composer publish UI');
   {
     const res = await app.inject({ method: 'GET', url: '/composer?assetId=asset-smoke-1' });
     assert(res.statusCode === 200, 'GET /composer returns 200');
-    assert(res.body.includes('data-testid="composer-asset-selector"'), 'asset selector present');
-    assert(res.body.includes('data-testid="composer-detail-section"'), 'detail section present');
-    assert(res.body.includes('data-testid="composer-readiness-badge"'), 'readiness badge present');
-    assert(res.body.includes('data-testid="composer-seo-section"'), 'SEO section present');
-    assert(res.body.includes('data-testid="composer-ai-section"'), 'AI section present');
     assert(res.body.includes('data-testid="composer-publish-button"'), 'publish button present');
-    assert(res.body.includes('href="/composer"'), 'composer nav link present');
+    assert(
+      res.body.includes('data-testid="composer-publisher-multiselect"'),
+      'multi-select present',
+    );
+    assert(res.body.includes('value="wordpress"'), 'wordpress checkbox');
+    assert(res.body.includes('value="ghost"'), 'ghost checkbox');
   }
 
-  section('2 · Publish flow');
+  section('2 · Confirmation dialog');
   {
     const res = await app.inject({
-      method: 'POST',
-      url: '/ops/composer/publish',
-      payload: { assetId: 'asset-smoke-1', publisherIds: 'wordpress' },
+      method: 'GET',
+      url: '/composer?assetId=asset-smoke-1&confirmPublish=1&publishers=wordpress,ghost',
     });
-    assert(res.statusCode === 302, 'publish redirects to confirm');
-    const confirm = await app.inject({ method: 'GET', url: res.headers.location ?? '' });
-    assert(confirm.body.includes('data-testid="composer-confirm-dialog"'), 'confirm dialog shown');
+    assert(res.body.includes('data-testid="composer-confirm-dialog"'), 'confirm dialog shown');
+    assert(res.body.includes('data-testid="composer-confirm-button"'), 'confirm button present');
+  }
 
-    const done = await app.inject({
+  section('3 · Publish flow');
+  {
+    const step1 = await app.inject({
       method: 'POST',
       url: '/ops/composer/publish',
-      payload: { assetId: 'asset-smoke-1', publisherIds: 'wordpress', confirm: 'true' },
+      payload: { assetId: 'asset-smoke-1', publisherIds: ['wordpress', 'ghost'] },
     });
-    assert(done.statusCode === 302, 'confirmed publish redirects');
-    const page = await app.inject({ method: 'GET', url: done.headers.location ?? '' });
+    assert(step1.statusCode === 302, 'first POST redirects to confirm');
+    assert(step1.headers.location?.includes('confirmPublish=1'), 'confirm query param set');
+
+    const step2 = await app.inject({
+      method: 'POST',
+      url: '/ops/composer/publish',
+      payload: {
+        assetId: 'asset-smoke-1',
+        publisherIds: ['wordpress', 'ghost'],
+        confirm: 'true',
+      },
+    });
+    assert(step2.statusCode === 302, 'confirmed POST redirects with summary');
+    assert(step2.headers.location?.includes('publishSummary='), 'summary encoded in URL');
+
+    const page = await app.inject({ method: 'GET', url: step2.headers.location ?? '' });
     assert(page.body.includes('data-testid="composer-publish-result"'), 'publish result shown');
+    assert(page.body.includes('data-testid="publish-queued-wordpress"'), 'queued wordpress');
+    assert(page.body.includes('data-testid="publish-skipped-ghost"'), 'skipped ghost');
+    assert(page.body.includes('data-testid="publish-failure-unknown"'), 'failure shown');
   }
 
   await app.close();
-  console.log('\n✅  All content composer dashboard smoke checks passed.\n');
+  console.log('\n✅  All publish workflow dashboard smoke checks passed.\n');
 }
 
 main().catch((err) => {

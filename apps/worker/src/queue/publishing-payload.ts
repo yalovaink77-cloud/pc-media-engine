@@ -19,6 +19,8 @@ export type PublishingJobPayload = {
   projectId?: string;
   assetId?: string;
   processingJobId?: string;
+  /** Registry publisher id when enqueued from composer (Sprint 41). */
+  publisherId?: string;
   mediaMimeType?: string;
   mediaFilename?: string;
   /** Base64-encoded binary content. */
@@ -119,6 +121,9 @@ export function validatePublishingJobPayload(data: unknown): PublishingJobPayloa
   }
   if (typeof obj['processingJobId'] === 'string' && obj['processingJobId'].trim()) {
     payload.processingJobId = obj['processingJobId'].trim();
+  }
+  if (typeof obj['publisherId'] === 'string' && obj['publisherId'].trim()) {
+    payload.publisherId = obj['publisherId'].trim();
   }
 
   if (typeof obj['scheduledFor'] === 'string' && obj['scheduledFor'].trim()) {

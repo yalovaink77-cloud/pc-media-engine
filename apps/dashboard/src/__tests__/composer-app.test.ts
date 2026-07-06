@@ -79,6 +79,12 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
       publisherCompatibility: { publisherId: 'wordpress', compatible: true, gaps: [] },
       missingRequirements: [],
     }),
+    publishComposer: async () => ({
+      assetId: 'asset-001',
+      accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
+      skipped: [],
+      failures: [],
+    }),
     ...overrides,
   };
 }
@@ -113,7 +119,7 @@ describe('GET /composer', () => {
   });
 });
 
-describe('POST /ops/composer/validate', () => {
+describe('POST /ops/composer/publish', () => {
   beforeEach(() => {
     app = buildDashboardApp({
       client: makeClient(),
@@ -122,15 +128,26 @@ describe('POST /ops/composer/validate', () => {
     });
   });
 
-  it('redirects with validation query params', async () => {
+  it('redirects to confirmation without confirm flag', async () => {
     const res = await app.inject({
       method: 'POST',
-      url: '/ops/composer/validate',
-      payload: { assetId: 'asset-001', publisherId: 'wordpress' },
+      url: '/ops/composer/publish',
+      payload: { assetId: 'asset-001', publisherIds: ['wordpress'] },
     });
     expect(res.statusCode).toBe(302);
-    expect(res.headers.location).toContain('validated=1');
+    expect(res.headers.location).toContain('confirmPublish=1');
     expect(res.headers.location).toContain('assetId=asset-001');
-    expect(res.headers.location).toContain('publisherId=wordpress');
+    expect(res.headers.location).toContain('publishers=wordpress');
+  });
+
+  it('redirects with publish summary after confirmation', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/ops/composer/publish',
+      payload: { assetId: 'asset-001', publisherIds: ['wordpress'], confirm: 'true' },
+    });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('publishSummary=');
+    expect(res.headers.location).toContain('assetId=asset-001');
   });
 });

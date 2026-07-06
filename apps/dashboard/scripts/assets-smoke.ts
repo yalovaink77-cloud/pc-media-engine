@@ -96,6 +96,7 @@ function makeClient(): DashboardApiClient {
     fetchComposerAssets: async () => null,
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
+    publishComposer: async () => null,
   };
 }
 

@@ -28,6 +28,7 @@ export function sanitizePayload(data: unknown): JobPayloadSummary {
     mediaMimeType: typeof obj['mediaMimeType'] === 'string' ? obj['mediaMimeType'] : undefined,
     mediaFilename: typeof obj['mediaFilename'] === 'string' ? obj['mediaFilename'] : undefined,
     hasMedia: Boolean(obj['mediaBuffer'] ?? obj['mediaData']),
+    publisherId: typeof obj['publisherId'] === 'string' ? obj['publisherId'] : undefined,
   };
 }
 
@@ -74,12 +75,19 @@ function buildErrorInfo(failedReason?: string, stacktrace?: string[]): JobErrorI
   };
 }
 
+function resolveJobPublisher(data: unknown, fallback: string): string {
+  const obj = data !== null && typeof data === 'object' ? (data as RawPayload) : {};
+  const publisherId = obj['publisherId'];
+  return typeof publisherId === 'string' && publisherId.trim() ? publisherId.trim() : fallback;
+}
+
 export async function mapJobToListItem(
   job: Job,
   state: string,
-  publisher: string,
+  publisherFallback: string,
 ): Promise<JobListItem> {
   const payload = sanitizePayload(job.data);
+  const publisher = resolveJobPublisher(job.data, publisherFallback);
   const maxAttempts = job.opts.attempts ?? 1;
   const createdAt = toIso(job.timestamp) ?? new Date(0).toISOString();
   const updatedAt = toIso(job.finishedOn ?? job.processedOn ?? job.timestamp);
@@ -104,10 +112,10 @@ export async function mapJobToListItem(
 export async function mapJobToDetail(
   job: Job,
   state: string,
-  publisher: string,
+  publisherFallback: string,
   queuePaused: boolean,
 ): Promise<JobDetail> {
-  const base = await mapJobToListItem(job, state, publisher);
+  const base = await mapJobToListItem(job, state, publisherFallback);
   const payload = sanitizePayload(job.data);
   const scheduledTime =
     payload.scheduledFor ??

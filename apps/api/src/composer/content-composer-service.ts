@@ -1,16 +1,22 @@
 import { basename, extname } from 'node:path';
 
 import { createAiMetadataEnrichmentService } from '@pcme/ai';
+import type { StorageProvider } from '@pcme/media';
 import type { PublisherCapabilities } from '@pcme/publisher-sdk';
 import type { PublishMetadata } from '@pcme/seo';
 
 import type { AssetLibraryService, AssetListItem } from '../assets/types.js';
 import type { PublisherManagementService } from '../publishers/types.js';
+import type { PublishingQueueEnqueuer } from '../queue/publishing-enqueue.js';
+import type { PublishingJobPayload } from '../queue/publishing-payload.js';
+import { encodeMediaBuffer } from '../queue/publishing-payload.js';
 import type {
   ComposerAssetDetail,
   ComposerAssetListItem,
   ComposerAssetListQuery,
   ComposerAssetListResult,
+  ComposerPublishInput,
+  ComposerPublishResult,
   ComposerValidateInput,
   ComposerValidateResult,
   ContentComposerService,
@@ -25,6 +31,9 @@ export type ContentComposerDeps = {
   assetLibrary: AssetLibraryService;
   publisherService?: PublisherManagementService;
   findDuplicate?: (projectId: string, publisher: string, slug: string) => Promise<boolean>;
+  publishingEnqueuer?: PublishingQueueEnqueuer;
+  storageProvider?: Pick<StorageProvider, 'get' | 'exists'>;
+  defaultOrganizationId?: string;
   env?: Record<string, string | undefined>;
 };
 
@@ -138,6 +147,47 @@ function missingConfigRequirements(
     missing.push('Publisher is disabled — required configuration is missing');
   }
   return missing;
+}
+
+const THUMBNAIL_MIME = 'image/webp';
+
+async function loadThumbnailMedia(
+  deps: ContentComposerDeps,
+  projectId: string,
+  assetId: string,
+): Promise<{ buffer: Buffer; mimeType: string; filename: string } | null> {
+  const storageKey = await deps.assetLibrary.getThumbnailStorageKey(projectId, assetId);
+  if (!storageKey || !deps.storageProvider) return null;
+
+  try {
+    const exists = await deps.storageProvider.exists(storageKey);
+    if (!exists) return null;
+    const buffer = await deps.storageProvider.get(storageKey);
+    const filename = storageKey.split('/').pop() ?? `${assetId}_thumb.webp`;
+    return { buffer, mimeType: THUMBNAIL_MIME, filename };
+  } catch {
+    return null;
+  }
+}
+
+function buildPublishingPayload(
+  detail: ComposerAssetDetail,
+  publisherId: string,
+  media: { buffer: Buffer; mimeType: string; filename: string },
+  organizationId?: string,
+): PublishingJobPayload {
+  return {
+    title: detail.preview.title,
+    slug: detail.preview.slug,
+    body: detail.preview.body,
+    organizationId,
+    projectId: detail.projectId,
+    assetId: detail.id,
+    publisherId,
+    mediaMimeType: media.mimeType,
+    mediaFilename: media.filename,
+    mediaBuffer: encodeMediaBuffer(media.buffer),
+  };
 }
 
 export function createContentComposerService(deps: ContentComposerDeps): ContentComposerService {
@@ -312,6 +362,91 @@ export function createContentComposerService(deps: ContentComposerDeps): Content
         },
         missingRequirements,
       };
+    },
+
+    async publish(input: ComposerPublishInput): Promise<ComposerPublishResult> {
+      const result: ComposerPublishResult = {
+        assetId: input.assetId,
+        accepted: [],
+        skipped: [],
+        failures: [],
+      };
+
+      if (!deps.publishingEnqueuer) {
+        result.failures.push({
+          publisherId: '*',
+          reason: 'Publishing queue is not available (Redis not configured)',
+        });
+        return result;
+      }
+
+      const detail = await this.getComposerAsset(input.projectId, input.assetId);
+      if (!detail) {
+        result.failures.push({ publisherId: '*', reason: `Asset "${input.assetId}" not found` });
+        return result;
+      }
+
+      const uniquePublisherIds = [
+        ...new Set(input.publisherIds.map((id) => id.trim()).filter(Boolean)),
+      ];
+      if (!uniquePublisherIds.length) {
+        result.failures.push({ publisherId: '*', reason: 'At least one publisherId is required' });
+        return result;
+      }
+
+      const media = await loadThumbnailMedia(deps, input.projectId, input.assetId);
+      if (!media) {
+        result.failures.push({
+          publisherId: '*',
+          reason: 'Thumbnail media unavailable — cannot build publishing payload',
+        });
+        return result;
+      }
+
+      for (const publisherId of uniquePublisherIds) {
+        const validation = await this.validate({
+          projectId: input.projectId,
+          assetId: input.assetId,
+          publisherId,
+        });
+
+        if (!validation.ready) {
+          result.failures.push({
+            publisherId,
+            reason: validation.messages.join('; ') || 'Validation failed',
+          });
+          continue;
+        }
+
+        if (deps.findDuplicate) {
+          const duplicate = await deps.findDuplicate(input.projectId, publisherId, detail.seo.slug);
+          if (duplicate) {
+            result.skipped.push({
+              publisherId,
+              reason: `Duplicate slug "${detail.seo.slug}" already published to ${publisherId}`,
+            });
+            continue;
+          }
+        }
+
+        try {
+          const payload = buildPublishingPayload(
+            detail,
+            publisherId,
+            media,
+            deps.defaultOrganizationId,
+          );
+          const jobId = await deps.publishingEnqueuer.enqueue(payload);
+          result.accepted.push({ publisherId, jobId });
+        } catch (err) {
+          result.failures.push({
+            publisherId,
+            reason: err instanceof Error ? err.message : 'Enqueue failed',
+          });
+        }
+      }
+
+      return result;
     },
   };
 }

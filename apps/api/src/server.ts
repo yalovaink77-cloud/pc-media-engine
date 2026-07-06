@@ -18,6 +18,7 @@ import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
 import { createPublisherService } from './publishers/publisher-service.js';
 import { createBullMqQueueService } from './queue/bullmq-queue-service.js';
+import { buildPublishingEnqueuer } from './queue/publishing-enqueue.js';
 import { buildProcessingEnqueuer, parseRedisConnection } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { assertNoFatalErrors, logApiStartupSummary, validateApiConfig } from './startup.js';
@@ -139,6 +140,9 @@ export async function startServer(config: Config): Promise<void> {
                 return existing !== null;
               }
             : undefined,
+          publishingEnqueuer: buildPublishingEnqueuer(config.redisUrl, config),
+          storageProvider,
+          defaultOrganizationId: config.defaultOrgId,
           env: process.env,
         })
       : undefined;
@@ -148,6 +152,8 @@ export async function startServer(config: Config): Promise<void> {
       '[api/composer] Content composer disabled — requires asset library and publisher service',
     );
   }
+
+  const publishingEnqueuer = buildPublishingEnqueuer(config.redisUrl, config);
 
   const app = buildApp({
     config,
@@ -165,6 +171,7 @@ export async function startServer(config: Config): Promise<void> {
     publisherService,
     assetLibrary,
     composerService,
+    publishingEnqueuer,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

@@ -33,7 +33,8 @@
     "publisher-management:smoke": "tsx scripts/publisher-management-smoke.ts",
     "jobs:smoke": "tsx scripts/jobs-smoke.ts",
     "assets:smoke": "tsx scripts/assets-smoke.ts",
-    "composer:smoke": "tsx scripts/composer-smoke.ts"
+    "composer:smoke": "tsx scripts/composer-smoke.ts",
+    "publish-workflow:smoke": "tsx scripts/publish-workflow-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

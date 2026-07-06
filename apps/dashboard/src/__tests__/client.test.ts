@@ -266,4 +266,26 @@ describe('createDashboardApiClient — content composer', () => {
     expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('asset-1');
   });
+
+  it('publishComposer calls POST /composer/publish', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          assetId: 'asset-1',
+          accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
+          skipped: [],
+          failures: [],
+        }),
+        { status: 202 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.publishComposer('asset-1', ['wordpress', 'ghost']);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/composer/publish');
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('wordpress');
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('ghost');
+  });
 });

@@ -60,6 +60,7 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
     fetchComposerAssets: async () => null,
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
+    publishComposer: async () => null,
     ...overrides,
   };
 }

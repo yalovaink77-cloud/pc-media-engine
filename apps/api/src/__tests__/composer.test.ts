@@ -96,6 +96,12 @@ function makeMockComposer(overrides: Partial<ContentComposerService> = {}): Cont
       },
       missingRequirements: [],
     }),
+    publish: vi.fn().mockResolvedValue({
+      assetId: 'asset-001',
+      accepted: [],
+      skipped: [],
+      failures: [],
+    }),
     ...overrides,
   };
 }

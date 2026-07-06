@@ -14,6 +14,7 @@ import {
 } from './renderer.js';
 import type {
   AssetListFilters,
+  ComposerPublishResult,
   DashboardFlash,
   JobListFilters,
   PublisherHealthResult,
@@ -320,8 +321,9 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   app.get('/composer', async (request, reply) => {
     const query = request.query as {
       assetId?: string;
-      publisherId?: string;
-      validated?: string;
+      confirmPublish?: string;
+      publishers?: string;
+      publishSummary?: string;
     };
     const errors: string[] = [];
     const assets = await client.fetchComposerAssets();
@@ -333,18 +335,31 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       if (!selectedAsset) errors.push(`Could not load composer asset "${query.assetId}"`);
     }
 
-    let validateResult = null;
-    if (query.validated === '1' && query.assetId && query.publisherId) {
-      validateResult = await client.validateComposer(query.assetId, query.publisherId);
-      if (!validateResult) errors.push('Validation request failed');
+    let publishResult = null;
+    if (query.publishSummary) {
+      try {
+        publishResult = JSON.parse(
+          decodeURIComponent(query.publishSummary),
+        ) as ComposerPublishResult;
+      } catch {
+        errors.push('Could not parse publish result summary');
+      }
     }
+
+    const selectedPublisherIds = query.publishers
+      ? query.publishers
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : undefined;
 
     const html = renderComposerPage({
       assets,
       selectedAsset,
       selectedAssetId: query.assetId,
-      selectedPublisherId: query.publisherId,
-      validateResult,
+      selectedPublisherIds,
+      confirmPublish: query.confirmPublish === '1',
+      publishResult,
       fetchedAt: new Date().toISOString(),
       errors,
       apiBaseUrl,
@@ -357,19 +372,42 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       .send(html);
   });
 
-  app.post<{ Body: { assetId?: string; publisherId?: string } }>(
-    '/ops/composer/validate',
+  app.post<{ Body: { assetId?: string; publisherIds?: string | string[]; confirm?: string } }>(
+    '/ops/composer/publish',
     async (request, reply) => {
       const assetId = request.body?.assetId?.trim();
-      const publisherId = request.body?.publisherId?.trim();
-      if (!assetId || !publisherId) {
+      const rawIds = request.body?.publisherIds;
+      const publisherIds = Array.isArray(rawIds)
+        ? rawIds.map((id) => id.trim()).filter(Boolean)
+        : rawIds
+          ? [rawIds.trim()]
+          : [];
+      const confirmed = request.body?.confirm === 'on' || request.body?.confirm === 'true';
+
+      if (!assetId || !publisherIds.length) {
         void reply.redirect(302, '/composer');
         return;
       }
+
+      if (!confirmed) {
+        const params = new URLSearchParams({
+          assetId,
+          confirmPublish: '1',
+          publishers: publisherIds.join(','),
+        });
+        void reply.redirect(302, `/composer?${params.toString()}`);
+        return;
+      }
+
+      const result = await client.publishComposer(assetId, publisherIds);
+      if (!result) {
+        void reply.redirect(302, `/composer?assetId=${encodeURIComponent(assetId)}`);
+        return;
+      }
+
       const params = new URLSearchParams({
         assetId,
-        publisherId,
-        validated: '1',
+        publishSummary: encodeURIComponent(JSON.stringify(result)),
       });
       void reply.redirect(302, `/composer?${params.toString()}`);
     },

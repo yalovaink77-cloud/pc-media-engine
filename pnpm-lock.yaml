@@ -124,6 +124,9 @@ importers:
       '@pcme/media':
         specifier: workspace:*
         version: link:../../packages/media
+      '@pcme/plugin-ghost':
+        specifier: workspace:*
+        version: link:../../plugins/ghost
       '@pcme/plugin-wordpress':
         specifier: workspace:*
         version: link:../../plugins/wordpress
