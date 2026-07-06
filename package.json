@@ -47,7 +47,8 @@
     "composer:smoke": "pnpm --filter @pcme/api composer:smoke && pnpm --filter @pcme/dashboard smoke:composer",
     "publish-workflow:smoke": "pnpm --filter @pcme/api publish-workflow:smoke && pnpm --filter @pcme/dashboard publish-workflow:smoke",
     "bulk-publish:smoke": "pnpm --filter @pcme/api bulk-publish:smoke && pnpm --filter @pcme/dashboard bulk-publish:smoke",
-    "calendar:smoke": "pnpm --filter @pcme/api calendar:smoke && pnpm --filter @pcme/dashboard calendar:smoke"
+    "calendar:smoke": "pnpm --filter @pcme/api calendar:smoke && pnpm --filter @pcme/dashboard calendar:smoke",
+    "provider-config:smoke": "pnpm --filter @pcme/api provider-config:smoke && pnpm --filter @pcme/dashboard provider-config:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

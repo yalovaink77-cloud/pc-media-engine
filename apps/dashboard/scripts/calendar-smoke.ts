@@ -101,6 +101,10 @@ function makeClient(): DashboardApiClient {
     bulkPublishComposer: async () => null,
     fetchCalendarEvents: async () => events,
     fetchCalendarTimeline: async () => timeline,
+    fetchProviderConfigs: async () => null,
+    fetchProviderConfig: async () => null,
+    validateProviderConfig: async () => null,
+    updateProviderConfig: async () => ({ ok: false, status: 0, detail: null, validation: null }),
   };
 }
 

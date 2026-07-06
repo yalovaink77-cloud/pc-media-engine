@@ -309,13 +309,11 @@ describe('createDashboardApiClient — content composer', () => {
   });
 
   it('fetchCalendarEvents calls GET /calendar/events', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ events: [], count: 0, start: 'a', end: 'b' }), {
-          status: 200,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ events: [], count: 0, start: 'a', end: 'b' }), {
+        status: 200,
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createDashboardApiClient('http://api.test');
@@ -324,5 +322,32 @@ describe('createDashboardApiClient — content composer', () => {
     });
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/calendar/events');
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('publisher=wordpress');
+  });
+
+  it('fetchProviderConfigs calls GET /providers/config', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ providers: [], count: 0 }), { status: 200 }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchProviderConfigs();
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/providers/config');
+  });
+
+  it('validateProviderConfig calls POST /providers/config/:id/validate', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ valid: true, errors: [], warnings: [] }), { status: 200 }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.validateProviderConfig('wordpress', { WORDPRESS_URL: 'https://wp.test' });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/providers/config/wordpress/validate');
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
   });
 });

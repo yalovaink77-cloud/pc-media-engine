@@ -13,6 +13,7 @@ import type {
   DashboardPageData,
   JobDetailPageData,
   JobsPageData,
+  ProviderConfigPageData,
   PublishersPageData,
   RecentItem,
   TimelineEntry,
@@ -68,10 +69,19 @@ function renderErrors(errors: string[]): string {
 }
 
 function renderNav(
-  active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer' | 'bulk-publish' | 'calendar',
+  active:
+    | 'dashboard'
+    | 'publishers'
+    | 'provider-config'
+    | 'jobs'
+    | 'assets'
+    | 'composer'
+    | 'bulk-publish'
+    | 'calendar',
 ): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
+  const configCls = active === 'provider-config' ? 'nav-active' : '';
   const jobsCls = active === 'jobs' ? 'nav-active' : '';
   const assetsCls = active === 'assets' ? 'nav-active' : '';
   const composerCls = active === 'composer' ? 'nav-active' : '';
@@ -81,6 +91,7 @@ function renderNav(
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
       <a href="/publishers" class="${pubCls}">Publishers</a>
+      <a href="/provider-config" class="${configCls}">Provider Config</a>
       <a href="/jobs" class="${jobsCls}">Jobs</a>
       <a href="/assets" class="${assetsCls}">Assets</a>
       <a href="/composer" class="${composerCls}">Composer</a>
@@ -1812,6 +1823,156 @@ export function renderCalendarPage(data: CalendarPageData): string {
   </main>
   <footer>
     <p>Reuses Sprint 25 delayed-job scheduler &middot; No live polling in Sprint 43</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function configStatusBadge(
+  status: ProviderConfigPageData['providers'][0]['configurationStatus'],
+): string {
+  if (status === 'complete') return badge('Complete', 'ok');
+  if (status === 'partial') return badge('Partial', 'warn');
+  return badge('Missing', 'err');
+}
+
+function renderConfigFieldInput(
+  field: ProviderConfigPageData['providers'][0]['requiredFields'][0],
+): string {
+  const isSecret =
+    Boolean(field.masked) || field.envVar.includes('PASSWORD') || field.envVar.includes('API_KEY');
+  const inputType = isSecret ? 'password' : 'text';
+  const value = isSecret ? (field.masked ?? '') : (field.value ?? '');
+  const placeholder = isSecret ? 'Leave masked value unchanged to preserve' : '';
+  return `
+    <label class="config-field" data-testid="field-${esc(field.envVar)}">
+      <span><code>${esc(field.envVar)}</code>${field.required ? ' (required)' : ' (optional)'}</span>
+      <input type="${inputType}" name="${esc(field.envVar)}" value="${esc(value)}" placeholder="${esc(placeholder)}" autocomplete="off" />
+      <small>${esc(field.description)}</small>
+    </label>`;
+}
+
+function renderProviderConfigCard(
+  provider: ProviderConfigPageData['providers'][0],
+  detail: ProviderConfigPageData['details'][string] | null | undefined,
+  editing: boolean,
+): string {
+  const statusBadge = configStatusBadge(provider.configurationStatus);
+  const enabledBadge = provider.enabled ? badge('Enabled', 'ok') : badge('Disabled', 'warn');
+  const hotReload = provider.supportsHotReload
+    ? badge('Hot reload', 'ok')
+    : badge('Restart required', 'warn');
+
+  const requiredList =
+    provider.requiredFields.length > 0
+      ? `<ul class="config-list" data-testid="required-${esc(provider.id)}">${provider.requiredFields
+          .map((f) => {
+            const display = f.masked ? esc(f.masked) : f.value ? esc(f.value) : '<em>not set</em>';
+            return `<li><code>${esc(f.envVar)}</code>: ${display}</li>`;
+          })
+          .join('')}</ul>`
+      : '<p class="empty">No required fields</p>';
+
+  const optionalList =
+    provider.optionalFields.length > 0
+      ? `<ul class="config-list">${provider.optionalFields
+          .map((f) => {
+            const display = f.configured ? esc(f.value ?? f.masked ?? '') : '<em>not set</em>';
+            return `<li><code>${esc(f.envVar)}</code>: ${display}</li>`;
+          })
+          .join('')}</ul>`
+      : '';
+
+  const validationBlock =
+    detail?.validation && !detail.validation.valid
+      ? `<p class="flash flash-err" data-testid="validation-${esc(provider.id)}">${detail.validation.errors.map(esc).join('; ')}</p>`
+      : detail?.validation?.warnings?.length
+        ? `<p class="flash flash-warn">${detail.validation.warnings.map(esc).join('; ')}</p>`
+        : '';
+
+  const editForm = editing
+    ? `<form method="post" action="/ops/provider-config/${esc(provider.id)}/save" class="config-edit-form" data-testid="edit-form-${esc(provider.id)}">
+        ${[...provider.requiredFields, ...provider.optionalFields].map(renderConfigFieldInput).join('')}
+        <div class="publisher-actions">
+          <button type="submit" formaction="/ops/provider-config/${esc(provider.id)}/validate" class="btn btn-neutral" data-testid="validate-btn-${esc(provider.id)}">Validate</button>
+          <button type="submit" class="btn btn-primary" data-testid="save-btn-${esc(provider.id)}">Save</button>
+          <a href="/provider-config" class="btn btn-neutral">Cancel</a>
+        </div>
+      </form>`
+    : `<div class="publisher-actions">
+        <a href="/provider-config?edit=${esc(provider.id)}" class="btn btn-neutral" data-testid="edit-btn-${esc(provider.id)}">Edit</a>
+        <form method="post" action="/ops/provider-config/${esc(provider.id)}/health" style="display:inline">
+          <button type="submit" class="btn btn-neutral" data-testid="health-btn-${esc(provider.id)}">Health</button>
+        </form>
+      </div>`;
+
+  return `
+    <article class="publisher-card" data-testid="provider-config-card-${esc(provider.id)}">
+      <h3>${esc(provider.displayName)}</h3>
+      <p class="publisher-meta">
+        ${statusBadge} ${enabledBadge} ${hotReload}
+        &middot; <code>${esc(provider.id)}</code>
+      </p>
+      ${detail?.description ? `<p style="font-size:.85rem;margin-bottom:.5rem">${esc(detail.description)}</p>` : ''}
+      ${validationBlock}
+      <h4 style="font-size:.7rem;text-transform:uppercase;color:#9ca3af;margin-top:.75rem">Required Fields</h4>
+      ${requiredList}
+      ${optionalList ? `<h4 style="font-size:.7rem;text-transform:uppercase;color:#9ca3af;margin-top:.75rem">Optional Fields</h4>${optionalList}` : ''}
+      ${editForm}
+    </article>`;
+}
+
+function renderProviderConfigSection(data: ProviderConfigPageData): string {
+  if (!data.providers.length) {
+    return `<p class="empty" data-testid="provider-config-unavailable">No providers available</p>`;
+  }
+
+  const validationAlert = data.validationResult
+    ? `<div class="flash ${data.validationResult.valid ? 'flash-ok' : 'flash-err'}" data-testid="validation-result">
+        ${data.validationResult.valid ? 'Validation passed' : esc(data.validationResult.errors.join('; '))}
+        ${data.validationResult.warnings.length ? ` — Warnings: ${esc(data.validationResult.warnings.join('; '))}` : ''}
+      </div>`
+    : '';
+
+  return `${validationAlert}
+    <div class="publisher-grid" data-testid="provider-config-grid">
+      ${data.providers
+        .map((p) => renderProviderConfigCard(p, data.details[p.id], data.editProviderId === p.id))
+        .join('')}
+    </div>`;
+}
+
+export function renderProviderConfigPage(data: ProviderConfigPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Provider Configuration</title>
+  <style>${CSS}
+  .config-edit-form { margin-top:1rem; display:flex; flex-direction:column; gap:.75rem; }
+  .config-field { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; }
+  .config-field input { padding:.4rem .5rem; border:1px solid #d1d5db; border-radius:.35rem; }
+  .publisher-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Provider Configuration</h1>
+    <p>Inspect and update provider settings &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('provider-config')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    <section data-testid="provider-config-section">
+      <h2>Provider Configuration</h2>
+      <p style="font-size:.85rem;color:#6b7280;margin-bottom:1rem">Secrets are always masked. Omitted secret fields preserve existing values on save.</p>
+      ${renderProviderConfigSection(data)}
+    </section>
+  </main>
+  <footer>
+    <p>Reuses Publisher SDK validation &middot; Hot reload for WordPress and Ghost</p>
   </footer>
 </body>
 </html>`;

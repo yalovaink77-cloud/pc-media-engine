@@ -12,6 +12,7 @@ import {
   renderDashboardPage,
   renderJobDetailPage,
   renderJobsPage,
+  renderProviderConfigPage,
   renderPublishersPage,
 } from './renderer.js';
 import type {
@@ -102,6 +103,31 @@ function redirectPublishersWithFlash(
 ): void {
   const flash = encodeURIComponent(message);
   void reply.redirect(302, `/publishers?flash=${flash}&flashType=${type}`);
+}
+
+function redirectProviderConfigWithFlash(
+  reply: FastifyReply,
+  message: string,
+  type: 'ok' | 'err',
+  extraParams?: Record<string, string>,
+): void {
+  const params = new URLSearchParams({
+    flash: message,
+    flashType: type,
+  });
+  if (extraParams) {
+    for (const [key, value] of Object.entries(extraParams)) params.set(key, value);
+  }
+  void reply.redirect(302, `/provider-config?${params.toString()}`);
+}
+
+function parseProviderConfigForm(body: Record<string, string> | undefined): Record<string, string> {
+  if (!body) return {};
+  const values: Record<string, string> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (key && value !== undefined) values[key] = value;
+  }
+  return values;
 }
 
 function formatHealthFlash(id: string, health: PublisherHealthResult | null): QueueActionResult {
@@ -217,6 +243,111 @@ export function buildDashboardApp(options: DashboardAppOptions) {
     const result = formatHealthFlash(id, await client.fetchPublisherHealth(id));
     redirectPublishersWithFlash(reply, result.message, result.ok ? 'ok' : 'err');
   });
+
+  app.get('/provider-config', async (request, reply) => {
+    const query = request.query as {
+      flash?: string;
+      flashType?: string;
+      edit?: string;
+      validation?: string;
+    };
+    const errors: string[] = [];
+    const list = await client.fetchProviderConfigs();
+    if (!list) errors.push('Could not reach /providers/config — is the API running?');
+
+    const providers = list?.providers ?? [];
+    const details: Record<
+      string,
+      Awaited<ReturnType<DashboardApiClient['fetchProviderConfig']>>
+    > = {};
+    await Promise.all(
+      providers.map(async (p) => {
+        details[p.id] = await client.fetchProviderConfig(p.id);
+      }),
+    );
+
+    let validationResult = undefined;
+    if (query.validation) {
+      try {
+        validationResult = JSON.parse(decodeURIComponent(query.validation)) as {
+          valid: boolean;
+          errors: string[];
+          warnings: string[];
+        };
+      } catch {
+        errors.push('Could not parse validation result');
+      }
+    }
+
+    const html = renderProviderConfigPage({
+      providers,
+      details,
+      editProviderId: query.edit,
+      validationResult,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      flash: parseFlash(query),
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.post<{ Params: { id: string }; Body: Record<string, string> }>(
+    '/ops/provider-config/:id/validate',
+    async (request, reply) => {
+      const { id } = request.params;
+      const values = parseProviderConfigForm(request.body);
+      const result = await client.validateProviderConfig(id, values);
+      if (!result) {
+        redirectProviderConfigWithFlash(reply, `Validation request failed for "${id}"`, 'err', {
+          edit: id,
+        });
+        return;
+      }
+      const params = {
+        edit: id,
+        validation: encodeURIComponent(JSON.stringify(result)),
+      };
+      const message = result.valid
+        ? `Validation passed for "${id}"`
+        : `Validation failed: ${result.errors.join('; ')}`;
+      redirectProviderConfigWithFlash(reply, message, result.valid ? 'ok' : 'err', params);
+    },
+  );
+
+  app.post<{ Params: { id: string }; Body: Record<string, string> }>(
+    '/ops/provider-config/:id/save',
+    async (request, reply) => {
+      const { id } = request.params;
+      const values = parseProviderConfigForm(request.body);
+      const result = await client.updateProviderConfig(id, values);
+      if (result.ok && result.detail) {
+        redirectProviderConfigWithFlash(reply, `Configuration saved for "${id}"`, 'ok');
+        return;
+      }
+      const errMsg =
+        result.validation?.errors.join('; ') ?? `Failed to save configuration for "${id}"`;
+      redirectProviderConfigWithFlash(reply, errMsg, 'err', {
+        edit: id,
+        ...(result.validation
+          ? { validation: encodeURIComponent(JSON.stringify(result.validation)) }
+          : {}),
+      });
+    },
+  );
+
+  app.post<{ Params: { id: string } }>(
+    '/ops/provider-config/:id/health',
+    async (request, reply) => {
+      const { id } = request.params;
+      const result = formatHealthFlash(id, await client.fetchPublisherHealth(id));
+      redirectProviderConfigWithFlash(reply, result.message, result.ok ? 'ok' : 'err');
+    },
+  );
 
   app.get('/jobs', async (request, reply) => {
     const query = request.query as Record<string, string | undefined>;

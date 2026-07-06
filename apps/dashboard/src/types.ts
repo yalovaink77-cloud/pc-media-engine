@@ -158,6 +158,57 @@ export type PublishersPageData = {
 };
 
 // ---------------------------------------------------------------------------
+// Provider configuration (Sprint 44)
+// ---------------------------------------------------------------------------
+
+export type ConfigFieldStatus = {
+  envVar: string;
+  description: string;
+  required: boolean;
+  configured: boolean;
+  value?: string;
+  masked?: string;
+};
+
+export type ProviderConfigSummary = {
+  id: string;
+  displayName: string;
+  enabled: boolean;
+  configured: boolean;
+  configurationStatus: 'complete' | 'partial' | 'missing';
+  requiredFields: ConfigFieldStatus[];
+  optionalFields: ConfigFieldStatus[];
+  supportsHotReload: boolean;
+};
+
+export type ProviderConfigListResult = {
+  providers: ProviderConfigSummary[];
+  count: number;
+};
+
+export type ProviderConfigDetail = ProviderConfigSummary & {
+  version: string;
+  description: string;
+  validation?: ProviderConfigValidationResult;
+};
+
+export type ProviderConfigValidationResult = {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+};
+
+export type ProviderConfigPageData = {
+  providers: ProviderConfigSummary[];
+  details: Record<string, ProviderConfigDetail | null>;
+  editProviderId?: string;
+  validationResult?: ProviderConfigValidationResult;
+  fetchedAt: string;
+  errors: string[];
+  flash?: DashboardFlash;
+};
+
+// ---------------------------------------------------------------------------
 // Publishing jobs (Sprint 38)
 // ---------------------------------------------------------------------------
 

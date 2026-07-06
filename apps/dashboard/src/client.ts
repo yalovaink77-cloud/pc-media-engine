@@ -17,6 +17,9 @@ import type {
   JobDetail,
   JobListFilters,
   JobListResult,
+  ProviderConfigDetail,
+  ProviderConfigListResult,
+  ProviderConfigValidationResult,
   PublisherDetail,
   PublisherHealthResult,
   PublisherListItem,
@@ -74,6 +77,22 @@ export interface DashboardApiClient {
     publisher?: string;
     limit?: number;
   }): Promise<CalendarTimelineResult | null>;
+  /** Sprint 44 provider configuration management. */
+  fetchProviderConfigs(): Promise<ProviderConfigListResult | null>;
+  fetchProviderConfig(id: string): Promise<ProviderConfigDetail | null>;
+  validateProviderConfig(
+    id: string,
+    values: Record<string, string>,
+  ): Promise<ProviderConfigValidationResult | null>;
+  updateProviderConfig(
+    id: string,
+    values: Record<string, string>,
+  ): Promise<{
+    ok: boolean;
+    status: number;
+    detail: ProviderConfigDetail | null;
+    validation: ProviderConfigValidationResult | null;
+  }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +131,37 @@ async function postJson<T>(url: string, body: unknown, apiKey?: string): Promise
     return (await res.json()) as T;
   } catch {
     return null;
+  }
+}
+
+async function putJson<T>(
+  url: string,
+  body: unknown,
+  apiKey?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  try {
+    const headers: Record<string, string> = {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    };
+    if (apiKey) headers['x-api-key'] = apiKey;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      try {
+        const errBody = (await res.json()) as T;
+        return { ok: false, status: res.status, data: errBody };
+      } catch {
+        return { ok: false, status: res.status, data: null };
+      }
+    }
+    return { ok: true, status: res.status, data: (await res.json()) as T };
+  } catch {
+    return { ok: false, status: 0, data: null };
   }
 }
 
@@ -258,6 +308,28 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
         `${base}/calendar/timeline${qs ? `?${qs}` : ''}`,
         apiKey,
       );
+    },
+    fetchProviderConfigs: () =>
+      fetchJson<ProviderConfigListResult>(`${base}/providers/config`, apiKey),
+    fetchProviderConfig: (id: string) =>
+      fetchJson<ProviderConfigDetail>(`${base}/providers/config/${encodeURIComponent(id)}`, apiKey),
+    validateProviderConfig: (id, values) =>
+      postJson<ProviderConfigValidationResult>(
+        `${base}/providers/config/${encodeURIComponent(id)}/validate`,
+        values,
+        apiKey,
+      ),
+    updateProviderConfig: async (id, values) => {
+      const result = await putJson<ProviderConfigDetail | ProviderConfigValidationResult>(
+        `${base}/providers/config/${encodeURIComponent(id)}`,
+        values,
+        apiKey,
+      );
+      if (result.ok && result.data && 'id' in result.data) {
+        return { ok: true, status: result.status, detail: result.data, validation: null };
+      }
+      const validation = result.data && 'valid' in result.data ? result.data : null;
+      return { ok: false, status: result.status, detail: null, validation };
     },
   };
 }

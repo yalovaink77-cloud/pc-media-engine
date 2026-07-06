@@ -17,7 +17,12 @@ import { createCalendarService } from './calendar/calendar-service.js';
 import { createContentComposerService } from './composer/content-composer-service.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
-import { createPublisherService } from './publishers/publisher-service.js';
+import { ProviderConfigStore } from './providers/config-store.js';
+import { createProviderConfigService } from './providers/provider-config-service.js';
+import {
+  createDefaultPublisherRegistry,
+  createPublisherService,
+} from './publishers/publisher-service.js';
 import { createBullMqQueueService } from './queue/bullmq-queue-service.js';
 import { buildPublishingEnqueuer } from './queue/publishing-enqueue.js';
 import { buildProcessingEnqueuer, parseRedisConnection } from './queue/redis-enqueue.js';
@@ -95,7 +100,18 @@ export async function startServer(config: Config): Promise<void> {
     console.warn('[api/queue] Queue management disabled — set REDIS_URL to enable');
   }
 
-  const publisherService = createPublisherService();
+  const publisherRegistry = createDefaultPublisherRegistry();
+  const providerConfigStore = new ProviderConfigStore({ baseEnv: process.env });
+  const getProviderEnv = () => providerConfigStore.getMergedEnv();
+
+  const publisherService = createPublisherService({
+    registry: publisherRegistry,
+    getEnv: getProviderEnv,
+  });
+  const providerConfigService = createProviderConfigService({
+    registry: publisherRegistry,
+    configStore: providerConfigStore,
+  });
   console.log(
     `[api/publishers] Registered providers: ${publisherService
       .listPublishers()
@@ -182,6 +198,7 @@ export async function startServer(config: Config): Promise<void> {
     composerService,
     publishingEnqueuer,
     calendarService,
+    providerConfigService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

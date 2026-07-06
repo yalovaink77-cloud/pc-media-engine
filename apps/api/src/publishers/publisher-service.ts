@@ -21,6 +21,8 @@ import type {
 export type CreatePublisherServiceOptions = {
   registry?: PublisherRegistry;
   env?: Record<string, string | undefined>;
+  /** Dynamic env resolver for hot-reload configuration overlays (Sprint 44). */
+  getEnv?: () => Record<string, string | undefined>;
 };
 
 function buildDefaultRegistry(): PublisherRegistry {
@@ -28,6 +30,11 @@ function buildDefaultRegistry(): PublisherRegistry {
   registry.register(wordPressRegistration);
   registry.register(ghostRegistration);
   return registry;
+}
+
+/** Shared registry factory for publisher + provider-config services. */
+export function createDefaultPublisherRegistry(): PublisherRegistry {
+  return buildDefaultRegistry();
 }
 
 function isProviderEnabled(id: string, env: Record<string, string | undefined>): boolean {
@@ -63,10 +70,12 @@ export function createPublisherService(
   options: CreatePublisherServiceOptions = {},
 ): PublisherManagementService {
   const registry = options.registry ?? buildDefaultRegistry();
-  const env = options.env ?? process.env;
+  const resolveEnv = (): Record<string, string | undefined> =>
+    options.getEnv?.() ?? options.env ?? process.env;
 
   return {
     listPublishers(): PublisherListItem[] {
+      const env = resolveEnv();
       return registry.listMetadata().map((metadata) => ({
         id: metadata.id,
         displayName: metadata.name,
@@ -78,6 +87,7 @@ export function createPublisherService(
     },
 
     getPublisher(id: string): PublisherDetail | null {
+      const env = resolveEnv();
       const registration = registry.get(id);
       if (!registration) return null;
 
@@ -96,6 +106,7 @@ export function createPublisherService(
     },
 
     async checkHealth(id: string): Promise<PublisherHealthResponse> {
+      const env = resolveEnv();
       const registration = registry.get(id);
       if (!registration) {
         return {

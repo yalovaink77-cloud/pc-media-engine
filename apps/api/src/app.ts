@@ -11,6 +11,7 @@ import type { ContentComposerService } from './composer/types.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
+import type { ProviderConfigService } from './providers/types.js';
 import type { PublisherManagementService } from './publishers/types.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
 import type { PublishingQueueEnqueuer } from './queue/publishing-enqueue.js';
@@ -29,6 +30,7 @@ import type { AssetCreator } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
 import type { QueueMetricsProvider } from './routes/metrics.js';
 import { metricsRoutes } from './routes/metrics.js';
+import { providerConfigRoutes } from './routes/provider-config.js';
 import { publishersRoutes } from './routes/publishers.js';
 import type { PublishedContentFinder } from './routes/publishing.js';
 import { publishingRoutes } from './routes/publishing.js';
@@ -131,6 +133,11 @@ export type AppOptions = {
    * When absent, /calendar/* routes return 503.
    */
   calendarService?: CalendarService;
+  /**
+   * Optional provider configuration service (Sprint 44+).
+   * When absent, /providers/config/* routes return 503.
+   */
+  providerConfigService?: ProviderConfigService;
 };
 
 /**
@@ -160,6 +167,7 @@ export function buildApp(options: AppOptions) {
     composerService,
     publishingEnqueuer,
     calendarService,
+    providerConfigService,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -288,6 +296,11 @@ export function buildApp(options: AppOptions) {
 
   app.register(calendarRoutes, {
     calendarService,
+    authMiddleware,
+  });
+
+  app.register(providerConfigRoutes, {
+    providerConfigService,
     authMiddleware,
   });
 
