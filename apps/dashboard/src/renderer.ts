@@ -3,6 +3,7 @@ import type {
   AssetDimensions,
   AssetsPageData,
   AssetThumbnail,
+  ComposerPageData,
   DashboardPageData,
   JobDetailPageData,
   JobsPageData,
@@ -59,17 +60,19 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
-function renderNav(active: 'dashboard' | 'publishers' | 'jobs' | 'assets'): string {
+function renderNav(active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer'): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
   const jobsCls = active === 'jobs' ? 'nav-active' : '';
   const assetsCls = active === 'assets' ? 'nav-active' : '';
+  const composerCls = active === 'composer' ? 'nav-active' : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
       <a href="/publishers" class="${pubCls}">Publishers</a>
       <a href="/jobs" class="${jobsCls}">Jobs</a>
       <a href="/assets" class="${assetsCls}">Assets</a>
+      <a href="/composer" class="${composerCls}">Composer</a>
     </nav>`;
 }
 
@@ -1172,6 +1175,218 @@ export function renderAssetDetailPage(data: AssetDetailPageData): string {
   </main>
   <footer>
     <p>Read-only inspection &middot; No edit or delete actions</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function readinessBadge(ready: boolean): string {
+  return ready ? badge('Ready', 'ok') : badge('Not Ready', 'err');
+}
+
+function renderComposerAssetSelector(data: ComposerPageData): string {
+  if (!data.assets) {
+    return `<p class="empty" data-testid="composer-unavailable">Composer unavailable — API not configured</p>`;
+  }
+  const options = data.assets.assets
+    .map(
+      (a) =>
+        `<option value="${esc(a.id)}"${data.selectedAssetId === a.id ? ' selected' : ''}>${esc(a.filename)} (${esc(a.readiness)})</option>`,
+    )
+    .join('');
+  return `
+  <form class="filter-form" method="get" action="/composer" data-testid="composer-asset-selector">
+    <div>
+      <label for="assetId">Asset</label>
+      <select name="assetId" id="assetId" onchange="this.form.submit()">
+        <option value="">Select an asset…</option>
+        ${options}
+      </select>
+    </div>
+  </form>`;
+}
+
+function renderComposerDetail(data: ComposerPageData): string {
+  const asset = data.selectedAsset;
+  if (!asset) {
+    return `<p class="empty" data-testid="composer-empty">Select an asset to preview publishable content</p>`;
+  }
+
+  const preview = asset.thumbnail?.url
+    ? `<img class="asset-preview" src="${esc(assetMediaUrl(data.apiBaseUrl, asset.thumbnail.url))}" alt="${esc(asset.filename)}" data-testid="composer-preview">`
+    : `<p class="empty" data-testid="composer-preview-missing">No thumbnail preview</p>`;
+
+  const publisherRows = asset.compatiblePublishers.length
+    ? asset.compatiblePublishers
+        .map(
+          (p) => `
+      <tr data-testid="composer-publisher-${esc(p.id)}">
+        <td>${esc(p.displayName)}</td>
+        <td>${p.enabled ? badge('Enabled', 'ok') : badge('Disabled', 'warn')}</td>
+        <td>${p.compatible ? badge('Compatible', 'ok') : badge('Gaps', 'warn')}</td>
+        <td>${p.gaps.length ? esc(p.gaps.join('; ')) : '—'}</td>
+      </tr>`,
+        )
+        .join('')
+    : `<tr><td colspan="4" class="empty">No publishers registered</td></tr>`;
+
+  const historyRows = asset.publishingHistory.length
+    ? asset.publishingHistory
+        .map(
+          (h) => `
+      <tr>
+        <td>${esc(h.publisher)}</td>
+        <td>${badge(h.status, h.status === 'published' ? 'ok' : 'neutral')}</td>
+        <td>${esc(h.slug)}</td>
+        <td>${formatDate(h.publishedAt)}</td>
+      </tr>`,
+        )
+        .join('')
+    : `<tr><td colspan="4" class="empty">No publishing history</td></tr>`;
+
+  const publisherOptions = asset.compatiblePublishers
+    .map(
+      (p) =>
+        `<option value="${esc(p.id)}"${data.selectedPublisherId === p.id ? ' selected' : ''}>${esc(p.displayName)}</option>`,
+    )
+    .join('');
+
+  const validatePanel = data.validateResult
+    ? `<div class="detail-card" data-testid="composer-validation-result">
+        <h3>Validation Result</h3>
+        <p style="margin-bottom:.5rem">${readinessBadge(data.validateResult.ready)}</p>
+        ${
+          data.validateResult.messages.length
+            ? `<ul class="config-list">${data.validateResult.messages.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>`
+            : '<p class="empty">No blocking messages</p>'
+        }
+        ${
+          data.validateResult.warnings.length
+            ? `<p style="margin-top:.75rem;font-size:.8rem;color:#92400e"><strong>Warnings:</strong></p><ul class="config-list">${data.validateResult.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`
+            : ''
+        }
+      </div>`
+    : '';
+
+  const warningsList = asset.validationWarnings.length
+    ? `<ul class="config-list">${asset.validationWarnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`
+    : `<p class="empty">No validation warnings</p>`;
+
+  return `
+  <section data-testid="composer-detail-section">
+    <div class="cards" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="label">Readiness</div>
+        <div class="value small" data-testid="composer-readiness-badge">${readinessBadge(asset.readiness.ready)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Status</div>
+        <div class="value small">${assetStatusBadge(asset.status)}</div>
+      </div>
+      <div class="card">
+        <div class="label">AI Provider</div>
+        <div class="value small">${esc(asset.ai.provider)}${asset.ai.aiApplied ? ' (applied)' : ''}</div>
+      </div>
+    </div>
+    <div class="detail-grid" style="margin-bottom:1.5rem">
+      <div class="detail-card">
+        <h3>Preview</h3>
+        ${preview}
+        <dl class="detail-list" style="margin-top:1rem">
+          <dt>Title</dt><dd>${esc(asset.preview.title)}</dd>
+          <dt>Slug</dt><dd>${esc(asset.preview.slug)}</dd>
+          <dt>Body</dt><dd>${esc(asset.preview.body)}</dd>
+        </dl>
+      </div>
+      <div class="detail-card" data-testid="composer-seo-section">
+        <h3>SEO Metadata</h3>
+        <dl class="detail-list">
+          <dt>SEO Title</dt><dd>${esc(asset.seo.seoTitle)}</dd>
+          <dt>Slug</dt><dd>${esc(asset.seo.slug)}</dd>
+          <dt>Excerpt</dt><dd>${esc(asset.seo.excerpt)}</dd>
+          <dt>Meta Description</dt><dd>${esc(asset.seo.metaDescription)}</dd>
+          <dt>Reading Time</dt><dd>${esc(asset.seo.readingTimeMinutes)} min</dd>
+          <dt>Tags</dt><dd>${asset.seo.tags.length ? esc(asset.seo.tags.join(', ')) : '—'}</dd>
+          <dt>Categories</dt><dd>${asset.seo.categories.length ? esc(asset.seo.categories.join(', ')) : '—'}</dd>
+        </dl>
+      </div>
+      <div class="detail-card" data-testid="composer-ai-section">
+        <h3>AI Metadata</h3>
+        <dl class="detail-list">
+          <dt>Provider</dt><dd>${esc(asset.ai.provider)}</dd>
+          <dt>Applied</dt><dd>${boolBadge(asset.ai.aiApplied)}</dd>
+          <dt>Message</dt><dd>${esc(asset.ai.message ?? '—')}</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="detail-card" style="margin-bottom:1.5rem" data-testid="composer-publisher-section">
+      <h3>Publisher Compatibility</h3>
+      <table>
+        <thead><tr><th>Publisher</th><th>Status</th><th>Compatible</th><th>Gaps</th></tr></thead>
+        <tbody>${publisherRows}</tbody>
+      </table>
+    </div>
+    <div class="detail-grid" style="margin-bottom:1.5rem">
+      <div class="detail-card" data-testid="composer-warnings-panel">
+        <h3>Validation Warnings</h3>
+        ${warningsList}
+      </div>
+      <div class="detail-card" data-testid="composer-history-section">
+        <h3>Publishing History</h3>
+        <p style="font-size:.85rem;margin-bottom:.5rem">Total: ${esc(asset.publishingSummary.total)}</p>
+        <table>
+          <thead><tr><th>Publisher</th><th>Status</th><th>Slug</th><th>Published</th></tr></thead>
+          <tbody>${historyRows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="detail-card ops-panel" data-testid="composer-validation-panel">
+      <h3>Validate for Publisher</h3>
+      <form method="post" action="/ops/composer/validate" data-testid="composer-validate-form">
+        <input type="hidden" name="assetId" value="${esc(asset.id)}">
+        <div class="ops-row">
+          <div class="ops-form">
+            <label for="publisherId">Publisher</label>
+            <select name="publisherId" id="publisherId" required>
+              <option value="">Select publisher…</option>
+              ${publisherOptions}
+            </select>
+          </div>
+          <div class="ops-form" style="align-self:flex-end">
+            <button type="submit" class="btn btn-neutral" data-testid="composer-validate-button">Validate</button>
+          </div>
+        </div>
+      </form>
+      ${validatePanel}
+    </div>
+  </section>`;
+}
+
+export function renderComposerPage(data: ComposerPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Content Composer</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Content Composer</h1>
+    <p>Draft-first publish preparation &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('composer')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    <section data-testid="composer-section">
+      <h2>Content Composer</h2>
+      ${renderComposerAssetSelector(data)}
+      ${renderComposerDetail(data)}
+    </section>
+  </main>
+  <footer>
+    <p>Read-only inspection &middot; Validation only — no publish action yet</p>
   </footer>
 </body>
 </html>`;

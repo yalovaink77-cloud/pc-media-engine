@@ -61,6 +61,9 @@ function makeMockClient(): DashboardApiClient {
     fetchJob: async (id) => (id === 'job-001' ? jobDetail : null),
     fetchAssets: async () => ({ assets: [], total: 0, limit: 50, offset: 0 }),
     fetchAsset: async () => null,
+    fetchComposerAssets: async () => null,
+    fetchComposerAsset: async () => null,
+    validateComposer: async () => null,
   };
 }
 

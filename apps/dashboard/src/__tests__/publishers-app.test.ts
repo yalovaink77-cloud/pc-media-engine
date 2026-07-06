@@ -62,6 +62,9 @@ function makeMockClient(): DashboardApiClient {
     fetchJob: async () => null,
     fetchAssets: async () => null,
     fetchAsset: async () => null,
+    fetchComposerAssets: async () => null,
+    fetchComposerAsset: async () => null,
+    validateComposer: async () => null,
   };
 }
 

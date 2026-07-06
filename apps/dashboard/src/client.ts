@@ -2,6 +2,9 @@ import type {
   AssetDetail,
   AssetListFilters,
   AssetListResult,
+  ComposerAssetDetail,
+  ComposerAssetListResult,
+  ComposerValidateResult,
   DashboardHealthData,
   DashboardMetricsData,
   DashboardQueueData,
@@ -43,6 +46,14 @@ export interface DashboardApiClient {
   /** Sprint 39 asset library — read-only. */
   fetchAssets(filters?: AssetListFilters): Promise<AssetListResult | null>;
   fetchAsset(id: string, projectId?: string): Promise<AssetDetail | null>;
+  /** Sprint 40 content composer — read-only + validation. */
+  fetchComposerAssets(projectId?: string): Promise<ComposerAssetListResult | null>;
+  fetchComposerAsset(id: string, projectId?: string): Promise<ComposerAssetDetail | null>;
+  validateComposer(
+    assetId: string,
+    publisherId: string,
+    projectId?: string,
+  ): Promise<ComposerValidateResult | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +67,26 @@ async function fetchJson<T>(url: string, apiKey?: string): Promise<T | null> {
     const res = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function postJson<T>(url: string, body: unknown, apiKey?: string): Promise<T | null> {
+  try {
+    const headers: Record<string, string> = {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    };
+    if (apiKey) headers['x-api-key'] = apiKey;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) return null;
     return (await res.json()) as T;
@@ -158,6 +189,26 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
         `${base}/assets/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`,
       );
     },
+    fetchComposerAssets: (projectId?: string) => {
+      const params = new URLSearchParams();
+      if (projectId) params.set('projectId', projectId);
+      const qs = params.toString();
+      return fetchJson<ComposerAssetListResult>(`${base}/composer/assets${qs ? `?${qs}` : ''}`);
+    },
+    fetchComposerAsset: (id: string, projectId?: string) => {
+      const params = new URLSearchParams();
+      if (projectId) params.set('projectId', projectId);
+      const qs = params.toString();
+      return fetchJson<ComposerAssetDetail>(
+        `${base}/composer/assets/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`,
+      );
+    },
+    validateComposer: (assetId, publisherId, projectId) =>
+      postJson<ComposerValidateResult>(
+        `${base}/composer/validate`,
+        { assetId, publisherId, projectId },
+        apiKey,
+      ),
   };
 }
 

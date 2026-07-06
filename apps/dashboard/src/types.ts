@@ -333,3 +333,103 @@ export type AssetDetailPageData = {
   errors: string[];
   apiBaseUrl: string;
 };
+
+// ---------------------------------------------------------------------------
+// Content composer (Sprint 40)
+// ---------------------------------------------------------------------------
+
+export type ComposerAssetListItem = {
+  id: string;
+  projectId: string;
+  filename: string;
+  mimeType: string;
+  status: string;
+  readiness: 'ready' | 'not_ready';
+  thumbnail?: AssetThumbnail;
+  publisherCount: number;
+  createdAt: string;
+};
+
+export type ComposerSeoMetadata = {
+  slug: string;
+  seoTitle: string;
+  excerpt: string;
+  metaDescription: string;
+  readingTimeMinutes: number;
+  tags: string[];
+  categories: string[];
+};
+
+export type ComposerAiMetadata = {
+  provider: string;
+  aiApplied: boolean;
+  message?: string;
+};
+
+export type ComposerReadiness = {
+  ready: boolean;
+  blockers: string[];
+  warnings: string[];
+};
+
+export type ComposerPublisherCompatibility = {
+  id: string;
+  displayName: string;
+  enabled: boolean;
+  compatible: boolean;
+  gaps: string[];
+};
+
+export type ComposerAssetDetail = {
+  id: string;
+  projectId: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  status: string;
+  dimensions?: AssetDimensions;
+  thumbnail?: AssetThumbnail;
+  tags: string[];
+  altText?: string;
+  seo: ComposerSeoMetadata;
+  ai: ComposerAiMetadata;
+  readiness: ComposerReadiness;
+  validationWarnings: string[];
+  compatiblePublishers: ComposerPublisherCompatibility[];
+  publishingHistory: PublishingHistorySummaryItem[];
+  publishingSummary: {
+    total: number;
+    publishers: Array<{ publisher: string; count: number }>;
+  };
+  preview: { title: string; slug: string; body: string };
+};
+
+export type ComposerAssetListResult = {
+  assets: ComposerAssetListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type ComposerValidateResult = {
+  ready: boolean;
+  messages: string[];
+  warnings: string[];
+  publisherCompatibility: {
+    publisherId: string;
+    compatible: boolean;
+    gaps: string[];
+  };
+  missingRequirements: string[];
+};
+
+export type ComposerPageData = {
+  assets: ComposerAssetListResult | null;
+  selectedAsset: ComposerAssetDetail | null;
+  selectedAssetId?: string;
+  validateResult: ComposerValidateResult | null;
+  selectedPublisherId?: string;
+  fetchedAt: string;
+  errors: string[];
+  apiBaseUrl: string;
+};

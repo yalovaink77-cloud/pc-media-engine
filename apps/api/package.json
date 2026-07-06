@@ -32,15 +32,18 @@
     "queue:smoke": "tsx scripts/queue-smoke.ts",
     "publisher-management:smoke": "tsx scripts/publisher-management-smoke.ts",
     "jobs:smoke": "tsx scripts/jobs-smoke.ts",
-    "assets:smoke": "tsx scripts/assets-smoke.ts"
+    "assets:smoke": "tsx scripts/assets-smoke.ts",
+    "composer:smoke": "tsx scripts/composer-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",
+    "@pcme/ai": "workspace:*",
     "@pcme/database": "workspace:*",
     "@pcme/media": "workspace:*",
     "@pcme/plugin-ghost": "workspace:*",
     "@pcme/plugin-wordpress": "workspace:*",
     "@pcme/publisher-sdk": "workspace:*",
+    "@pcme/seo": "workspace:*",
     "dotenv": "^16.4.7",
     "fastify": "^4.29.0",
     "bullmq": "^5.79.2"

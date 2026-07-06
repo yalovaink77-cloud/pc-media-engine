@@ -13,6 +13,7 @@ import { LocalStorageProvider } from '@pcme/media';
 import { buildApp } from './app.js';
 import { createAssetLibraryService } from './assets/asset-library-service.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
+import { createContentComposerService } from './composer/content-composer-service.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
 import { createPublisherService } from './publishers/publisher-service.js';
@@ -123,6 +124,31 @@ export async function startServer(config: Config): Promise<void> {
     console.warn('[api/assets] Asset library disabled — set DATABASE_URL and default project');
   }
 
+  const composerService =
+    assetLibrary && publisherService
+      ? createContentComposerService({
+          assetLibrary,
+          publisherService,
+          findDuplicate: publishedContentRepo
+            ? async (projectId, publisher, slug) => {
+                const existing = await publishedContentRepo.findDuplicate(
+                  projectId,
+                  publisher,
+                  slug,
+                );
+                return existing !== null;
+              }
+            : undefined,
+          env: process.env,
+        })
+      : undefined;
+
+  if (!composerService) {
+    console.warn(
+      '[api/composer] Content composer disabled — requires asset library and publisher service',
+    );
+  }
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -138,6 +164,7 @@ export async function startServer(config: Config): Promise<void> {
     queueService,
     publisherService,
     assetLibrary,
+    composerService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

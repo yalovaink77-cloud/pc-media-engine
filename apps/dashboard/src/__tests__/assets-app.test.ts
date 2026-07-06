@@ -57,6 +57,9 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
     fetchJob: async () => null,
     fetchAssets: async () => assetList,
     fetchAsset: async (id) => (id === 'asset-001' ? assetDetail : null),
+    fetchComposerAssets: async () => null,
+    fetchComposerAsset: async () => null,
+    validateComposer: async () => null,
     ...overrides,
   };
 }

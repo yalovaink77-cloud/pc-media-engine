@@ -93,6 +93,9 @@ function makeClient(): DashboardApiClient {
     fetchJob: async () => null,
     fetchAssets: async () => assetList,
     fetchAsset: async (id) => (id === 'asset-smoke-1' ? assetDetail : null),
+    fetchComposerAssets: async () => null,
+    fetchComposerAsset: async () => null,
+    validateComposer: async () => null,
   };
 }
 

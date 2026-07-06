@@ -210,13 +210,11 @@ describe('createDashboardApiClient — publishing jobs', () => {
 
 describe('createDashboardApiClient — asset library', () => {
   it('fetchAssets calls GET /assets with filters', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ assets: [], total: 0, limit: 10, offset: 0 }), {
-          status: 200,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ assets: [], total: 0, limit: 10, offset: 0 }), {
+        status: 200,
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createDashboardApiClient('http://api.test');
@@ -237,5 +235,35 @@ describe('createDashboardApiClient — asset library', () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
       'http://api.test/assets/asset-1?projectId=proj-abc',
     );
+  });
+});
+
+describe('createDashboardApiClient — content composer', () => {
+  it('fetchComposerAssets calls GET /composer/assets', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ assets: [], total: 0, limit: 50, offset: 0 }), {
+        status: 200,
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchComposerAssets('proj-abc');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'http://api.test/composer/assets?projectId=proj-abc',
+    );
+  });
+
+  it('validateComposer calls POST /composer/validate', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ ready: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.validateComposer('asset-1', 'wordpress');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/composer/validate');
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('asset-1');
   });
 });

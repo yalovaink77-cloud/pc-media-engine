@@ -6,6 +6,7 @@ import Fastify from 'fastify';
 import type { AssetLibraryService } from './assets/types.js';
 import type { AuthConfig } from './auth/index.js';
 import { createAuthMiddleware } from './auth/middleware.js';
+import type { ContentComposerService } from './composer/types.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
@@ -15,6 +16,7 @@ import type { QueueService } from './queue/queue-service.js';
 import { assetsRoutes } from './routes/assets.js';
 import type { AuthRouteOptions } from './routes/auth.js';
 import { authRoutes } from './routes/auth.js';
+import { composerRoutes } from './routes/composer.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import type { DatabaseStatus } from './routes/health.js';
@@ -111,6 +113,11 @@ export type AppOptions = {
    * When absent, all /assets/* routes return 503.
    */
   assetLibrary?: AssetLibraryService;
+  /**
+   * Optional content composer service (Sprint 40+).
+   * When absent, all /composer/* routes return 503.
+   */
+  composerService?: ContentComposerService;
 };
 
 /**
@@ -137,6 +144,7 @@ export function buildApp(options: AppOptions) {
     queueService,
     publisherService,
     assetLibrary,
+    composerService,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -253,6 +261,11 @@ export function buildApp(options: AppOptions) {
   app.register(assetsRoutes, {
     assetLibrary,
     storageProvider,
+    defaultProjectId: config.defaultProjectId,
+  });
+
+  app.register(composerRoutes, {
+    composerService,
     defaultProjectId: config.defaultProjectId,
   });
 

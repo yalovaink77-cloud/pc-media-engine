@@ -6,6 +6,7 @@ import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
 import {
   renderAssetDetailPage,
   renderAssetsPage,
+  renderComposerPage,
   renderDashboardPage,
   renderJobDetailPage,
   renderJobsPage,
@@ -315,6 +316,64 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       .header('cache-control', 'no-store')
       .send(html);
   });
+
+  app.get('/composer', async (request, reply) => {
+    const query = request.query as {
+      assetId?: string;
+      publisherId?: string;
+      validated?: string;
+    };
+    const errors: string[] = [];
+    const assets = await client.fetchComposerAssets();
+    if (!assets) errors.push('Could not reach /composer/assets — is the API configured?');
+
+    let selectedAsset = null;
+    if (query.assetId) {
+      selectedAsset = await client.fetchComposerAsset(query.assetId);
+      if (!selectedAsset) errors.push(`Could not load composer asset "${query.assetId}"`);
+    }
+
+    let validateResult = null;
+    if (query.validated === '1' && query.assetId && query.publisherId) {
+      validateResult = await client.validateComposer(query.assetId, query.publisherId);
+      if (!validateResult) errors.push('Validation request failed');
+    }
+
+    const html = renderComposerPage({
+      assets,
+      selectedAsset,
+      selectedAssetId: query.assetId,
+      selectedPublisherId: query.publisherId,
+      validateResult,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.post<{ Body: { assetId?: string; publisherId?: string } }>(
+    '/ops/composer/validate',
+    async (request, reply) => {
+      const assetId = request.body?.assetId?.trim();
+      const publisherId = request.body?.publisherId?.trim();
+      if (!assetId || !publisherId) {
+        void reply.redirect(302, '/composer');
+        return;
+      }
+      const params = new URLSearchParams({
+        assetId,
+        publisherId,
+        validated: '1',
+      });
+      void reply.redirect(302, `/composer?${params.toString()}`);
+    },
+  );
 
   return app;
 }

@@ -43,7 +43,8 @@
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",
     "publisher-management:smoke": "pnpm --filter @pcme/api publisher-management:smoke && pnpm --filter @pcme/dashboard smoke:publishers",
     "jobs:smoke": "pnpm --filter @pcme/api jobs:smoke && pnpm --filter @pcme/dashboard smoke:jobs",
-    "assets:smoke": "pnpm --filter @pcme/api assets:smoke && pnpm --filter @pcme/dashboard smoke:assets"
+    "assets:smoke": "pnpm --filter @pcme/api assets:smoke && pnpm --filter @pcme/dashboard smoke:assets",
+    "composer:smoke": "pnpm --filter @pcme/api composer:smoke && pnpm --filter @pcme/dashboard smoke:composer"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
