@@ -18,6 +18,12 @@ export {
 } from './errors.js';
 export type { WordPressLogMeta, WordPressPublisherLogger } from './logger.js';
 export { createConsoleLogger, noopLogger } from './logger.js';
+// Sprint 34: provider registration
+export {
+  WORDPRESS_CAPABILITIES,
+  WORDPRESS_METADATA,
+  wordPressRegistration,
+} from './registration.js';
 export type { MediaValidationOptions } from './validator.js';
 export {
   ALLOWED_MEDIA_MIME_TYPES,

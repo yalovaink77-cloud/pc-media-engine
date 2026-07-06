@@ -1,5 +1,5 @@
 {
-  "name": "@pcme/plugin-wordpress",
+  "name": "@pcme/publisher-sdk",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,11 +18,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/wordpress-smoke.ts",
-    "smoke:s33": "tsx src/scripts/wordpress-smoke-sprint33.ts"
+    "smoke": "tsx src/scripts/publisher-sdk-smoke.ts"
   },
   "dependencies": {
-    "@pcme/publisher-sdk": "workspace:*",
     "@pcme/publishing": "workspace:*"
   },
   "devDependencies": {

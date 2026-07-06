@@ -1,30 +1,18 @@
 /**
  * WordPressMediaPublisher — WordPress REST API publishing provider.
  * Sprint 33: production hardening.
+ * Sprint 34: implements PublisherProvider from @pcme/publisher-sdk.
  *
- * Implements the Publisher interface from @pcme/publishing.
- *
- * ✓ health()       — GET  /wp-json/wp/v2/users/me
- * ✓ publishMedia() — POST /wp-json/wp/v2/media
- * ✓ publishPost()  — POST /wp-json/wp/v2/posts (status=draft only)
- * ✓ publish()      — routes to publishMedia or publishPost
- *
- * Sprint 33 additions:
- * ✓ Request timeout via AbortSignal
- * ✓ Structured logging (injectable WordPressPublisherLogger)
- * ✓ Centralised media validation (MIME allowlist, size limit)
- * ✓ Centralised post validation (URL-safe slug, required fields)
- * ✓ Enhanced PublishingResult: wpPostId, wpMediaId, permalink, postStatus
- * ✓ Enriched error categorization via parseWordPressErrorResponse
- * ✓ Retry-safe: idempotent errors (409 duplicate) handled gracefully
+ * ✓ health()           — GET  /wp-json/wp/v2/users/me
+ * ✓ publishMedia()     — POST /wp-json/wp/v2/media
+ * ✓ publishPost()      — POST /wp-json/wp/v2/posts (status=draft only)
+ * ✓ publish()          — routes to publishMedia or publishPost
+ * ✓ getMetadata()      — returns WORDPRESS_METADATA (Sprint 34)
+ * ✓ getCapabilities()  — returns WORDPRESS_CAPABILITIES (Sprint 34)
  */
 
-import type {
-  HealthResult,
-  Publisher,
-  PublishingRequest,
-  PublishingResult,
-} from '@pcme/publishing';
+import type { PublisherProvider } from '@pcme/publisher-sdk';
+import type { HealthResult, PublishingRequest, PublishingResult } from '@pcme/publishing';
 import { PublishingValidationError } from '@pcme/publishing';
 
 import { buildBasicAuth } from './auth.js';
@@ -33,6 +21,7 @@ import { isConfigComplete } from './config.js';
 import { isRetryableError, parseWordPressErrorResponse } from './errors.js';
 import type { WordPressPublisherLogger } from './logger.js';
 import { noopLogger } from './logger.js';
+import { WORDPRESS_CAPABILITIES, WORDPRESS_METADATA } from './registration.js';
 import { validateMediaRequest, validatePostRequest } from './validator.js';
 
 // ---------------------------------------------------------------------------
@@ -92,7 +81,7 @@ type WpPostPayload = {
 // WordPressMediaPublisher
 // ---------------------------------------------------------------------------
 
-export class WordPressMediaPublisher implements Publisher {
+export class WordPressMediaPublisher implements PublisherProvider {
   readonly name = 'WordPressMediaPublisher';
 
   private readonly log: WordPressPublisherLogger;
@@ -325,6 +314,18 @@ export class WordPressMediaPublisher implements Publisher {
       return this.publishMedia(request);
     }
     return this.publishPost(request);
+  }
+
+  // -------------------------------------------------------------------------
+  // PublisherProvider introspection (Sprint 34)
+  // -------------------------------------------------------------------------
+
+  getMetadata() {
+    return WORDPRESS_METADATA;
+  }
+
+  getCapabilities() {
+    return WORDPRESS_CAPABILITIES;
   }
 
   async health(): Promise<HealthResult> {
