@@ -4,6 +4,9 @@ import type {
   DashboardQueueData,
   DashboardRecentData,
   DashboardSummaryData,
+  PublisherDetail,
+  PublisherHealthResult,
+  PublisherListItem,
   QueueActionResult,
 } from './types.js';
 
@@ -24,6 +27,10 @@ export interface DashboardApiClient {
   drainQueue(): Promise<QueueActionResult>;
   retryJob(jobId: string): Promise<QueueActionResult>;
   removeJob(jobId: string): Promise<QueueActionResult>;
+  /** Sprint 37 publisher management — read-only. */
+  fetchPublishers(): Promise<PublisherListItem[] | null>;
+  fetchPublisherDetail(id: string): Promise<PublisherDetail | null>;
+  fetchPublisherHealth(id: string): Promise<PublisherHealthResult | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +107,14 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
       apiAction(`${base}/queue/jobs/${encodeURIComponent(jobId)}/retry`, 'POST', apiKey),
     removeJob: (jobId: string) =>
       apiAction(`${base}/queue/jobs/${encodeURIComponent(jobId)}`, 'DELETE', apiKey),
+    fetchPublishers: async () => {
+      const data = await fetchJson<{ publishers: PublisherListItem[] }>(`${base}/publishers`);
+      return data?.publishers ?? null;
+    },
+    fetchPublisherDetail: (id: string) =>
+      fetchJson<PublisherDetail>(`${base}/publishers/${encodeURIComponent(id)}`),
+    fetchPublisherHealth: (id: string) =>
+      fetchJson<PublisherHealthResult>(`${base}/publishers/${encodeURIComponent(id)}/health`),
   };
 }
 
@@ -130,4 +145,25 @@ export async function fetchAllDashboardData(client: DashboardApiClient): Promise
   if (!metrics) errors.push('Could not reach /metrics');
 
   return { health, summary, recent, metrics, queueStatus, errors };
+}
+
+export async function fetchAllPublishersData(client: DashboardApiClient): Promise<{
+  publishers: PublisherListItem[];
+  details: Record<string, PublisherDetail | null>;
+  errors: string[];
+}> {
+  const publishers = await client.fetchPublishers();
+  const errors: string[] = [];
+
+  if (!publishers) {
+    errors.push('Could not reach /publishers');
+    return { publishers: [], details: {}, errors };
+  }
+
+  const detailsEntries = await Promise.all(
+    publishers.map(async (p) => [p.id, await client.fetchPublisherDetail(p.id)] as const),
+  );
+  const details = Object.fromEntries(detailsEntries);
+
+  return { publishers, details, errors };
 }

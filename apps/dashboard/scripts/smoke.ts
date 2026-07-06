@@ -122,6 +122,9 @@ function makeFixtureClient(): DashboardApiClient {
     drainQueue: noop,
     retryJob: noop,
     removeJob: noop,
+    fetchPublishers: async () => [],
+    fetchPublisherDetail: async () => null,
+    fetchPublisherHealth: async () => null,
   };
 }
 
@@ -138,6 +141,9 @@ function makeErrorClient(): DashboardApiClient {
     drainQueue: fail,
     retryJob: fail,
     removeJob: fail,
+    fetchPublishers: async () => null,
+    fetchPublisherDetail: async () => null,
+    fetchPublisherHealth: async () => null,
   };
 }
 

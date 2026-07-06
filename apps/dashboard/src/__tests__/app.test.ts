@@ -99,6 +99,9 @@ function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardA
     drainQueue: okAction,
     retryJob: async (jobId) => ({ ok: true, status: 200, message: `Retried ${jobId}` }),
     removeJob: async (jobId) => ({ ok: true, status: 200, message: `Removed ${jobId}` }),
+    fetchPublishers: async () => [],
+    fetchPublisherDetail: async () => null,
+    fetchPublisherHealth: async () => null,
     ...overrides,
   };
 }
@@ -120,6 +123,9 @@ function makeErrorClient(): DashboardApiClient {
     drainQueue: failAction,
     retryJob: failAction,
     removeJob: failAction,
+    fetchPublishers: async () => null,
+    fetchPublisherDetail: async () => null,
+    fetchPublisherHealth: async () => null,
   };
 }
 

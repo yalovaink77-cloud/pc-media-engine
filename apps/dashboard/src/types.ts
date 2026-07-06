@@ -105,3 +105,54 @@ export type QueueActionResult = {
   status: number;
   message: string;
 };
+
+// ---------------------------------------------------------------------------
+// Publisher management (Sprint 37)
+// ---------------------------------------------------------------------------
+
+export type PublisherCapabilities = {
+  mediaUpload: boolean;
+  postCreation: boolean;
+  drafts: boolean;
+  tags: boolean;
+  categories: boolean;
+  featuredImages: boolean;
+  scheduling: boolean;
+  update: boolean;
+  delete: boolean;
+};
+
+export type ConfigRequirement = {
+  envVar: string;
+  required: boolean;
+  description: string;
+};
+
+export type PublisherListItem = {
+  id: string;
+  displayName: string;
+  version: string;
+  enabled: boolean;
+  capabilities: PublisherCapabilities;
+  supportsHealthCheck: boolean;
+};
+
+export type PublisherDetail = PublisherListItem & {
+  description: string;
+  homepageUrl?: string;
+  configurationRequirements: ConfigRequirement[];
+};
+
+export type PublisherHealthResult = {
+  healthy: boolean;
+  latency: number;
+  message: string;
+};
+
+export type PublishersPageData = {
+  publishers: PublisherListItem[];
+  details: Record<string, PublisherDetail | null>;
+  fetchedAt: string;
+  errors: string[];
+  flash?: DashboardFlash;
+};

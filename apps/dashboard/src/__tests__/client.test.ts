@@ -76,13 +76,11 @@ describe('createDashboardApiClient — queue operations', () => {
   });
 
   it('removeJob calls DELETE /queue/jobs/:id', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ success: true, message: 'Job job-2 removed' }), {
-          status: 200,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ success: true, message: 'Job job-2 removed' }), {
+        status: 200,
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createDashboardApiClient('http://api.test');
@@ -114,5 +112,71 @@ describe('createDashboardApiClient — queue operations', () => {
     expect(result.ok).toBe(false);
     expect(result.status).toBe(0);
     expect(result.message).toContain('fetch failed');
+  });
+});
+
+describe('createDashboardApiClient — publisher management', () => {
+  it('fetchPublishers calls GET /publishers', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          publishers: [
+            { id: 'wordpress', displayName: 'WordPress', version: '1.0.0', enabled: true },
+          ],
+          count: 1,
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    const publishers = await client.fetchPublishers();
+    expect(publishers).toHaveLength(1);
+    expect(publishers?.[0]?.id).toBe('wordpress');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/publishers');
+  });
+
+  it('fetchPublisherDetail calls GET /publishers/:id', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: 'ghost', displayName: 'Ghost' }), { status: 200 }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    const detail = await client.fetchPublisherDetail('ghost');
+    expect(detail?.id).toBe('ghost');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/publishers/ghost');
+  });
+
+  it('fetchPublisherHealth calls GET /publishers/:id/health', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ healthy: true, latency: 30, message: 'Connected' }), {
+          status: 200,
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    const health = await client.fetchPublisherHealth('wordpress');
+    expect(health?.healthy).toBe(true);
+    expect(health?.latency).toBe(30);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'http://api.test/publishers/wordpress/health',
+    );
+  });
+
+  it('returns null when publisher endpoints fail', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('error', { status: 503 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    expect(await client.fetchPublishers()).toBeNull();
+    expect(await client.fetchPublisherDetail('x')).toBeNull();
+    expect(await client.fetchPublisherHealth('x')).toBeNull();
   });
 });

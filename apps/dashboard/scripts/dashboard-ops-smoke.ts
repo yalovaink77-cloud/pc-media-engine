@@ -147,6 +147,9 @@ function makeOpsClient(unauthorized = false): DashboardApiClient {
         ? unauthorizedResult()
         : { ok: true, status: 200, message: `Job ${jobId} removed` };
     },
+    fetchPublishers: async () => [],
+    fetchPublisherDetail: async () => null,
+    fetchPublisherHealth: async () => null,
   };
 }
 

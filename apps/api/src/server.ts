@@ -12,6 +12,7 @@ import { buildApp } from './app.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
+import { createPublisherService } from './publishers/publisher-service.js';
 import { createBullMqQueueService } from './queue/bullmq-queue-service.js';
 import { buildProcessingEnqueuer, parseRedisConnection } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
@@ -88,6 +89,14 @@ export async function startServer(config: Config): Promise<void> {
     console.warn('[api/queue] Queue management disabled — set REDIS_URL to enable');
   }
 
+  const publisherService = createPublisherService();
+  console.log(
+    `[api/publishers] Registered providers: ${publisherService
+      .listPublishers()
+      .map((p) => p.id)
+      .join(', ')}`,
+  );
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -101,6 +110,7 @@ export async function startServer(config: Config): Promise<void> {
     startedAt,
     authConfig,
     queueService,
+    publisherService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

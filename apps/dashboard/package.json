@@ -15,7 +15,8 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "smoke": "tsx scripts/smoke.ts",
-    "smoke:ops": "tsx scripts/dashboard-ops-smoke.ts"
+    "smoke:ops": "tsx scripts/dashboard-ops-smoke.ts",
+    "smoke:publishers": "tsx scripts/publisher-management-smoke.ts"
   },
   "dependencies": {
     "fastify": "^4.29.0"

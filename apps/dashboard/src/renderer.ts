@@ -1,4 +1,4 @@
-import type { DashboardPageData, RecentItem } from './types.js';
+import type { DashboardPageData, PublishersPageData, RecentItem } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -49,7 +49,35 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
-function renderFlash(flash: DashboardPageData['flash']): string {
+function renderNav(active: 'dashboard' | 'publishers'): string {
+  const dashCls = active === 'dashboard' ? 'nav-active' : '';
+  const pubCls = active === 'publishers' ? 'nav-active' : '';
+  return `
+    <nav class="nav" data-testid="dashboard-nav">
+      <a href="/" class="${dashCls}">Dashboard</a>
+      <a href="/publishers" class="${pubCls}">Publishers</a>
+    </nav>`;
+}
+
+function capabilityBadges(caps: PublishersPageData['publishers'][0]['capabilities']): string {
+  const labels: Array<[keyof typeof caps, string]> = [
+    ['mediaUpload', 'Media'],
+    ['postCreation', 'Posts'],
+    ['drafts', 'Drafts'],
+    ['tags', 'Tags'],
+    ['categories', 'Categories'],
+    ['featuredImages', 'Featured'],
+    ['scheduling', 'Scheduling'],
+    ['update', 'Update'],
+    ['delete', 'Delete'],
+  ];
+  return labels
+    .filter(([key]) => caps[key])
+    .map(([, label]) => badge(label, 'neutral'))
+    .join(' ');
+}
+
+function renderFlash(flash: DashboardPageData['flash'] | PublishersPageData['flash']): string {
   if (!flash) return '';
   const cls = flash.type === 'ok' ? 'flash-ok' : 'flash-err';
   return `
@@ -429,8 +457,110 @@ const CSS = `
   .btn-warn{background:#d97706;color:#fff}
   .btn-neutral{background:#e5e7eb;color:#374151}
   .btn-danger{background:#dc2626;color:#fff}
+  .nav{margin-top:.75rem;display:flex;gap:1rem;font-size:.85rem}
+  .nav a{color:#cbd5e1;opacity:.8}
+  .nav a.nav-active,.nav a:hover{opacity:1;color:#fff;text-decoration:none}
+  .publisher-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+  .publisher-card{background:#fff;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .publisher-card h3{font-size:1rem;font-weight:600;margin-bottom:.35rem}
+  .publisher-meta{font-size:.8rem;color:#6b7280;margin-bottom:.75rem}
+  .publisher-caps{margin:.75rem 0;display:flex;flex-wrap:wrap;gap:.35rem}
+  .config-list{margin:.5rem 0 0;padding-left:1.1rem;font-size:.8rem;color:#4b5563}
+  .config-list li{margin-bottom:.25rem}
+  .publisher-actions{margin-top:1rem}
   footer{max-width:1200px;margin:0 auto;padding:0 2rem 2rem;font-size:.75rem;color:#9ca3af}
 `.trim();
+
+function renderPublisherCard(
+  publisher: PublishersPageData['publishers'][0],
+  detail: PublishersPageData['details'][string] | null | undefined,
+): string {
+  const statusBadge = publisher.enabled ? badge('Enabled', 'ok') : badge('Disabled', 'warn');
+  const unavailable = detail === null;
+  const configSection =
+    detail && detail.configurationRequirements.length > 0
+      ? `<ul class="config-list" data-testid="config-${esc(publisher.id)}">${detail.configurationRequirements
+          .map(
+            (req) =>
+              `<li><code>${esc(req.envVar)}</code>${req.required ? ' (required)' : ' (optional)'} — ${esc(req.description)}</li>`,
+          )
+          .join('')}</ul>`
+      : unavailable
+        ? `<p class="empty" data-testid="detail-unavailable-${esc(publisher.id)}">Provider details unavailable</p>`
+        : `<p class="empty">No configuration requirements listed</p>`;
+
+  const healthForm = publisher.supportsHealthCheck
+    ? `<form method="post" action="/ops/publishers/${esc(publisher.id)}/health" data-testid="health-form-${esc(publisher.id)}">
+        <button type="submit" class="btn btn-neutral">Check Health</button>
+      </form>`
+    : `<span class="empty">Health check not supported</span>`;
+
+  const homepage = detail?.homepageUrl
+    ? ` &middot; <a href="${esc(detail.homepageUrl)}" target="_blank" rel="noopener">Docs</a>`
+    : '';
+
+  return `
+    <article class="publisher-card" data-testid="publisher-card-${esc(publisher.id)}">
+      <h3>${esc(publisher.displayName)}</h3>
+      <p class="publisher-meta">
+        ${statusBadge}
+        &middot; v${esc(publisher.version)}
+        &middot; <code>${esc(publisher.id)}</code>
+        ${homepage}
+      </p>
+      ${detail?.description ? `<p style="font-size:.85rem;margin-bottom:.5rem">${esc(detail.description)}</p>` : ''}
+      <div class="publisher-caps" data-testid="caps-${esc(publisher.id)}">${capabilityBadges(publisher.capabilities) || badge('None', 'neutral')}</div>
+      <h4 style="font-size:.7rem;text-transform:uppercase;color:#9ca3af;margin-top:.75rem">Configuration Requirements</h4>
+      ${configSection}
+      <div class="publisher-actions">${healthForm}</div>
+    </article>`;
+}
+
+function renderPublishersSection(data: PublishersPageData): string {
+  if (!data.publishers.length) {
+    return `
+  <section>
+    <h2>Registered Publishers</h2>
+    <p class="empty" data-testid="publishers-unavailable">No publishers available — API may be unreachable</p>
+  </section>`;
+  }
+
+  const cards = data.publishers.map((p) => renderPublisherCard(p, data.details[p.id])).join('');
+
+  return `
+  <section data-testid="publishers-section">
+    <h2>Registered Publishers (${esc(data.publishers.length)})</h2>
+    <p style="font-size:.85rem;color:#6b7280;margin-bottom:1rem">Read-only view of Publisher SDK providers. No editing or credentials management.</p>
+    <div class="publisher-grid">${cards}</div>
+  </section>`;
+}
+
+export function renderPublishersPage(data: PublishersPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Publisher Management</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Publisher Management</h1>
+    <p>Read-only provider registry &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('publishers')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    ${renderPublishersSection(data)}
+  </main>
+  <footer>
+    <p>Reload to refresh &middot; Health checks call provider APIs when configured</p>
+  </footer>
+</body>
+</html>`;
+}
 
 export function renderDashboardPage(data: DashboardPageData): string {
   const version = data.health?.version ?? '—';
@@ -448,6 +578,7 @@ export function renderDashboardPage(data: DashboardPageData): string {
   <header>
     <h1>PC Media Engine — Dashboard</h1>
     <p>Operations UI &middot; Queue controls &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('dashboard')}
   </header>
   <main>
     ${renderErrors(data.errors)}

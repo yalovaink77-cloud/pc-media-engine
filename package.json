@@ -40,7 +40,8 @@
     "wordpress:smoke": "pnpm --filter @pcme/plugin-wordpress smoke:s33",
     "publisher-sdk:smoke": "pnpm --filter @pcme/publisher-sdk smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
-    "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops"
+    "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",
+    "publisher-management:smoke": "pnpm --filter @pcme/api publisher-management:smoke && pnpm --filter @pcme/dashboard smoke:publishers"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
