@@ -12,7 +12,8 @@ import { buildApp } from './app.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
-import { buildProcessingEnqueuer } from './queue/redis-enqueue.js';
+import { createBullMqQueueService } from './queue/bullmq-queue-service.js';
+import { buildProcessingEnqueuer, parseRedisConnection } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { assertNoFatalErrors, logApiStartupSummary, validateApiConfig } from './startup.js';
 
@@ -79,6 +80,14 @@ export async function startServer(config: Config): Promise<void> {
   const publishedContentRepo = config.databaseUrl ? new PublishedContentRepository() : undefined;
   const metricsService = new MetricsService();
 
+  // Sprint 32: queue management service — only when Redis is configured.
+  const queueService = config.redisUrl
+    ? createBullMqQueueService('publishing', parseRedisConnection(config.redisUrl))
+    : undefined;
+  if (!queueService) {
+    console.warn('[api/queue] Queue management disabled — set REDIS_URL to enable');
+  }
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -91,6 +100,7 @@ export async function startServer(config: Config): Promise<void> {
     metricsService,
     startedAt,
     authConfig,
+    queueService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

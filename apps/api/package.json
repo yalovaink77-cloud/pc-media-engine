@@ -28,7 +28,8 @@
     "dashboard-api:smoke": "tsx scripts/dashboard-api-smoke.ts",
     "metrics:smoke": "tsx scripts/metrics-smoke.ts",
     "beta:smoke": "tsx scripts/beta-smoke.ts",
-    "auth:smoke": "tsx scripts/auth-smoke.ts"
+    "auth:smoke": "tsx scripts/auth-smoke.ts",
+    "queue:smoke": "tsx scripts/queue-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

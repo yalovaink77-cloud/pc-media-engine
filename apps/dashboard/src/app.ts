@@ -15,13 +15,15 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   const app = Fastify({ logger: { level: logLevel } });
 
   app.get('/', async (_request, reply) => {
-    const { health, summary, recent, metrics, errors } = await fetchAllDashboardData(client);
+    const { health, summary, recent, metrics, queueStatus, errors } =
+      await fetchAllDashboardData(client);
 
     const html = renderDashboardPage({
       health,
       summary,
       recent,
       metrics,
+      queueStatus,
       fetchedAt: new Date().toISOString(),
       errors,
     });

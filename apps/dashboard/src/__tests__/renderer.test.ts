@@ -86,6 +86,7 @@ function makePageData(overrides: Partial<DashboardPageData> = {}): DashboardPage
     summary: summaryFixture,
     recent: recentFixture,
     metrics: metricsFixture,
+    queueStatus: null,
     fetchedAt: NOW_ISO,
     errors: [],
     ...overrides,
@@ -303,6 +304,60 @@ describe('renderDashboardPage — metrics section', () => {
     const html = renderDashboardPage(makePageData({ metrics: null }));
     expect(html).toContain('data-testid="metrics-unavailable"');
     expect(html).toContain('Metrics data unavailable');
+  });
+});
+
+describe('renderDashboardPage — queue status section (Sprint 32)', () => {
+  it('shows unavailable message when queueStatus is null', () => {
+    const html = renderDashboardPage(makePageData({ queueStatus: null }));
+    expect(html).toContain('data-testid="queue-status-unavailable"');
+    expect(html).toContain('Queue status unavailable');
+  });
+
+  it('shows queue status cards when queueStatus is provided', () => {
+    const html = renderDashboardPage(
+      makePageData({
+        queueStatus: {
+          paused: false,
+          waiting: 5,
+          active: 2,
+          delayed: 1,
+          completed: 100,
+          failed: 4,
+        },
+      }),
+    );
+    expect(html).toContain('data-testid="queue-status-cards"');
+    expect(html).toContain('data-testid="queue-waiting"');
+    expect(html).toContain('>5<');
+    expect(html).toContain('data-testid="queue-active"');
+    expect(html).toContain('>2<');
+    expect(html).toContain('data-testid="queue-delayed"');
+    expect(html).toContain('>1<');
+    expect(html).toContain('data-testid="queue-completed"');
+    expect(html).toContain('>100<');
+    expect(html).toContain('data-testid="queue-failed"');
+    expect(html).toContain('>4<');
+  });
+
+  it('shows "Running" badge when queue is not paused', () => {
+    const html = renderDashboardPage(
+      makePageData({
+        queueStatus: { paused: false, waiting: 0, active: 0, delayed: 0, completed: 0, failed: 0 },
+      }),
+    );
+    expect(html).toContain('data-testid="queue-running-badge"');
+    expect(html).not.toContain('data-testid="queue-paused-badge"');
+  });
+
+  it('shows "Paused" badge when queue is paused', () => {
+    const html = renderDashboardPage(
+      makePageData({
+        queueStatus: { paused: true, waiting: 3, active: 0, delayed: 0, completed: 5, failed: 0 },
+      }),
+    );
+    expect(html).toContain('data-testid="queue-paused-badge"');
+    expect(html).not.toContain('data-testid="queue-running-badge"');
   });
 });
 

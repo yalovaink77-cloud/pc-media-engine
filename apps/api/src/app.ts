@@ -8,6 +8,7 @@ import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
+import type { QueueService } from './queue/queue-service.js';
 import type { AuthRouteOptions } from './routes/auth.js';
 import { authRoutes } from './routes/auth.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
@@ -20,6 +21,7 @@ import type { QueueMetricsProvider } from './routes/metrics.js';
 import { metricsRoutes } from './routes/metrics.js';
 import type { PublishedContentFinder } from './routes/publishing.js';
 import { publishingRoutes } from './routes/publishing.js';
+import { queueRoutes } from './routes/queue.js';
 import { rootRoutes } from './routes/root.js';
 import { versionRoutes } from './routes/version.js';
 
@@ -86,6 +88,12 @@ export type AppOptions = {
    * When absent, auth is disabled and GET /auth/health reports authEnabled: false.
    */
   authConfig?: AuthConfig;
+  /**
+   * Optional queue management service (Sprint 32+).
+   * When absent, all /queue/* routes return 503.
+   * In production this wraps the BullMQ publishing queue.
+   */
+  queueService?: QueueService;
 };
 
 /**
@@ -109,6 +117,7 @@ export function buildApp(options: AppOptions) {
     queueMetricsProvider,
     startedAt,
     authConfig,
+    queueService,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -206,6 +215,11 @@ export function buildApp(options: AppOptions) {
     middleware: authMiddleware,
   };
   app.register(authRoutes, authRouteOptions);
+
+  app.register(queueRoutes, {
+    queueService,
+    authMiddleware,
+  });
 
   return app;
 }

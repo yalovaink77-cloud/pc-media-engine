@@ -13,6 +13,12 @@ export type DashboardConfig = {
   logLevel: string;
   /** Package version. */
   version: string;
+  /**
+   * Optional API key sent as X-API-Key header when calling authenticated endpoints
+   * (e.g. GET /queue/status). Required in production when PCME_AUTH_ENABLED=true.
+   * Sprint 32+.
+   */
+  apiKey: string | undefined;
 };
 
 export function loadDashboardConfig(): DashboardConfig {
@@ -25,5 +31,6 @@ export function loadDashboardConfig(): DashboardConfig {
     ),
     logLevel: process.env['LOG_LEVEL'] ?? 'info',
     version: process.env['npm_package_version'] ?? '0.0.0',
+    apiKey: process.env['DASHBOARD_API_KEY'] ?? undefined,
   };
 }

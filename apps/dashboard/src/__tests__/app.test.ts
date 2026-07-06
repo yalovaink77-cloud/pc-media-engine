@@ -67,12 +67,22 @@ const metricsFixture = {
   collectedAt: NOW_ISO,
 };
 
+const queueFixture = {
+  paused: false,
+  waiting: 1,
+  active: 0,
+  delayed: 0,
+  completed: 5,
+  failed: 0,
+};
+
 function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiClient {
   return {
     fetchHealth: async () => healthFixture,
     fetchSummary: async () => summaryFixture,
     fetchRecent: async () => recentFixture,
     fetchMetrics: async () => metricsFixture,
+    fetchQueueStatus: async () => queueFixture,
     ...overrides,
   };
 }
@@ -83,6 +93,7 @@ function makeErrorClient(): DashboardApiClient {
     fetchSummary: async () => null,
     fetchRecent: async () => null,
     fetchMetrics: async () => null,
+    fetchQueueStatus: async () => null,
   };
 }
 

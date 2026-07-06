@@ -35,7 +35,8 @@
     "dashboard-api:smoke": "pnpm --filter @pcme/api dashboard-api:smoke",
     "metrics:smoke": "pnpm --filter @pcme/api metrics:smoke",
     "beta:smoke": "pnpm --filter @pcme/api beta:smoke",
-    "auth:smoke": "pnpm --filter @pcme/api auth:smoke"
+    "auth:smoke": "pnpm --filter @pcme/api auth:smoke",
+    "queue:smoke": "pnpm --filter @pcme/api queue:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

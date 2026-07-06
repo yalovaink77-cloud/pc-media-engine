@@ -65,6 +65,16 @@ export type DashboardMetricsData = {
   collectedAt: string;
 };
 
+/** Queue status — mirrors GET /queue/status response (Sprint 32). */
+export type DashboardQueueData = {
+  paused: boolean;
+  waiting: number;
+  active: number;
+  delayed: number;
+  completed: number;
+  failed: number;
+};
+
 /** All data fetched for one page render. */
 export type DashboardPageData = {
   health: DashboardHealthData | null;
@@ -73,6 +83,8 @@ export type DashboardPageData = {
   /** ISO string; set at the time the server handles the request. */
   fetchedAt: string;
   metrics: DashboardMetricsData | null;
+  /** Queue operational status (Sprint 32). */
+  queueStatus: DashboardQueueData | null;
   /** One or more user-visible error messages when any fetch failed. */
   errors: string[];
 };

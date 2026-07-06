@@ -284,6 +284,51 @@ function renderMetrics(data: DashboardPageData): string {
 }
 
 // ---------------------------------------------------------------------------
+// Queue status section (Sprint 32)
+// ---------------------------------------------------------------------------
+
+function renderQueueStatus(data: DashboardPageData): string {
+  const q = data.queueStatus;
+  if (!q) {
+    return `
+  <section>
+    <h2>Queue Status</h2>
+    <p class="empty" data-testid="queue-status-unavailable">Queue status unavailable (no Redis connection or auth required)</p>
+  </section>`;
+  }
+  const pausedBadge = q.paused
+    ? `<span class="badge warn" data-testid="queue-paused-badge">Paused</span>`
+    : `<span class="badge ok" data-testid="queue-running-badge">Running</span>`;
+  return `
+  <section>
+    <h2>Queue Status</h2>
+    <p style="margin-bottom:.75rem">State: ${pausedBadge}</p>
+    <div class="cards" data-testid="queue-status-cards">
+      <div class="card">
+        <div class="label">Waiting</div>
+        <div class="value" data-testid="queue-waiting">${esc(q.waiting)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Active</div>
+        <div class="value" data-testid="queue-active">${esc(q.active)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Delayed</div>
+        <div class="value" data-testid="queue-delayed">${esc(q.delayed)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Completed</div>
+        <div class="value" data-testid="queue-completed">${esc(q.completed)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Failed</div>
+        <div class="value" data-testid="queue-failed">${esc(q.failed)}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+// ---------------------------------------------------------------------------
 // Page shell
 // ---------------------------------------------------------------------------
 
@@ -338,6 +383,7 @@ export function renderDashboardPage(data: DashboardPageData): string {
     ${renderHealth(data)}
     ${renderSummary(data)}
     ${renderMetrics(data)}
+    ${renderQueueStatus(data)}
     ${renderRecent(data)}
   </main>
   <footer>

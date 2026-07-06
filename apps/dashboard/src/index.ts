@@ -17,7 +17,7 @@ console.log(`[dashboard]   api_base   : ${config.apiBaseUrl}`);
 console.log(`[dashboard]   started_at : ${startedAt}`);
 console.log(`[dashboard] ──────────────────────────────────────────────────────`);
 
-const client = createDashboardApiClient(config.apiBaseUrl);
+const client = createDashboardApiClient(config.apiBaseUrl, config.apiKey);
 const app = buildDashboardApp({ client, logLevel: config.logLevel });
 
 let shuttingDown = false;

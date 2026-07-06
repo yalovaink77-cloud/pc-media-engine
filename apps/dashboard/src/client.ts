@@ -1,6 +1,7 @@
 import type {
   DashboardHealthData,
   DashboardMetricsData,
+  DashboardQueueData,
   DashboardRecentData,
   DashboardSummaryData,
 } from './types.js';
@@ -14,16 +15,20 @@ export interface DashboardApiClient {
   fetchSummary(): Promise<DashboardSummaryData | null>;
   fetchRecent(limit?: number): Promise<DashboardRecentData | null>;
   fetchMetrics(): Promise<DashboardMetricsData | null>;
+  /** Sprint 32: GET /queue/status — requires auth when PCME_AUTH_ENABLED=true. */
+  fetchQueueStatus(): Promise<DashboardQueueData | null>;
 }
 
 // ---------------------------------------------------------------------------
 // HTTP implementation using native fetch (Node >= 18)
 // ---------------------------------------------------------------------------
 
-async function fetchJson<T>(url: string): Promise<T | null> {
+async function fetchJson<T>(url: string, apiKey?: string): Promise<T | null> {
   try {
+    const headers: Record<string, string> = { accept: 'application/json' };
+    if (apiKey) headers['x-api-key'] = apiKey;
     const res = await fetch(url, {
-      headers: { accept: 'application/json' },
+      headers,
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return null;
@@ -33,7 +38,7 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   }
 }
 
-export function createDashboardApiClient(baseUrl: string): DashboardApiClient {
+export function createDashboardApiClient(baseUrl: string, apiKey?: string): DashboardApiClient {
   const base = baseUrl.replace(/\/+$/, '');
   return {
     fetchHealth: () => fetchJson<DashboardHealthData>(`${base}/dashboard/health`),
@@ -41,11 +46,13 @@ export function createDashboardApiClient(baseUrl: string): DashboardApiClient {
     fetchRecent: (limit = 10) =>
       fetchJson<DashboardRecentData>(`${base}/dashboard/recent?limit=${limit}`),
     fetchMetrics: () => fetchJson<DashboardMetricsData>(`${base}/metrics`),
+    // Queue status may require auth — pass apiKey when configured.
+    fetchQueueStatus: () => fetchJson<DashboardQueueData>(`${base}/queue/status`, apiKey),
   };
 }
 
 // ---------------------------------------------------------------------------
-// Fetch all three endpoints concurrently; collect error messages
+// Fetch all endpoints concurrently; collect error messages
 // ---------------------------------------------------------------------------
 
 export async function fetchAllDashboardData(client: DashboardApiClient): Promise<{
@@ -53,13 +60,15 @@ export async function fetchAllDashboardData(client: DashboardApiClient): Promise
   summary: DashboardSummaryData | null;
   recent: DashboardRecentData | null;
   metrics: DashboardMetricsData | null;
+  queueStatus: DashboardQueueData | null;
   errors: string[];
 }> {
-  const [health, summary, recent, metrics] = await Promise.all([
+  const [health, summary, recent, metrics, queueStatus] = await Promise.all([
     client.fetchHealth(),
     client.fetchSummary(),
     client.fetchRecent(10),
     client.fetchMetrics(),
+    client.fetchQueueStatus(),
   ]);
 
   const errors: string[] = [];
@@ -67,6 +76,7 @@ export async function fetchAllDashboardData(client: DashboardApiClient): Promise
   if (!summary) errors.push('Could not reach /dashboard/summary');
   if (!recent) errors.push('Could not reach /dashboard/recent');
   if (!metrics) errors.push('Could not reach /metrics');
+  // Queue status is best-effort — no error when unavailable.
 
-  return { health, summary, recent, metrics, errors };
+  return { health, summary, recent, metrics, queueStatus, errors };
 }
