@@ -54,6 +54,9 @@ const authConfig: AuthConfig = {
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: true,
   apiKeys: ['smoke-key'],
+  apiKeyRoles: {},
+  defaultJwtRole: 'operator',
+  defaultApiKeyRole: 'admin',
 };
 
 const listItem: JobListItem = {

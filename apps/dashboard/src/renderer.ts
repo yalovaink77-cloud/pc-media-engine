@@ -1,3 +1,4 @@
+import type { DashboardRbac, Permission } from './rbac.js';
 import type {
   AssetDetailPageData,
   AssetDimensions,
@@ -19,9 +20,20 @@ import type {
   TimelineEntry,
 } from './types.js';
 
-// ---------------------------------------------------------------------------
-// Small helpers
-// ---------------------------------------------------------------------------
+let pageRbac: DashboardRbac = { enabled: false, role: 'admin', can: () => true };
+
+export function setDashboardRbacContext(rbac: DashboardRbac): void {
+  pageRbac = rbac;
+}
+
+function canAccess(permission: Permission): boolean {
+  return pageRbac.can(permission);
+}
+
+function renderPermissionDenied(testId: string): string {
+  if (!pageRbac.enabled) return '';
+  return `<p class="flash flash-err" data-testid="${testId}">Permission denied for your role (${esc(pageRbac.role)})</p>`;
+}
 
 function esc(s: string | number | null | undefined): string {
   if (s === null || s === undefined) return '';
@@ -87,16 +99,28 @@ function renderNav(
   const composerCls = active === 'composer' ? 'nav-active' : '';
   const bulkCls = active === 'bulk-publish' ? 'nav-active' : '';
   const calendarCls = active === 'calendar' ? 'nav-active' : '';
+  const composerLink = canAccess('composer:read')
+    ? `<a href="/composer" class="${composerCls}">Composer</a>`
+    : '';
+  const bulkLink = canAccess('publishing:write')
+    ? `<a href="/bulk-publish" class="${bulkCls}">Bulk Publish</a>`
+    : '';
+  const calendarLink = canAccess('calendar:read')
+    ? `<a href="/calendar" class="${calendarCls}">Calendar</a>`
+    : '';
+  const configLink = canAccess('providers:read')
+    ? `<a href="/provider-config" class="${configCls}">Provider Config</a>`
+    : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
       <a href="/publishers" class="${pubCls}">Publishers</a>
-      <a href="/provider-config" class="${configCls}">Provider Config</a>
+      ${configLink}
       <a href="/jobs" class="${jobsCls}">Jobs</a>
       <a href="/assets" class="${assetsCls}">Assets</a>
-      <a href="/composer" class="${composerCls}">Composer</a>
-      <a href="/bulk-publish" class="${bulkCls}">Bulk Publish</a>
-      <a href="/calendar" class="${calendarCls}">Calendar</a>
+      ${composerLink}
+      ${bulkLink}
+      ${calendarLink}
     </nav>`;
 }
 
@@ -311,6 +335,14 @@ function renderRecent(data: DashboardPageData): string {
 // ---------------------------------------------------------------------------
 
 function renderQueueOperations(data: DashboardPageData): string {
+  if (!canAccess('queue:write')) {
+    return `
+  <section>
+    <h2>Queue Operations</h2>
+    ${renderPermissionDenied('queue-ops-denied')}
+  </section>`;
+  }
+
   const keyHint = data.apiKeyConfigured
     ? '<p class="ops-hint ok" data-testid="api-key-configured">API key configured — queue operations will authenticate via DASHBOARD_API_KEY.</p>'
     : '<p class="ops-hint warn" data-testid="api-key-missing">No DASHBOARD_API_KEY configured. Queue operations may return 401 Unauthorized when API auth is enabled.</p>';
@@ -634,15 +666,17 @@ function renderJobDetailSection(data: JobDetailPageData): string {
     : `<p class="empty">No error recorded</p>`;
 
   const retryForm =
-    job.status === 'failed'
+    job.status === 'failed' && canAccess('queue:write')
       ? `<form method="post" action="/ops/jobs/${esc(job.id)}/retry" data-testid="job-retry-form">
           <button type="submit" class="btn btn-ok">Retry Job</button>
         </form>`
       : '';
 
-  const removeForm = `<form method="post" action="/ops/jobs/${esc(job.id)}/remove" data-testid="job-remove-form">
+  const removeForm = canAccess('queue:write')
+    ? `<form method="post" action="/ops/jobs/${esc(job.id)}/remove" data-testid="job-remove-form">
       <button type="submit" class="btn btn-danger">Remove Job</button>
-    </form>`;
+    </form>`
+    : renderPermissionDenied('job-remove-denied');
 
   return `
   <section data-testid="job-detail-section">
@@ -1379,14 +1413,18 @@ function renderComposerDetail(data: ComposerPageData): string {
     </div>
     <div class="detail-card ops-panel" data-testid="composer-publish-panel">
       <h3>Publish to Publishers</h3>
-      <form method="post" action="/ops/composer/publish" data-testid="composer-publish-form">
+      ${
+        canAccess('publishing:write')
+          ? `<form method="post" action="/ops/composer/publish" data-testid="composer-publish-form">
         <input type="hidden" name="assetId" value="${esc(asset.id)}">
         <p style="font-size:.85rem;color:#6b7280;margin-bottom:.75rem">Select one or more publishers. Each selection creates an independent queue job.</p>
         <ul class="publisher-checklist" data-testid="composer-publisher-multiselect">${publisherOptions}</ul>
         <div class="ops-row" style="margin-top:1rem">
           <button type="submit" class="btn btn-ok" data-testid="composer-publish-button">Publish</button>
         </div>
-      </form>
+      </form>`
+          : renderPermissionDenied('composer-publish-denied')
+      }
       ${confirmPanel}
       ${publishResultPanel}
     </div>
@@ -1891,7 +1929,8 @@ function renderProviderConfigCard(
         : '';
 
   const editForm = editing
-    ? `<form method="post" action="/ops/provider-config/${esc(provider.id)}/save" class="config-edit-form" data-testid="edit-form-${esc(provider.id)}">
+    ? canAccess('providers:write')
+      ? `<form method="post" action="/ops/provider-config/${esc(provider.id)}/save" class="config-edit-form" data-testid="edit-form-${esc(provider.id)}">
         ${[...provider.requiredFields, ...provider.optionalFields].map(renderConfigFieldInput).join('')}
         <div class="publisher-actions">
           <button type="submit" formaction="/ops/provider-config/${esc(provider.id)}/validate" class="btn btn-neutral" data-testid="validate-btn-${esc(provider.id)}">Validate</button>
@@ -1899,8 +1938,13 @@ function renderProviderConfigCard(
           <a href="/provider-config" class="btn btn-neutral">Cancel</a>
         </div>
       </form>`
+      : renderPermissionDenied('provider-config-write-denied')
     : `<div class="publisher-actions">
-        <a href="/provider-config?edit=${esc(provider.id)}" class="btn btn-neutral" data-testid="edit-btn-${esc(provider.id)}">Edit</a>
+        ${
+          canAccess('providers:write')
+            ? `<a href="/provider-config?edit=${esc(provider.id)}" class="btn btn-neutral" data-testid="edit-btn-${esc(provider.id)}">Edit</a>`
+            : ''
+        }
         <form method="post" action="/ops/provider-config/${esc(provider.id)}/health" style="display:inline">
           <button type="submit" class="btn btn-neutral" data-testid="health-btn-${esc(provider.id)}">Health</button>
         </form>

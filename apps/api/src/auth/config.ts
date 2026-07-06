@@ -9,7 +9,13 @@
  *   PCME_JWT_SECRET       HMAC-SHA256 secret (required when JWT is enabled)
  *   PCME_JWT_EXPIRES_IN   token lifetime in seconds (default: 3600)
  *   PCME_API_KEYS         comma-separated raw API keys (enables API-key auth)
+ *   PCME_API_KEY_ROLES    comma-separated key:role pairs (Sprint 45 RBAC)
+ *   PCME_DEFAULT_JWT_ROLE default JWT role when claim missing (default: operator)
+ *   PCME_DEFAULT_API_KEY_ROLE default API key role (default: admin)
  */
+
+import type { Role } from './permissions.js';
+import { isRole } from './permissions.js';
 
 export type AuthConfig = {
   /** Master switch — false means all requests pass through unverified. */
@@ -28,12 +34,37 @@ export type AuthConfig = {
    * Future: replace with DB-backed hashed keys (Sprint 32+).
    */
   apiKeys: string[];
+  /** Maps raw API key → role (from PCME_API_KEY_ROLES). */
+  apiKeyRoles: Record<string, Role>;
+  /** Role used when JWT has no role claim. Default: operator. */
+  defaultJwtRole: Role;
+  /** Role used when API key has no explicit mapping. Default: admin. */
+  defaultApiKeyRole: Role;
 };
 
 export type AuthConfigValidation = {
   errors: string[];
   warnings: string[];
 };
+
+function parseApiKeyRoles(raw: string | undefined): Record<string, Role> {
+  const map: Record<string, Role> = {};
+  if (!raw) return map;
+  for (const entry of raw.split(',')) {
+    const trimmed = entry.trim();
+    if (!trimmed) continue;
+    const colon = trimmed.indexOf(':');
+    if (colon <= 0) continue;
+    const key = trimmed.slice(0, colon).trim();
+    const roleRaw = trimmed.slice(colon + 1).trim();
+    if (key && isRole(roleRaw)) map[key] = roleRaw;
+  }
+  return map;
+}
+
+function parseDefaultRole(raw: string | undefined, fallback: Role): Role {
+  return raw && isRole(raw) ? raw : fallback;
+}
 
 export function loadAuthConfig(): AuthConfig {
   const enabled = process.env['PCME_AUTH_ENABLED'] === 'true';
@@ -52,6 +83,9 @@ export function loadAuthConfig(): AuthConfig {
     jwtEnabled: enabled && !!process.env['PCME_JWT_SECRET'],
     apiKeyEnabled: enabled && apiKeys.length > 0,
     apiKeys,
+    apiKeyRoles: parseApiKeyRoles(process.env['PCME_API_KEY_ROLES']),
+    defaultJwtRole: parseDefaultRole(process.env['PCME_DEFAULT_JWT_ROLE'], 'operator'),
+    defaultApiKeyRole: parseDefaultRole(process.env['PCME_DEFAULT_API_KEY_ROLE'], 'admin'),
   };
 }
 

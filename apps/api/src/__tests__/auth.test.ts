@@ -46,6 +46,9 @@ const disabledAuth: AuthConfig = {
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: false,
   apiKeys: [],
+  apiKeyRoles: {},
+  defaultJwtRole: 'operator',
+  defaultApiKeyRole: 'admin',
 };
 
 const testSecret = 'test-secret-at-least-32-characters-long!!';
@@ -58,6 +61,9 @@ function enabledAuth(overrides: Partial<AuthConfig> = {}): AuthConfig {
     jwtExpiresInSeconds: 3600,
     apiKeyEnabled: true,
     apiKeys: ['test-key-alpha', 'test-key-beta'],
+    apiKeyRoles: {},
+    defaultJwtRole: 'operator',
+    defaultApiKeyRole: 'admin',
     ...overrides,
   };
 }

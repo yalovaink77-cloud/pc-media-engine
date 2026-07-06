@@ -70,32 +70,37 @@ async function conflict(reply: FastifyReply, message: string): Promise<void> {
 
 export async function queueRoutes(app: FastifyInstance, options: QueueRouteOptions): Promise<void> {
   const { queueService, authMiddleware } = options;
-  const { requireAuth } = authMiddleware;
+  const { requirePermission } = authMiddleware;
 
-  // ------------------------------------------------------------------
-  // GET /queue/status
-  // ------------------------------------------------------------------
-  app.get('/queue/status', { preHandler: [requireAuth] }, async (_request, reply: FastifyReply) => {
-    if (!queueService) return serviceUnavailable(reply);
-    const status = await queueService.getStatus();
-    return reply.status(200).send(status);
-  });
+  app.get(
+    '/queue/status',
+    { preHandler: [requirePermission('queue:read')] },
+    async (_request, reply: FastifyReply) => {
+      if (!queueService) return serviceUnavailable(reply);
+      const status = await queueService.getStatus();
+      return reply.status(200).send(status);
+    },
+  );
 
   // ------------------------------------------------------------------
   // POST /queue/pause
   // ------------------------------------------------------------------
-  app.post('/queue/pause', { preHandler: [requireAuth] }, async (_request, reply: FastifyReply) => {
-    if (!queueService) return serviceUnavailable(reply);
-    await queueService.pause();
-    return reply.status(200).send({ success: true, message: 'Queue paused' });
-  });
+  app.post(
+    '/queue/pause',
+    { preHandler: [requirePermission('queue:write')] },
+    async (_request, reply: FastifyReply) => {
+      if (!queueService) return serviceUnavailable(reply);
+      await queueService.pause();
+      return reply.status(200).send({ success: true, message: 'Queue paused' });
+    },
+  );
 
   // ------------------------------------------------------------------
   // POST /queue/resume
   // ------------------------------------------------------------------
   app.post(
     '/queue/resume',
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission('queue:write')] },
     async (_request, reply: FastifyReply) => {
       if (!queueService) return serviceUnavailable(reply);
       await queueService.resume();
@@ -106,18 +111,22 @@ export async function queueRoutes(app: FastifyInstance, options: QueueRouteOptio
   // ------------------------------------------------------------------
   // POST /queue/drain
   // ------------------------------------------------------------------
-  app.post('/queue/drain', { preHandler: [requireAuth] }, async (_request, reply: FastifyReply) => {
-    if (!queueService) return serviceUnavailable(reply);
-    await queueService.drain();
-    return reply.status(200).send({ success: true, message: 'Queue drained' });
-  });
+  app.post(
+    '/queue/drain',
+    { preHandler: [requirePermission('queue:write')] },
+    async (_request, reply: FastifyReply) => {
+      if (!queueService) return serviceUnavailable(reply);
+      await queueService.drain();
+      return reply.status(200).send({ success: true, message: 'Queue drained' });
+    },
+  );
 
   // ------------------------------------------------------------------
   // POST /queue/jobs/:id/retry
   // ------------------------------------------------------------------
   app.post<{ Params: { id: string } }>(
     '/queue/jobs/:id/retry',
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission('queue:write')] },
     async (request, reply) => {
       if (!queueService) return serviceUnavailable(reply);
       const { id } = request.params;
@@ -137,7 +146,7 @@ export async function queueRoutes(app: FastifyInstance, options: QueueRouteOptio
   // ------------------------------------------------------------------
   app.delete<{ Params: { id: string } }>(
     '/queue/jobs/:id',
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission('queue:write')] },
     async (request, reply) => {
       if (!queueService) return serviceUnavailable(reply);
       const { id } = request.params;

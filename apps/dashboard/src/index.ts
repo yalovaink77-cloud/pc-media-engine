@@ -1,6 +1,7 @@
 import { buildDashboardApp } from './app.js';
 import { createDashboardApiClient } from './client.js';
 import { loadDashboardConfig } from './config.js';
+import { loadDashboardRbac } from './rbac.js';
 
 const startedAt = new Date().toISOString();
 const config = loadDashboardConfig();
@@ -23,6 +24,7 @@ const app = buildDashboardApp({
   logLevel: config.logLevel,
   apiKeyConfigured: Boolean(config.apiKey),
   apiBaseUrl: config.apiBaseUrl,
+  rbac: loadDashboardRbac(),
 });
 
 let shuttingDown = false;

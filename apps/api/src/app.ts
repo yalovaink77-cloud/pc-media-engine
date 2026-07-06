@@ -177,6 +177,9 @@ export function buildApp(options: AppOptions) {
     jwtExpiresInSeconds: 3600,
     apiKeyEnabled: false,
     apiKeys: [],
+    apiKeyRoles: {},
+    defaultJwtRole: 'operator',
+    defaultApiKeyRole: 'admin',
   };
   const resolvedAuthConfig = authConfig ?? defaultAuthConfig;
   const authMiddleware = createAuthMiddleware(resolvedAuthConfig);
@@ -279,12 +282,14 @@ export function buildApp(options: AppOptions) {
 
   app.register(publishersRoutes, {
     publisherService,
+    authMiddleware,
   });
 
   app.register(assetsRoutes, {
     assetLibrary,
     storageProvider,
     defaultProjectId: config.defaultProjectId,
+    authMiddleware,
   });
 
   app.register(composerRoutes, {

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { AuthConfig } from '../auth/index.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
+import { getRbacMetadata } from '../auth/rbac.js';
 
 // ---------------------------------------------------------------------------
 // Response types
@@ -67,4 +68,13 @@ export async function authRoutes(app: FastifyInstance, options: AuthRouteOptions
       return reply.status(200).send(body);
     },
   );
+
+  app.get('/auth/rbac', async (_request, reply) => {
+    const metadata = getRbacMetadata();
+    return reply.status(200).send({
+      status: 'ok',
+      authEnabled: authConfig.enabled,
+      ...metadata,
+    });
+  });
 }

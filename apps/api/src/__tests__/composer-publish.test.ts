@@ -34,6 +34,9 @@ const authConfig: AuthConfig = {
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: true,
   apiKeys: ['smoke-key'],
+  apiKeyRoles: {},
+  defaultJwtRole: 'operator',
+  defaultApiKeyRole: 'admin',
 };
 
 const publishResult: ComposerPublishResult = {
@@ -111,7 +114,7 @@ describe('POST /composer/publish', () => {
       composerService: makeMockComposer(),
       authConfig,
     });
-    const token = signJwt({ sub: 'test' }, authConfig.jwtSecret, 3600);
+    const token = signJwt({ sub: 'test', role: 'publisher' }, authConfig.jwtSecret, 3600);
     const res = await app.inject({
       method: 'POST',
       url: '/composer/publish',

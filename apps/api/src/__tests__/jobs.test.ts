@@ -37,6 +37,9 @@ const authConfig: AuthConfig = {
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: true,
   apiKeys: ['jobs-test-api-key'],
+  apiKeyRoles: {},
+  defaultJwtRole: 'operator',
+  defaultApiKeyRole: 'admin',
 };
 
 function makeToken(): string {

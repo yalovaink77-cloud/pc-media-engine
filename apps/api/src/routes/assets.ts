@@ -15,11 +15,13 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 
 import type { AssetLibraryService } from '../assets/types.js';
 import { DEFAULT_ASSET_LIMIT, isAssetStatus, MAX_ASSET_LIMIT } from '../assets/types.js';
+import type { AuthMiddleware } from '../auth/middleware.js';
 
 export type AssetsRouteOptions = {
   assetLibrary?: AssetLibraryService;
   storageProvider?: StorageProvider;
   defaultProjectId: string;
+  authMiddleware?: AuthMiddleware;
 };
 
 type AssetsListQuery = {
@@ -58,43 +60,49 @@ export async function assetsRoutes(
   app: FastifyInstance,
   options: AssetsRouteOptions,
 ): Promise<void> {
-  const { assetLibrary, storageProvider, defaultProjectId } = options;
+  const { assetLibrary, storageProvider, defaultProjectId, authMiddleware } = options;
+  const readGuard = authMiddleware ? [authMiddleware.requirePermission('assets:read')] : [];
 
-  app.get<{ Querystring: AssetsListQuery }>('/assets', async (request, reply) => {
-    if (!assetLibrary) return serviceUnavailable(reply);
+  app.get<{ Querystring: AssetsListQuery }>(
+    '/assets',
+    { preHandler: readGuard },
+    async (request, reply) => {
+      if (!assetLibrary) return serviceUnavailable(reply);
 
-    const { status, mimeType, limit, offset } = request.query;
-    const projectId = request.query.projectId ?? defaultProjectId;
+      const { status, mimeType, limit, offset } = request.query;
+      const projectId = request.query.projectId ?? defaultProjectId;
 
-    if (!projectId) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: 'projectId is required (or set PCME_DEFAULT_PROJECT_ID)',
-        statusCode: 400,
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required (or set PCME_DEFAULT_PROJECT_ID)',
+          statusCode: 400,
+        });
+      }
+
+      if (status && !isAssetStatus(status)) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: `Invalid status "${status}". Allowed: pending, processing, ready, failed`,
+          statusCode: 400,
+        });
+      }
+
+      const result = await assetLibrary.listAssets({
+        projectId,
+        status,
+        mimeType,
+        limit: parseLimit(limit),
+        offset: parseOffset(offset),
       });
-    }
 
-    if (status && !isAssetStatus(status)) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: `Invalid status "${status}". Allowed: pending, processing, ready, failed`,
-        statusCode: 400,
-      });
-    }
-
-    const result = await assetLibrary.listAssets({
-      projectId,
-      status,
-      mimeType,
-      limit: parseLimit(limit),
-      offset: parseOffset(offset),
-    });
-
-    return reply.status(200).send(result);
-  });
+      return reply.status(200).send(result);
+    },
+  );
 
   app.get<{ Params: { id: string }; Querystring: { projectId?: string } }>(
     '/assets/:id',
+    { preHandler: readGuard },
     async (request, reply) => {
       if (!assetLibrary) return serviceUnavailable(reply);
 
@@ -116,6 +124,7 @@ export async function assetsRoutes(
 
   app.get<{ Params: { id: string }; Querystring: { projectId?: string } }>(
     '/assets/:id/download',
+    { preHandler: readGuard },
     async (request, reply) => {
       if (!assetLibrary || !storageProvider) {
         return reply.status(503).send({
@@ -151,6 +160,7 @@ export async function assetsRoutes(
 
   app.get<{ Params: { id: string }; Querystring: { projectId?: string } }>(
     '/assets/:id/thumbnail',
+    { preHandler: readGuard },
     async (request, reply) => {
       if (!assetLibrary || !storageProvider) {
         return reply.status(503).send({

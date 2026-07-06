@@ -46,7 +46,7 @@ export async function calendarRoutes(
   options: CalendarRouteOptions,
 ): Promise<void> {
   const { calendarService, authMiddleware } = options;
-  const preHandler = authMiddleware ? [authMiddleware.requireAuth] : [];
+  const preHandler = authMiddleware ? [authMiddleware.requirePermission('calendar:read')] : [];
 
   app.get<{ Querystring: EventsQuery }>(
     '/calendar/events',

@@ -76,6 +76,9 @@ function fullAuthConfig(): AuthConfig {
     jwtExpiresInSeconds: 3600,
     apiKeyEnabled: true,
     apiKeys: [TEST_API_KEY],
+    apiKeyRoles: {},
+    defaultJwtRole: 'operator',
+    defaultApiKeyRole: 'admin',
   };
 }
 

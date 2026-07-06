@@ -34,6 +34,9 @@ const authConfig: AuthConfig = {
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: true,
   apiKeys: ['smoke-key'],
+  apiKeyRoles: {},
+  defaultJwtRole: 'operator',
+  defaultApiKeyRole: 'admin',
 };
 
 const future = new Date(Date.now() + 86_400_000).toISOString();

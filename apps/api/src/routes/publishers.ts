@@ -1,9 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 
+import type { AuthMiddleware } from '../auth/middleware.js';
 import type { PublisherManagementService } from '../publishers/types.js';
 
 export type PublishersRouteOptions = {
   publisherService?: PublisherManagementService;
+  authMiddleware?: AuthMiddleware;
 };
 
 const CAPABILITIES_SCHEMA = {
@@ -46,9 +48,11 @@ export async function publishersRoutes(
   app: FastifyInstance,
   options: PublishersRouteOptions,
 ): Promise<void> {
-  const { publisherService } = options;
+  const { publisherService, authMiddleware } = options;
+  const readGuard = authMiddleware ? [authMiddleware.requirePermission('publishers:read')] : [];
 
   app.get('/publishers', {
+    preHandler: readGuard,
     schema: {
       response: {
         200: {
@@ -74,6 +78,7 @@ export async function publishersRoutes(
   });
 
   app.get<{ Params: { id: string } }>('/publishers/:id', {
+    preHandler: readGuard,
     schema: {
       params: {
         type: 'object',
@@ -121,6 +126,7 @@ export async function publishersRoutes(
   });
 
   app.get<{ Params: { id: string } }>('/publishers/:id/health', {
+    preHandler: readGuard,
     schema: {
       params: {
         type: 'object',

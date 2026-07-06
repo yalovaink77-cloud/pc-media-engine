@@ -59,12 +59,12 @@ function parseOffset(raw?: string): number {
 
 export async function jobsRoutes(app: FastifyInstance, options: JobsRouteOptions): Promise<void> {
   const { queueService, authMiddleware, publishingConfig } = options;
-  const { requireAuth } = authMiddleware;
+  const { requirePermission } = authMiddleware;
   const publisherDriver = publishingConfig.publisherDriver ?? 'mock';
 
   app.get<{ Querystring: JobsListQuery }>(
     '/jobs',
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission('jobs:read')] },
     async (request, reply) => {
       if (!queueService) return serviceUnavailable(reply);
 
@@ -95,7 +95,7 @@ export async function jobsRoutes(app: FastifyInstance, options: JobsRouteOptions
 
   app.get<{ Params: { id: string } }>(
     '/jobs/:id',
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission('jobs:read')] },
     async (request, reply) => {
       if (!queueService) return serviceUnavailable(reply);
 

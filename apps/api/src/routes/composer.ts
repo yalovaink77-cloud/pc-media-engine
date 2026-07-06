@@ -99,29 +99,37 @@ export async function composerRoutes(
 ): Promise<void> {
   const { composerService, publishingEnqueuer, authMiddleware, defaultProjectId } = options;
 
-  app.get<{ Querystring: ComposerListQuery }>('/composer/assets', async (request, reply) => {
-    if (!composerService) return serviceUnavailable(reply);
+  const readGuard = authMiddleware ? [authMiddleware.requirePermission('composer:read')] : [];
+  const validateGuard = authMiddleware ? [authMiddleware.requirePermission('composer:write')] : [];
 
-    const projectId = request.query.projectId ?? defaultProjectId;
-    if (!projectId) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: 'projectId is required (or set PCME_DEFAULT_PROJECT_ID)',
-        statusCode: 400,
+  app.get<{ Querystring: ComposerListQuery }>(
+    '/composer/assets',
+    { preHandler: readGuard },
+    async (request, reply) => {
+      if (!composerService) return serviceUnavailable(reply);
+
+      const projectId = request.query.projectId ?? defaultProjectId;
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required (or set PCME_DEFAULT_PROJECT_ID)',
+          statusCode: 400,
+        });
+      }
+
+      const result = await composerService.listEligibleAssets({
+        projectId,
+        limit: parseLimit(request.query.limit),
+        offset: parseOffset(request.query.offset),
       });
-    }
 
-    const result = await composerService.listEligibleAssets({
-      projectId,
-      limit: parseLimit(request.query.limit),
-      offset: parseOffset(request.query.offset),
-    });
-
-    return reply.status(200).send(result);
-  });
+      return reply.status(200).send(result);
+    },
+  );
 
   app.get<{ Params: { id: string }; Querystring: { projectId?: string } }>(
     '/composer/assets/:id',
+    { preHandler: readGuard },
     async (request, reply) => {
       if (!composerService) return serviceUnavailable(reply);
 
@@ -141,46 +149,50 @@ export async function composerRoutes(
     },
   );
 
-  app.post<{ Body: ComposerValidateBody }>('/composer/validate', async (request, reply) => {
-    if (!composerService) return serviceUnavailable(reply);
+  app.post<{ Body: ComposerValidateBody }>(
+    '/composer/validate',
+    { preHandler: validateGuard },
+    async (request, reply) => {
+      if (!composerService) return serviceUnavailable(reply);
 
-    const { assetId, publisherId } = request.body ?? {};
-    const projectId = request.body?.projectId ?? defaultProjectId;
+      const { assetId, publisherId } = request.body ?? {};
+      const projectId = request.body?.projectId ?? defaultProjectId;
 
-    if (!assetId?.trim()) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: 'assetId is required',
-        statusCode: 400,
+      if (!assetId?.trim()) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'assetId is required',
+          statusCode: 400,
+        });
+      }
+      if (!publisherId?.trim()) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'publisherId is required',
+          statusCode: 400,
+        });
+      }
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required',
+          statusCode: 400,
+        });
+      }
+
+      const result = await composerService.validate({
+        projectId,
+        assetId: assetId.trim(),
+        publisherId: publisherId.trim(),
       });
-    }
-    if (!publisherId?.trim()) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: 'publisherId is required',
-        statusCode: 400,
-      });
-    }
-    if (!projectId) {
-      return reply.status(400).send({
-        error: 'Bad Request',
-        message: 'projectId is required',
-        statusCode: 400,
-      });
-    }
 
-    const result = await composerService.validate({
-      projectId,
-      assetId: assetId.trim(),
-      publisherId: publisherId.trim(),
-    });
-
-    return reply.status(200).send(result);
-  });
+      return reply.status(200).send(result);
+    },
+  );
 
   app.post<{ Body: ComposerPublishBody }>(
     '/composer/publish',
-    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    { preHandler: authMiddleware ? [authMiddleware.requirePermission('publishing:write')] : [] },
     async (request, reply) => {
       if (!composerService) return serviceUnavailable(reply);
       if (!publishingEnqueuer) return queueUnavailable(reply);
@@ -223,7 +235,7 @@ export async function composerRoutes(
 
   app.post<{ Body: ComposerBulkPublishBody }>(
     '/composer/bulk-publish',
-    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    { preHandler: authMiddleware ? [authMiddleware.requirePermission('publishing:write')] : [] },
     async (request, reply) => {
       if (!composerService) return serviceUnavailable(reply);
       if (!publishingEnqueuer) return queueUnavailable(reply);
@@ -261,7 +273,7 @@ export async function composerRoutes(
 
   app.post<{ Body: ComposerScheduleBody }>(
     '/composer/schedule',
-    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    { preHandler: authMiddleware ? [authMiddleware.requirePermission('scheduling:write')] : [] },
     async (request, reply) => {
       if (!composerService) return serviceUnavailable(reply);
       if (!publishingEnqueuer) return queueUnavailable(reply);

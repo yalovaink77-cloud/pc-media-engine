@@ -3,6 +3,9 @@ import Fastify from 'fastify';
 
 import type { DashboardApiClient } from './client.js';
 import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
+import type { DashboardRbac } from './rbac.js';
+import { loadDashboardRbac, permissionDeniedMessage } from './rbac.js';
+import { setDashboardRbacContext } from './renderer.js';
 import {
   renderAssetDetailPage,
   renderAssetsPage,
@@ -32,6 +35,8 @@ export type DashboardAppOptions = {
   apiKeyConfigured?: boolean;
   /** API base URL for asset thumbnail/download links in HTML. */
   apiBaseUrl?: string;
+  /** Sprint 45 RBAC context for UI adaptation. */
+  rbac?: DashboardRbac;
 };
 
 function redirectWithFlash(reply: FastifyReply, result: QueueActionResult): void {
@@ -142,8 +147,30 @@ function formatHealthFlash(id: string, health: PublisherHealthResult | null): Qu
   };
 }
 
+function redirectQueueDenied(reply: FastifyReply, message: string, type: 'ok' | 'err'): void {
+  redirectWithFlash(reply, { ok: type === 'ok', status: type === 'ok' ? 200 : 403, message });
+}
+
 export function buildDashboardApp(options: DashboardAppOptions) {
-  const { client, logLevel = 'info', apiKeyConfigured = false, apiBaseUrl = '' } = options;
+  const {
+    client,
+    logLevel = 'info',
+    apiKeyConfigured = false,
+    apiBaseUrl = '',
+    rbac = loadDashboardRbac(),
+  } = options;
+
+  setDashboardRbacContext(rbac);
+
+  function denyIfNoPermission(
+    reply: FastifyReply,
+    permission: Parameters<DashboardRbac['can']>[0],
+    redirect: (reply: FastifyReply, message: string, type: 'ok' | 'err') => void,
+  ): boolean {
+    if (!rbac.enabled || rbac.can(permission)) return true;
+    redirect(reply, permissionDeniedMessage(permission), 'err');
+    return false;
+  }
 
   const app = Fastify({ logger: { level: logLevel } });
 
@@ -188,19 +215,23 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       .send(html);
   });
 
-  app.post('/ops/queue/pause', async (_request, reply) => {
+  app.post('/ops/queue/pause', async (request, reply) => {
+    if (!denyIfNoPermission(reply, 'queue:write', redirectQueueDenied)) return;
     redirectWithFlash(reply, await client.pauseQueue());
   });
 
-  app.post('/ops/queue/resume', async (_request, reply) => {
+  app.post('/ops/queue/resume', async (request, reply) => {
+    if (!denyIfNoPermission(reply, 'queue:write', redirectQueueDenied)) return;
     redirectWithFlash(reply, await client.resumeQueue());
   });
 
-  app.post('/ops/queue/drain', async (_request, reply) => {
+  app.post('/ops/queue/drain', async (request, reply) => {
+    if (!denyIfNoPermission(reply, 'queue:write', redirectQueueDenied)) return;
     redirectWithFlash(reply, await client.drainQueue());
   });
 
   app.post<{ Body: { jobId?: string } }>('/ops/queue/retry', async (request, reply) => {
+    if (!denyIfNoPermission(reply, 'queue:write', redirectQueueDenied)) return;
     const jobId = request.body?.jobId?.trim();
     if (!jobId) {
       redirectWithFlash(reply, { ok: false, status: 400, message: 'Job ID is required' });
@@ -210,6 +241,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   });
 
   app.post<{ Body: { jobId?: string } }>('/ops/queue/remove', async (request, reply) => {
+    if (!denyIfNoPermission(reply, 'queue:write', redirectQueueDenied)) return;
     const jobId = request.body?.jobId?.trim();
     if (!jobId) {
       redirectWithFlash(reply, { ok: false, status: 400, message: 'Job ID is required' });
@@ -299,6 +331,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   app.post<{ Params: { id: string }; Body: Record<string, string> }>(
     '/ops/provider-config/:id/validate',
     async (request, reply) => {
+      if (!denyIfNoPermission(reply, 'providers:write', redirectProviderConfigWithFlash)) return;
       const { id } = request.params;
       const values = parseProviderConfigForm(request.body);
       const result = await client.validateProviderConfig(id, values);
@@ -322,6 +355,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   app.post<{ Params: { id: string }; Body: Record<string, string> }>(
     '/ops/provider-config/:id/save',
     async (request, reply) => {
+      if (!denyIfNoPermission(reply, 'providers:write', redirectProviderConfigWithFlash)) return;
       const { id } = request.params;
       const values = parseProviderConfigForm(request.body);
       const result = await client.updateProviderConfig(id, values);
@@ -396,18 +430,26 @@ export function buildDashboardApp(options: DashboardAppOptions) {
 
   app.post<{ Params: { id: string } }>('/ops/jobs/:id/retry', async (request, reply) => {
     const { id } = request.params;
-    const result = await client.retryJob(id);
-    redirectJobDetailWithFlash(reply, id, result.message, result.ok ? 'ok' : 'err');
+    if (!rbac.enabled || rbac.can('queue:write')) {
+      const result = await client.retryJob(id);
+      redirectJobDetailWithFlash(reply, id, result.message, result.ok ? 'ok' : 'err');
+      return;
+    }
+    redirectJobDetailWithFlash(reply, id, permissionDeniedMessage('queue:write'), 'err');
   });
 
   app.post<{ Params: { id: string } }>('/ops/jobs/:id/remove', async (request, reply) => {
     const { id } = request.params;
-    const result = await client.removeJob(id);
-    if (result.ok) {
-      redirectJobsWithFlash(reply, result.message, 'ok');
+    if (!rbac.enabled || rbac.can('queue:write')) {
+      const result = await client.removeJob(id);
+      if (result.ok) {
+        redirectJobsWithFlash(reply, result.message, 'ok');
+        return;
+      }
+      redirectJobDetailWithFlash(reply, id, result.message, 'err');
       return;
     }
-    redirectJobDetailWithFlash(reply, id, result.message, 'err');
+    redirectJobDetailWithFlash(reply, id, permissionDeniedMessage('queue:write'), 'err');
   });
 
   app.get('/assets', async (request, reply) => {
@@ -509,6 +551,12 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   app.post<{ Body: { assetId?: string; publisherIds?: string | string[]; confirm?: string } }>(
     '/ops/composer/publish',
     async (request, reply) => {
+      if (
+        !denyIfNoPermission(reply, 'publishing:write', (r, m, t) => {
+          void reply.redirect(302, `/composer?flash=${encodeURIComponent(m)}&flashType=${t}`);
+        })
+      )
+        return;
       const assetId = request.body?.assetId?.trim();
       const rawIds = request.body?.publisherIds;
       const publisherIds = Array.isArray(rawIds)
@@ -605,6 +653,12 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   app.post<{
     Body: { assetIds?: string | string[]; publisherIds?: string | string[]; confirm?: string };
   }>('/ops/bulk-publish', async (request, reply) => {
+    if (
+      !denyIfNoPermission(reply, 'publishing:write', (r, m, t) => {
+        void reply.redirect(302, `/bulk-publish?flash=${encodeURIComponent(m)}&flashType=${t}`);
+      })
+    )
+      return;
     const rawAssetIds = request.body?.assetIds;
     const assetIds = Array.isArray(rawAssetIds)
       ? rawAssetIds.map((id) => id.trim()).filter(Boolean)

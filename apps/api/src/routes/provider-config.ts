@@ -76,8 +76,10 @@ export async function providerConfigRoutes(
   options: ProviderConfigRouteOptions,
 ): Promise<void> {
   const { providerConfigService, authMiddleware } = options;
-  const readPreHandler = authMiddleware ? [authMiddleware.requireAuth] : [];
-  const writePreHandler = authMiddleware ? [authMiddleware.requireAuth] : [];
+  const readPreHandler = authMiddleware ? [authMiddleware.requirePermission('providers:read')] : [];
+  const writePreHandler = authMiddleware
+    ? [authMiddleware.requirePermission('providers:write')]
+    : [];
 
   app.get(
     '/providers/config',
