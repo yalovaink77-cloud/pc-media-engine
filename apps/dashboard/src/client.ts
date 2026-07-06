@@ -2,6 +2,8 @@ import type {
   AssetDetail,
   AssetListFilters,
   AssetListResult,
+  CalendarEventsResult,
+  CalendarTimelineResult,
   ComposerAssetDetail,
   ComposerAssetListResult,
   ComposerBulkPublishResult,
@@ -61,6 +63,17 @@ export interface DashboardApiClient {
     assetIds: string[],
     publisherIds: string[],
   ): Promise<ComposerBulkPublishResult | null>;
+  fetchCalendarEvents(
+    start: string,
+    end: string,
+    filters?: { publisher?: string; status?: string },
+  ): Promise<CalendarEventsResult | null>;
+  fetchCalendarTimeline(filters?: {
+    start?: string;
+    end?: string;
+    publisher?: string;
+    limit?: number;
+  }): Promise<CalendarTimelineResult | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -228,6 +241,24 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
         { assetIds, publisherIds },
         apiKey,
       ),
+    fetchCalendarEvents: (start, end, filters = {}) => {
+      const params = new URLSearchParams({ start, end });
+      if (filters.publisher) params.set('publisher', filters.publisher);
+      if (filters.status) params.set('status', filters.status);
+      return fetchJson<CalendarEventsResult>(`${base}/calendar/events?${params}`, apiKey);
+    },
+    fetchCalendarTimeline: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.start) params.set('start', filters.start);
+      if (filters.end) params.set('end', filters.end);
+      if (filters.publisher) params.set('publisher', filters.publisher);
+      if (filters.limit) params.set('limit', String(filters.limit));
+      const qs = params.toString();
+      return fetchJson<CalendarTimelineResult>(
+        `${base}/calendar/timeline${qs ? `?${qs}` : ''}`,
+        apiKey,
+      );
+    },
   };
 }
 

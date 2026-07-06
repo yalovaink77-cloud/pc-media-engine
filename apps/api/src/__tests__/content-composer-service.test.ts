@@ -388,3 +388,75 @@ describe('createContentComposerService.bulkPublish', () => {
     expect(result.summary.accepted).toBe(10);
   });
 });
+
+describe('createContentComposerService.schedule', () => {
+  const future = new Date(Date.now() + 86_400_000).toISOString();
+
+  it('enqueues delayed jobs with scheduledFor per publisher', async () => {
+    const payloads: Array<{ publisherId?: string; scheduledFor?: string }> = [];
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(true, true),
+      publishingEnqueuer: {
+        enqueue: async (payload) => {
+          payloads.push(payload);
+          return `job-${payloads.length}`;
+        },
+        close: async () => {},
+      },
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test', GHOST_URL: 'https://ghost.test' },
+    });
+
+    const result = await service.schedule({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress', 'ghost'],
+      scheduledFor: future,
+    });
+
+    expect(result.accepted).toHaveLength(2);
+    expect(payloads.every((p) => p.scheduledFor === future)).toBe(true);
+    expect(result.scheduledFor).toBe(future);
+  });
+
+  it('rejects past scheduledFor', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+
+    const result = await service.schedule({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress'],
+      scheduledFor: '2020-01-01T00:00:00.000Z',
+    });
+
+    expect(result.failures[0]?.reason).toContain('future');
+  });
+
+  it('skips duplicate schedules', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      findDuplicate: async () => true,
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+
+    const result = await service.schedule({
+      projectId: 'proj-1',
+      assetId: 'asset-1',
+      publisherIds: ['wordpress'],
+      scheduledFor: future,
+    });
+
+    expect(result.skipped).toHaveLength(1);
+    expect(result.accepted).toHaveLength(0);
+  });
+});

@@ -21,7 +21,8 @@
     "smoke:assets": "tsx scripts/assets-smoke.ts",
     "smoke:composer": "tsx scripts/composer-smoke.ts",
     "publish-workflow:smoke": "tsx scripts/publish-workflow-smoke.ts",
-    "bulk-publish:smoke": "tsx scripts/bulk-publish-smoke.ts"
+    "bulk-publish:smoke": "tsx scripts/bulk-publish-smoke.ts",
+    "calendar:smoke": "tsx scripts/calendar-smoke.ts"
   },
   "dependencies": {
     "fastify": "^4.29.0"

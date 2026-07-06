@@ -13,6 +13,7 @@ import { LocalStorageProvider } from '@pcme/media';
 import { buildApp } from './app.js';
 import { createAssetLibraryService } from './assets/asset-library-service.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
+import { createCalendarService } from './calendar/calendar-service.js';
 import { createContentComposerService } from './composer/content-composer-service.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
@@ -155,6 +156,14 @@ export async function startServer(config: Config): Promise<void> {
 
   const publishingEnqueuer = buildPublishingEnqueuer(config.redisUrl, config);
 
+  const calendarService = queueService
+    ? createCalendarService({
+        queueService,
+        publishedContentRepo,
+        publisherDriver: config.publisherDriver,
+      })
+    : undefined;
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -172,6 +181,7 @@ export async function startServer(config: Config): Promise<void> {
     assetLibrary,
     composerService,
     publishingEnqueuer,
+    calendarService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

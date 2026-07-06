@@ -7,6 +7,7 @@
  *   POST /composer/validate
  *   POST /composer/publish
  *   POST /composer/bulk-publish
+ *   POST /composer/schedule
  */
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
@@ -44,6 +45,13 @@ type ComposerPublishBody = {
 type ComposerBulkPublishBody = {
   assetIds?: string[] | string;
   publisherIds?: string[] | string;
+  projectId?: string;
+};
+
+type ComposerScheduleBody = {
+  assetId?: string;
+  publisherIds?: string[] | string;
+  scheduledFor?: string;
   projectId?: string;
 };
 
@@ -250,6 +258,57 @@ export async function composerRoutes(
       return reply.status(202).send(result);
     },
   );
+
+  app.post<{ Body: ComposerScheduleBody }>(
+    '/composer/schedule',
+    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    async (request, reply) => {
+      if (!composerService) return serviceUnavailable(reply);
+      if (!publishingEnqueuer) return queueUnavailable(reply);
+
+      const projectId = request.body?.projectId ?? defaultProjectId;
+      const assetId = request.body?.assetId?.trim();
+      const scheduledFor = request.body?.scheduledFor?.trim();
+      const publisherIds = parseIdList(request.body?.publisherIds);
+
+      if (!assetId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'assetId is required',
+          statusCode: 400,
+        });
+      }
+      if (!publisherIds.length) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'publisherIds must contain at least one publisher',
+          statusCode: 400,
+        });
+      }
+      if (!scheduledFor) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'scheduledFor is required (ISO 8601)',
+          statusCode: 400,
+        });
+      }
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required',
+          statusCode: 400,
+        });
+      }
+
+      const result = await composerService.schedule({
+        projectId,
+        assetId,
+        publisherIds,
+        scheduledFor,
+      });
+      return reply.status(202).send(result);
+    },
+  );
 }
 
 export type {
@@ -257,5 +316,6 @@ export type {
   ComposerAssetListResult,
   ComposerBulkPublishResult,
   ComposerPublishResult,
+  ComposerScheduleResult,
   ComposerValidateResult,
 } from '../composer/types.js';

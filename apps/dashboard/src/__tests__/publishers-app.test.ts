@@ -67,6 +67,8 @@ function makeMockClient(): DashboardApiClient {
     validateComposer: async () => null,
     publishComposer: async () => null,
     bulkPublishComposer: async () => null,
+    fetchCalendarEvents: async () => null,
+    fetchCalendarTimeline: async () => null,
   };
 }
 

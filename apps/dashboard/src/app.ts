@@ -7,6 +7,7 @@ import {
   renderAssetDetailPage,
   renderAssetsPage,
   renderBulkPublishPage,
+  renderCalendarPage,
   renderComposerPage,
   renderDashboardPage,
   renderJobDetailPage,
@@ -512,6 +513,71 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       bulkSummary: encodeURIComponent(JSON.stringify(result)),
     });
     void reply.redirect(302, `/bulk-publish?${params.toString()}`);
+  });
+
+  app.get('/calendar', async (request, reply) => {
+    const query = request.query as {
+      view?: string;
+      start?: string;
+      end?: string;
+      eventId?: string;
+    };
+    const errors: string[] = [];
+
+    const now = new Date();
+    const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const defaultEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    ).toISOString();
+    const rangeStart = query.start ?? defaultStart;
+    const rangeEnd = query.end ?? defaultEnd;
+
+    const viewRaw = query.view ?? 'month';
+    const view =
+      viewRaw === 'week' || viewRaw === 'list' || viewRaw === 'timeline' ? viewRaw : 'month';
+
+    const events =
+      view !== 'timeline' ? await client.fetchCalendarEvents(rangeStart, rangeEnd) : null;
+    if (view !== 'timeline' && !events) {
+      errors.push('Could not reach /calendar/events — is the API configured?');
+    }
+
+    const timeline =
+      view === 'timeline'
+        ? await client.fetchCalendarTimeline({ start: rangeStart, end: rangeEnd })
+        : await client.fetchCalendarTimeline({ start: rangeStart, end: rangeEnd, limit: 50 });
+
+    if (view === 'timeline' && !timeline) {
+      errors.push('Could not reach /calendar/timeline');
+    }
+
+    const selectedEvent =
+      query.eventId && events ? (events.events.find((e) => e.id === query.eventId) ?? null) : null;
+
+    const html = renderCalendarPage({
+      view,
+      events,
+      timeline,
+      selectedEventId: query.eventId,
+      selectedEvent,
+      rangeStart,
+      rangeEnd,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
   });
 
   return app;

@@ -125,6 +125,17 @@ export type ComposerPublishResult = {
   failures: ComposerPublishFailure[];
 };
 
+export type ComposerScheduleInput = {
+  projectId: string;
+  assetId: string;
+  publisherIds: string[];
+  scheduledFor: string;
+};
+
+export type ComposerScheduleResult = ComposerPublishResult & {
+  scheduledFor: string;
+};
+
 export type ComposerBulkPublishInput = {
   projectId: string;
   assetIds: string[];
@@ -175,5 +186,6 @@ export interface ContentComposerService {
   getComposerAsset(projectId: string, assetId: string): Promise<ComposerAssetDetail | null>;
   validate(input: ComposerValidateInput): Promise<ComposerValidateResult>;
   publish(input: ComposerPublishInput): Promise<ComposerPublishResult>;
+  schedule(input: ComposerScheduleInput): Promise<ComposerScheduleResult>;
   bulkPublish(input: ComposerBulkPublishInput): Promise<ComposerBulkPublishResult>;
 }

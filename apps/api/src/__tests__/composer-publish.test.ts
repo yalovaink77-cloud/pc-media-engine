@@ -50,6 +50,7 @@ function makeMockComposer(overrides: Partial<ContentComposerService> = {}): Cont
     validate: vi.fn(),
     publish: vi.fn().mockResolvedValue(publishResult),
     bulkPublish: vi.fn(),
+    schedule: vi.fn(),
     ...overrides,
   };
 }

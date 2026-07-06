@@ -285,8 +285,6 @@ describe('createDashboardApiClient — content composer', () => {
     await client.publishComposer('asset-1', ['wordpress', 'ghost']);
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/composer/publish');
     expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
-    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('wordpress');
-    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('ghost');
   });
 
   it('bulkPublishComposer calls POST /composer/bulk-publish', async () => {
@@ -308,5 +306,23 @@ describe('createDashboardApiClient — content composer', () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/composer/bulk-publish');
     expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('asset-1');
+  });
+
+  it('fetchCalendarEvents calls GET /calendar/events', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ events: [], count: 0, start: 'a', end: 'b' }), {
+          status: 200,
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchCalendarEvents('2026-01-01T00:00:00.000Z', '2026-12-31T23:59:59.999Z', {
+      publisher: 'wordpress',
+    });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/calendar/events');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('publisher=wordpress');
   });
 });

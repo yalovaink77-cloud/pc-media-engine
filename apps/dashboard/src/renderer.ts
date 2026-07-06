@@ -4,6 +4,9 @@ import type {
   AssetsPageData,
   AssetThumbnail,
   BulkPublishPageData,
+  CalendarEvent,
+  CalendarPageData,
+  CalendarTimelineResult,
   ComposerBulkPublishResult,
   ComposerPageData,
   ComposerPublishResult,
@@ -12,6 +15,7 @@ import type {
   JobsPageData,
   PublishersPageData,
   RecentItem,
+  TimelineEntry,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -64,7 +68,7 @@ function renderErrors(errors: string[]): string {
 }
 
 function renderNav(
-  active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer' | 'bulk-publish',
+  active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer' | 'bulk-publish' | 'calendar',
 ): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
@@ -72,6 +76,7 @@ function renderNav(
   const assetsCls = active === 'assets' ? 'nav-active' : '';
   const composerCls = active === 'composer' ? 'nav-active' : '';
   const bulkCls = active === 'bulk-publish' ? 'nav-active' : '';
+  const calendarCls = active === 'calendar' ? 'nav-active' : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
@@ -80,6 +85,7 @@ function renderNav(
       <a href="/assets" class="${assetsCls}">Assets</a>
       <a href="/composer" class="${composerCls}">Composer</a>
       <a href="/bulk-publish" class="${bulkCls}">Bulk Publish</a>
+      <a href="/calendar" class="${calendarCls}">Calendar</a>
     </nav>`;
 }
 
@@ -1624,6 +1630,188 @@ export function renderBulkPublishPage(data: BulkPublishPageData): string {
   </main>
   <footer>
     <p>One queue job per valid asset × publisher pair &middot; Duplicate detection per pair</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function timelineTypeBadge(type: TimelineEntry['type']): string {
+  if (type === 'published') return badge(type, 'ok');
+  if (type === 'scheduled') return badge(type, 'warn');
+  if (type === 'failed') return badge(type, 'err');
+  if (type === 'duplicate_skipped') return badge('duplicate', 'warn');
+  return badge(type, 'neutral');
+}
+
+function renderCalendarViewTabs(
+  view: CalendarPageData['view'],
+  rangeStart: string,
+  rangeEnd: string,
+): string {
+  const base = `/calendar?start=${encodeURIComponent(rangeStart)}&end=${encodeURIComponent(rangeEnd)}`;
+  const tabs: Array<{ id: CalendarPageData['view']; label: string }> = [
+    { id: 'month', label: 'Month' },
+    { id: 'week', label: 'Week' },
+    { id: 'list', label: 'List' },
+    { id: 'timeline', label: 'Timeline' },
+  ];
+  return `<div class="view-tabs" data-testid="calendar-view-tabs">${tabs
+    .map((t) => {
+      const cls = view === t.id ? 'tab-active' : '';
+      return `<a href="${base}&view=${t.id}" class="${cls}" data-testid="calendar-view-${t.id}">${t.label}</a>`;
+    })
+    .join('')}</div>`;
+}
+
+function renderEventDetail(event: CalendarEvent): string {
+  return `
+  <div class="detail-card" data-testid="calendar-event-detail">
+    <h3>Event Detail</h3>
+    <dl class="detail-list">
+      <dt>Job</dt><dd><a href="/jobs/${esc(event.jobId)}">${esc(event.jobId)}</a></dd>
+      <dt>Scheduled</dt><dd>${formatDate(event.scheduledFor)}</dd>
+      <dt>Publisher</dt><dd>${esc(event.publisher)}</dd>
+      <dt>Asset</dt><dd>${esc(event.assetId ?? '—')}</dd>
+      <dt>Title</dt><dd>${esc(event.title)}</dd>
+      <dt>Slug</dt><dd>${esc(event.slug)}</dd>
+      <dt>Status</dt><dd>${jobStatusBadge(event.status)}</dd>
+      <dt>Retries</dt><dd>${esc(event.retryCount)} / ${esc(event.maxAttempts - 1)}</dd>
+    </dl>
+  </div>`;
+}
+
+function renderCalendarMonthView(data: CalendarPageData): string {
+  const events = data.events?.events ?? [];
+  const byDay = new Map<string, CalendarEvent[]>();
+  for (const event of events) {
+    const day = event.scheduledFor.slice(0, 10);
+    const list = byDay.get(day) ?? [];
+    list.push(event);
+    byDay.set(day, list);
+  }
+  const days = [...byDay.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(
+      ([day, items]) => `
+      <div class="calendar-day" data-testid="calendar-day-${esc(day)}">
+        <h4>${esc(day)}</h4>
+        <ul>${items
+          .map(
+            (e) =>
+              `<li><a href="/calendar?view=month&start=${encodeURIComponent(data.rangeStart)}&end=${encodeURIComponent(data.rangeEnd)}&eventId=${esc(e.id)}">${esc(e.title)} (${esc(e.publisher)})</a></li>`,
+          )
+          .join('')}</ul>
+      </div>`,
+    )
+    .join('');
+  return `<div data-testid="calendar-month-view" class="calendar-grid">${days || '<p class="empty">No scheduled events in range</p>'}</div>`;
+}
+
+function renderCalendarListView(data: CalendarPageData): string {
+  const events = data.events?.events ?? [];
+  const rows = events.length
+    ? events
+        .map(
+          (e) => `
+        <tr data-testid="calendar-event-row-${esc(e.id)}">
+          <td><a href="/calendar?view=list&start=${encodeURIComponent(data.rangeStart)}&end=${encodeURIComponent(data.rangeEnd)}&eventId=${esc(e.id)}">${esc(e.title)}</a></td>
+          <td>${formatDate(e.scheduledFor)}</td>
+          <td>${esc(e.publisher)}</td>
+          <td>${esc(e.assetId ?? '—')}</td>
+          <td>${jobStatusBadge(e.status)}</td>
+          <td>${esc(e.retryCount)}</td>
+        </tr>`,
+        )
+        .join('')
+    : '<tr><td colspan="6" class="empty">No events</td></tr>';
+
+  return `
+  <div data-testid="calendar-list-view">
+    <table>
+      <thead><tr><th>Title</th><th>Scheduled</th><th>Publisher</th><th>Asset</th><th>Status</th><th>Retries</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderCalendarTimelineView(timeline: CalendarTimelineResult | null): string {
+  const entries = timeline?.entries ?? [];
+  const rows = entries.length
+    ? entries
+        .map(
+          (e) => `
+        <tr data-testid="timeline-entry-${esc(e.id)}">
+          <td>${formatDate(e.timestamp)}</td>
+          <td>${timelineTypeBadge(e.type)}</td>
+          <td>${esc(e.title)}</td>
+          <td>${esc(e.publisher)}</td>
+          <td>${esc(e.assetId ?? '—')}</td>
+          <td>${e.jobId ? `<a href="/jobs/${esc(e.jobId)}">${esc(e.jobId)}</a>` : '—'}</td>
+          <td>${esc(e.retryCount ?? '—')}</td>
+        </tr>`,
+        )
+        .join('')
+    : '<tr><td colspan="7" class="empty">No timeline entries</td></tr>';
+
+  return `
+  <div data-testid="calendar-timeline-view">
+    <table>
+      <thead><tr><th>Time</th><th>Type</th><th>Title</th><th>Publisher</th><th>Asset</th><th>Job</th><th>Retries</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderCalendarBody(data: CalendarPageData): string {
+  const detail = data.selectedEvent ? renderEventDetail(data.selectedEvent) : '';
+  let viewContent = '';
+  if (data.view === 'timeline') {
+    viewContent = renderCalendarTimelineView(data.timeline);
+  } else if (data.view === 'list' || data.view === 'week') {
+    viewContent = renderCalendarListView(data);
+  } else {
+    viewContent = renderCalendarMonthView(data);
+  }
+
+  return `
+  <section data-testid="calendar-section">
+    ${renderCalendarViewTabs(data.view, data.rangeStart, data.rangeEnd)}
+    <p style="font-size:.85rem;color:#6b7280;margin:1rem 0">Range: ${formatDate(data.rangeStart)} — ${formatDate(data.rangeEnd)}</p>
+    ${viewContent}
+    ${detail}
+  </section>`;
+}
+
+export function renderCalendarPage(data: CalendarPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Publishing Calendar</title>
+  <style>${CSS}
+  .view-tabs { display:flex; gap:.5rem; margin-bottom:1rem; }
+  .view-tabs a { padding:.35rem .75rem; border-radius:.35rem; text-decoration:none; color:#374151; background:#f3f4f6; font-size:.85rem; }
+  .view-tabs a.tab-active { background:#1d4ed8; color:#fff; }
+  .calendar-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
+  .calendar-day { border:1px solid #e5e7eb; border-radius:.5rem; padding:.75rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Publishing Calendar</h1>
+    <p>Scheduled publishing &amp; timeline &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('calendar')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    <section>
+      <h2>Publishing Calendar</h2>
+      ${renderCalendarBody(data)}
+    </section>
+  </main>
+  <footer>
+    <p>Reuses Sprint 25 delayed-job scheduler &middot; No live polling in Sprint 43</p>
   </footer>
 </body>
 </html>`;

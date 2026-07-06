@@ -111,6 +111,8 @@ function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardA
     validateComposer: async () => null,
     publishComposer: async () => null,
     bulkPublishComposer: async () => null,
+    fetchCalendarEvents: async () => null,
+    fetchCalendarTimeline: async () => null,
     ...overrides,
   };
 }
@@ -144,6 +146,8 @@ function makeErrorClient(): DashboardApiClient {
     validateComposer: async () => null,
     publishComposer: async () => null,
     bulkPublishComposer: async () => null,
+    fetchCalendarEvents: async () => null,
+    fetchCalendarTimeline: async () => null,
   };
 }
 

@@ -6,6 +6,7 @@ import Fastify from 'fastify';
 import type { AssetLibraryService } from './assets/types.js';
 import type { AuthConfig } from './auth/index.js';
 import { createAuthMiddleware } from './auth/middleware.js';
+import type { CalendarService } from './calendar/types.js';
 import type { ContentComposerService } from './composer/types.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
@@ -17,6 +18,7 @@ import type { QueueService } from './queue/queue-service.js';
 import { assetsRoutes } from './routes/assets.js';
 import type { AuthRouteOptions } from './routes/auth.js';
 import { authRoutes } from './routes/auth.js';
+import { calendarRoutes } from './routes/calendar.js';
 import { composerRoutes } from './routes/composer.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
 import { dashboardRoutes } from './routes/dashboard.js';
@@ -124,6 +126,11 @@ export type AppOptions = {
    * When absent, POST /composer/publish returns 503.
    */
   publishingEnqueuer?: PublishingQueueEnqueuer;
+  /**
+   * Optional calendar service (Sprint 43+).
+   * When absent, /calendar/* routes return 503.
+   */
+  calendarService?: CalendarService;
 };
 
 /**
@@ -152,6 +159,7 @@ export function buildApp(options: AppOptions) {
     assetLibrary,
     composerService,
     publishingEnqueuer,
+    calendarService,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -276,6 +284,11 @@ export function buildApp(options: AppOptions) {
     publishingEnqueuer,
     authMiddleware,
     defaultProjectId: config.defaultProjectId,
+  });
+
+  app.register(calendarRoutes, {
+    calendarService,
+    authMiddleware,
   });
 
   return app;

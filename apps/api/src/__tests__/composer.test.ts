@@ -108,6 +108,13 @@ function makeMockComposer(overrides: Partial<ContentComposerService> = {}): Cont
       failures: [],
       summary: { assets: 0, publishers: 0, pairs: 0, accepted: 0, skipped: 0, failures: 0 },
     }),
+    schedule: vi.fn().mockResolvedValue({
+      assetId: 'asset-001',
+      scheduledFor: '2026-08-01T12:00:00.000Z',
+      accepted: [],
+      skipped: [],
+      failures: [],
+    }),
     ...overrides,
   };
 }

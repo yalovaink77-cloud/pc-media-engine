@@ -105,6 +105,8 @@ function makeClient(): DashboardApiClient {
       failures: [],
     }),
     bulkPublishComposer: async () => null,
+    fetchCalendarEvents: async () => null,
+    fetchCalendarTimeline: async () => null,
   };
 }
 

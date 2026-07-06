@@ -46,7 +46,8 @@
     "assets:smoke": "pnpm --filter @pcme/api assets:smoke && pnpm --filter @pcme/dashboard smoke:assets",
     "composer:smoke": "pnpm --filter @pcme/api composer:smoke && pnpm --filter @pcme/dashboard smoke:composer",
     "publish-workflow:smoke": "pnpm --filter @pcme/api publish-workflow:smoke && pnpm --filter @pcme/dashboard publish-workflow:smoke",
-    "bulk-publish:smoke": "pnpm --filter @pcme/api bulk-publish:smoke && pnpm --filter @pcme/dashboard bulk-publish:smoke"
+    "bulk-publish:smoke": "pnpm --filter @pcme/api bulk-publish:smoke && pnpm --filter @pcme/dashboard bulk-publish:smoke",
+    "calendar:smoke": "pnpm --filter @pcme/api calendar:smoke && pnpm --filter @pcme/dashboard calendar:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

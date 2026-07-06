@@ -20,6 +20,8 @@ import type {
   ComposerBulkPublishSummary,
   ComposerPublishInput,
   ComposerPublishResult,
+  ComposerScheduleInput,
+  ComposerScheduleResult,
   ComposerValidateInput,
   ComposerValidateResult,
   ContentComposerService,
@@ -183,6 +185,7 @@ function buildPublishingPayload(
   publisherId: string,
   media: { buffer: Buffer; mimeType: string; filename: string },
   organizationId?: string,
+  scheduledFor?: string,
 ): PublishingJobPayload {
   return {
     title: detail.preview.title,
@@ -195,7 +198,17 @@ function buildPublishingPayload(
     mediaMimeType: media.mimeType,
     mediaFilename: media.filename,
     mediaBuffer: encodeMediaBuffer(media.buffer),
+    ...(scheduledFor ? { scheduledFor } : {}),
   };
+}
+
+function validateScheduledFor(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return 'scheduledFor is required';
+  const ms = Date.parse(trimmed);
+  if (Number.isNaN(ms)) return 'scheduledFor must be a valid ISO 8601 datetime';
+  if (ms <= Date.now()) return 'scheduledFor must be in the future';
+  return null;
 }
 
 export function createContentComposerService(deps: ContentComposerDeps): ContentComposerService {
@@ -443,6 +456,101 @@ export function createContentComposerService(deps: ContentComposerDeps): Content
             publisherId,
             media,
             deps.defaultOrganizationId,
+          );
+          const jobId = await deps.publishingEnqueuer.enqueue(payload);
+          result.accepted.push({ publisherId, jobId });
+        } catch (err) {
+          result.failures.push({
+            publisherId,
+            reason: err instanceof Error ? err.message : 'Enqueue failed',
+          });
+        }
+      }
+
+      return result;
+    },
+
+    async schedule(input: ComposerScheduleInput): Promise<ComposerScheduleResult> {
+      const scheduleError = validateScheduledFor(input.scheduledFor);
+      const result: ComposerScheduleResult = {
+        assetId: input.assetId,
+        scheduledFor: input.scheduledFor.trim(),
+        accepted: [],
+        skipped: [],
+        failures: [],
+      };
+
+      if (scheduleError) {
+        result.failures.push({ publisherId: '*', reason: scheduleError });
+        return result;
+      }
+
+      if (!deps.publishingEnqueuer) {
+        result.failures.push({
+          publisherId: '*',
+          reason: 'Publishing queue is not available (Redis not configured)',
+        });
+        return result;
+      }
+
+      const detail = await this.getComposerAsset(input.projectId, input.assetId);
+      if (!detail) {
+        result.failures.push({ publisherId: '*', reason: `Asset "${input.assetId}" not found` });
+        return result;
+      }
+
+      const uniquePublisherIds = [
+        ...new Set(input.publisherIds.map((id) => id.trim()).filter(Boolean)),
+      ];
+      if (!uniquePublisherIds.length) {
+        result.failures.push({ publisherId: '*', reason: 'At least one publisherId is required' });
+        return result;
+      }
+
+      const media = await loadThumbnailMedia(deps, input.projectId, input.assetId);
+      if (!media) {
+        result.failures.push({
+          publisherId: '*',
+          reason: 'Thumbnail media unavailable — cannot build publishing payload',
+        });
+        return result;
+      }
+
+      const scheduledFor = input.scheduledFor.trim();
+
+      for (const publisherId of uniquePublisherIds) {
+        const validation = await this.validate({
+          projectId: input.projectId,
+          assetId: input.assetId,
+          publisherId,
+        });
+
+        if (!validation.ready) {
+          result.failures.push({
+            publisherId,
+            reason: validation.messages.join('; ') || 'Validation failed',
+          });
+          continue;
+        }
+
+        if (deps.findDuplicate) {
+          const duplicate = await deps.findDuplicate(input.projectId, publisherId, detail.seo.slug);
+          if (duplicate) {
+            result.skipped.push({
+              publisherId,
+              reason: `Duplicate slug "${detail.seo.slug}" already published to ${publisherId}`,
+            });
+            continue;
+          }
+        }
+
+        try {
+          const payload = buildPublishingPayload(
+            detail,
+            publisherId,
+            media,
+            deps.defaultOrganizationId,
+            scheduledFor,
           );
           const jobId = await deps.publishingEnqueuer.enqueue(payload);
           result.accepted.push({ publisherId, jobId });

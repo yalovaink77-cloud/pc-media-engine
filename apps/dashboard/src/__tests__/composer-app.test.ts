@@ -86,6 +86,8 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
       failures: [],
     }),
     bulkPublishComposer: async () => null,
+    fetchCalendarEvents: async () => null,
+    fetchCalendarTimeline: async () => null,
     ...overrides,
   };
 }

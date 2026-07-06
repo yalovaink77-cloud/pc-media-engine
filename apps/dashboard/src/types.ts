@@ -467,3 +467,57 @@ export type BulkPublishPageData = {
   errors: string[];
   apiBaseUrl: string;
 };
+
+export type CalendarEvent = {
+  id: string;
+  jobId: string;
+  assetId?: string;
+  projectId?: string;
+  publisher: string;
+  title: string;
+  slug: string;
+  scheduledFor: string;
+  status: string;
+  retryCount: number;
+  maxAttempts: number;
+};
+
+export type CalendarEventsResult = {
+  events: CalendarEvent[];
+  count: number;
+  start: string;
+  end: string;
+};
+
+export type TimelineEntry = {
+  id: string;
+  timestamp: string;
+  type: 'queued' | 'scheduled' | 'published' | 'failed' | 'duplicate_skipped';
+  assetId?: string;
+  projectId?: string;
+  publisher: string;
+  title: string;
+  slug: string;
+  jobId?: string;
+  scheduledFor?: string;
+  retryCount?: number;
+  message?: string;
+};
+
+export type CalendarTimelineResult = {
+  entries: TimelineEntry[];
+  count: number;
+};
+
+export type CalendarPageData = {
+  view: 'month' | 'week' | 'list' | 'timeline';
+  events: CalendarEventsResult | null;
+  timeline: CalendarTimelineResult | null;
+  selectedEventId?: string;
+  selectedEvent: CalendarEvent | null;
+  rangeStart: string;
+  rangeEnd: string;
+  fetchedAt: string;
+  errors: string[];
+  apiBaseUrl: string;
+};
