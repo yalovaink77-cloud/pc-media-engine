@@ -17,7 +17,8 @@
     "smoke": "tsx scripts/smoke.ts",
     "smoke:ops": "tsx scripts/dashboard-ops-smoke.ts",
     "smoke:publishers": "tsx scripts/publisher-management-smoke.ts",
-    "smoke:jobs": "tsx scripts/jobs-smoke.ts"
+    "smoke:jobs": "tsx scripts/jobs-smoke.ts",
+    "smoke:assets": "tsx scripts/assets-smoke.ts"
   },
   "dependencies": {
     "fastify": "^4.29.0"

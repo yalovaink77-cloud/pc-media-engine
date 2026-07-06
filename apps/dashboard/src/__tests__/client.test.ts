@@ -207,3 +207,35 @@ describe('createDashboardApiClient — publishing jobs', () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/jobs/job-1');
   });
 });
+
+describe('createDashboardApiClient — asset library', () => {
+  it('fetchAssets calls GET /assets with filters', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ assets: [], total: 0, limit: 10, offset: 0 }), {
+          status: 200,
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchAssets({ status: 'ready', mimeType: 'image/jpeg', limit: 10 });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'http://api.test/assets?status=ready&mimeType=image%2Fjpeg&limit=10',
+    );
+  });
+
+  it('fetchAsset calls GET /assets/:id', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ id: 'asset-1' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchAsset('asset-1', 'proj-abc');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'http://api.test/assets/asset-1?projectId=proj-abc',
+    );
+  });
+});

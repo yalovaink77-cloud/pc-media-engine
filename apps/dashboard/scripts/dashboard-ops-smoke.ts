@@ -152,6 +152,8 @@ function makeOpsClient(unauthorized = false): DashboardApiClient {
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => null,
     fetchJob: async () => null,
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 

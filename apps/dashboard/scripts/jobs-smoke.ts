@@ -84,6 +84,8 @@ function makeClient(): DashboardApiClient {
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => jobList,
     fetchJob: async (id) => (id === 'job-smoke-1' ? jobDetail : null),
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 

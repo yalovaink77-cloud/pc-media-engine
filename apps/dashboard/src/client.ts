@@ -1,4 +1,7 @@
 import type {
+  AssetDetail,
+  AssetListFilters,
+  AssetListResult,
   DashboardHealthData,
   DashboardMetricsData,
   DashboardQueueData,
@@ -37,6 +40,9 @@ export interface DashboardApiClient {
   /** Sprint 38 publishing jobs — require auth when PCME_AUTH_ENABLED=true. */
   fetchJobs(filters?: JobListFilters): Promise<JobListResult | null>;
   fetchJob(id: string): Promise<JobDetail | null>;
+  /** Sprint 39 asset library — read-only. */
+  fetchAssets(filters?: AssetListFilters): Promise<AssetListResult | null>;
+  fetchAsset(id: string, projectId?: string): Promise<AssetDetail | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,6 +140,24 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
     },
     fetchJob: (id: string) =>
       fetchJson<JobDetail>(`${base}/jobs/${encodeURIComponent(id)}`, apiKey),
+    fetchAssets: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.projectId) params.set('projectId', filters.projectId);
+      if (filters.status) params.set('status', filters.status);
+      if (filters.mimeType) params.set('mimeType', filters.mimeType);
+      if (filters.limit !== undefined) params.set('limit', String(filters.limit));
+      if (filters.offset !== undefined) params.set('offset', String(filters.offset));
+      const qs = params.toString();
+      return fetchJson<AssetListResult>(`${base}/assets${qs ? `?${qs}` : ''}`);
+    },
+    fetchAsset: (id: string, projectId?: string) => {
+      const params = new URLSearchParams();
+      if (projectId) params.set('projectId', projectId);
+      const qs = params.toString();
+      return fetchJson<AssetDetail>(
+        `${base}/assets/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`,
+      );
+    },
   };
 }
 

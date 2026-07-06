@@ -60,6 +60,8 @@ function makeMockClient(): DashboardApiClient {
     }),
     fetchJobs: async () => null,
     fetchJob: async () => null,
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 

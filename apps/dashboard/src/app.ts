@@ -4,12 +4,15 @@ import Fastify from 'fastify';
 import type { DashboardApiClient } from './client.js';
 import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
 import {
+  renderAssetDetailPage,
+  renderAssetsPage,
   renderDashboardPage,
   renderJobDetailPage,
   renderJobsPage,
   renderPublishersPage,
 } from './renderer.js';
 import type {
+  AssetListFilters,
   DashboardFlash,
   JobListFilters,
   PublisherHealthResult,
@@ -21,6 +24,8 @@ export type DashboardAppOptions = {
   logLevel?: string;
   /** True when DASHBOARD_API_KEY is set — shown in ops panel hint. */
   apiKeyConfigured?: boolean;
+  /** API base URL for asset thumbnail/download links in HTML. */
+  apiBaseUrl?: string;
 };
 
 function redirectWithFlash(reply: FastifyReply, result: QueueActionResult): void {
@@ -50,6 +55,22 @@ function parseJobFilters(query: Record<string, string | undefined>): JobListFilt
   if (query.publisher) filters.publisher = query.publisher;
   if (query.projectId) filters.projectId = query.projectId;
   if (query.assetId) filters.assetId = query.assetId;
+  if (query.limit) {
+    const limit = parseInt(query.limit, 10);
+    if (!Number.isNaN(limit)) filters.limit = limit;
+  }
+  if (query.offset) {
+    const offset = parseInt(query.offset, 10);
+    if (!Number.isNaN(offset)) filters.offset = offset;
+  }
+  return filters;
+}
+
+function parseAssetFilters(query: Record<string, string | undefined>): AssetListFilters {
+  const filters: AssetListFilters = {};
+  if (query.projectId) filters.projectId = query.projectId;
+  if (query.status) filters.status = query.status;
+  if (query.mimeType) filters.mimeType = query.mimeType;
   if (query.limit) {
     const limit = parseInt(query.limit, 10);
     if (!Number.isNaN(limit)) filters.limit = limit;
@@ -91,7 +112,7 @@ function formatHealthFlash(id: string, health: PublisherHealthResult | null): Qu
 }
 
 export function buildDashboardApp(options: DashboardAppOptions) {
-  const { client, logLevel = 'info', apiKeyConfigured = false } = options;
+  const { client, logLevel = 'info', apiKeyConfigured = false, apiBaseUrl = '' } = options;
 
   const app = Fastify({ logger: { level: logLevel } });
 
@@ -251,6 +272,48 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       return;
     }
     redirectJobDetailWithFlash(reply, id, result.message, 'err');
+  });
+
+  app.get('/assets', async (request, reply) => {
+    const query = request.query as Record<string, string | undefined>;
+    const filters = parseAssetFilters(query);
+    const result = await client.fetchAssets(filters);
+    const errors: string[] = [];
+    if (!result) errors.push('Could not reach /assets — is the API database configured?');
+
+    const html = renderAssetsPage({
+      result,
+      filters,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.get<{ Params: { id: string } }>('/assets/:id', async (request, reply) => {
+    const { id } = request.params;
+    const asset = await client.fetchAsset(id);
+    const errors: string[] = [];
+    if (!asset) errors.push(`Could not load asset "${id}"`);
+
+    const html = renderAssetDetailPage({
+      asset,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
   });
 
   return app;

@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
+import type { StorageProvider } from '@pcme/media';
 import Fastify from 'fastify';
 
+import type { AssetLibraryService } from './assets/types.js';
 import type { AuthConfig } from './auth/index.js';
 import { createAuthMiddleware } from './auth/middleware.js';
 import type { Config } from './config.js';
@@ -10,6 +12,7 @@ import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { PublisherManagementService } from './publishers/types.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
 import type { QueueService } from './queue/queue-service.js';
+import { assetsRoutes } from './routes/assets.js';
 import type { AuthRouteOptions } from './routes/auth.js';
 import { authRoutes } from './routes/auth.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
@@ -17,7 +20,7 @@ import { dashboardRoutes } from './routes/dashboard.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import { jobsRoutes } from './routes/jobs.js';
-import type { AssetCreator, FileStorer } from './routes/media.js';
+import type { AssetCreator } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
 import type { QueueMetricsProvider } from './routes/metrics.js';
 import { metricsRoutes } from './routes/metrics.js';
@@ -49,7 +52,7 @@ export type AppOptions = {
    * Undefined → /media route is not registered.
    * Pass a mock in tests; production creates a real LocalStorageProvider.
    */
-  storageProvider?: FileStorer;
+  storageProvider?: StorageProvider;
   /**
    * Injected processing job scheduler (Sprint 10+).
    * Undefined → processingJobs array in response will be empty (backward compatible).
@@ -103,6 +106,11 @@ export type AppOptions = {
    * In production this wraps the PublisherRegistry with WordPress + Ghost.
    */
   publisherService?: PublisherManagementService;
+  /**
+   * Optional asset library service (Sprint 39+).
+   * When absent, all /assets/* routes return 503.
+   */
+  assetLibrary?: AssetLibraryService;
 };
 
 /**
@@ -128,6 +136,7 @@ export function buildApp(options: AppOptions) {
     authConfig,
     queueService,
     publisherService,
+    assetLibrary,
   } = options;
 
   const defaultAuthConfig: AuthConfig = {
@@ -239,6 +248,12 @@ export function buildApp(options: AppOptions) {
 
   app.register(publishersRoutes, {
     publisherService,
+  });
+
+  app.register(assetsRoutes, {
+    assetLibrary,
+    storageProvider,
+    defaultProjectId: config.defaultProjectId,
   });
 
   return app;

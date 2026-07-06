@@ -127,6 +127,8 @@ function makeFixtureClient(): DashboardApiClient {
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => [],
     fetchJob: async () => null,
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 
@@ -148,6 +150,8 @@ function makeErrorClient(): DashboardApiClient {
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => null,
     fetchJob: async () => null,
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 

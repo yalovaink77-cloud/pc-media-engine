@@ -1,4 +1,8 @@
 import type {
+  AssetDetailPageData,
+  AssetDimensions,
+  AssetsPageData,
+  AssetThumbnail,
   DashboardPageData,
   JobDetailPageData,
   JobsPageData,
@@ -55,15 +59,17 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
-function renderNav(active: 'dashboard' | 'publishers' | 'jobs'): string {
+function renderNav(active: 'dashboard' | 'publishers' | 'jobs' | 'assets'): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
   const jobsCls = active === 'jobs' ? 'nav-active' : '';
+  const assetsCls = active === 'assets' ? 'nav-active' : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
       <a href="/publishers" class="${pubCls}">Publishers</a>
       <a href="/jobs" class="${jobsCls}">Jobs</a>
+      <a href="/assets" class="${assetsCls}">Assets</a>
     </nav>`;
 }
 
@@ -497,6 +503,9 @@ const CSS = `
   .detail-list dd{margin-left:0;color:#6b7280;word-break:break-all}
   .retry-list{margin:.5rem 0 0;padding-left:1.1rem;font-size:.8rem}
   .retry-list li{margin-bottom:.35rem}
+  .asset-thumb{width:48px;height:48px;object-fit:cover;border-radius:4px;background:#f3f4f6;display:block}
+  .asset-thumb-placeholder{width:48px;height:48px;border-radius:4px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#9ca3af}
+  .asset-preview{max-width:320px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
   footer{max-width:1200px;margin:0 auto;padding:0 2rem 2rem;font-size:.75rem;color:#9ca3af}
 `.trim();
 
@@ -849,6 +858,320 @@ export function renderDashboardPage(data: DashboardPageData): string {
   </main>
   <footer>
     <p>Version: ${esc(version)} &middot; Env: ${esc(env)} &middot; Reload to refresh</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDimensions(dims?: AssetDimensions): string {
+  if (!dims?.width && !dims?.height) return '—';
+  return `${dims.width ?? '?'} × ${dims.height ?? '?'}`;
+}
+
+function assetStatusBadge(status: string): string {
+  if (status === 'ready') return badge(status, 'ok');
+  if (status === 'failed') return badge(status, 'err');
+  if (status === 'processing') return badge(status, 'warn');
+  return badge(status, 'neutral');
+}
+
+function assetMediaUrl(apiBaseUrl: string, path?: string): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const rel = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${rel}`;
+}
+
+function renderAssetThumbnail(apiBaseUrl: string, thumbnail?: AssetThumbnail): string {
+  if (!thumbnail?.url) {
+    return `<span class="asset-thumb-placeholder" data-testid="asset-thumb-missing">—</span>`;
+  }
+  const src = assetMediaUrl(apiBaseUrl, thumbnail.url);
+  return `<img class="asset-thumb" src="${esc(src)}" alt="thumbnail" data-testid="asset-thumb" loading="lazy">`;
+}
+
+function renderAssetFilters(filters: AssetsPageData['filters']): string {
+  const v = (key: keyof AssetsPageData['filters']) => esc(filters[key] ?? '');
+  return `
+  <form class="filter-form" method="get" action="/assets" data-testid="assets-filter-form">
+    <div>
+      <label for="status">Status</label>
+      <select name="status" id="status">
+        <option value="">All</option>
+        ${['pending', 'processing', 'ready', 'failed']
+          .map(
+            (s) => `<option value="${s}"${filters.status === s ? ' selected' : ''}>${s}</option>`,
+          )
+          .join('')}
+      </select>
+    </div>
+    <div>
+      <label for="mimeType">MIME type</label>
+      <input type="text" name="mimeType" id="mimeType" value="${v('mimeType')}" placeholder="image/jpeg">
+    </div>
+    <div>
+      <label for="projectId">Project ID</label>
+      <input type="text" name="projectId" id="projectId" value="${v('projectId')}">
+    </div>
+    <div>
+      <label for="offset">Offset</label>
+      <input type="number" name="offset" id="offset" value="${v('offset') || '0'}" min="0">
+    </div>
+    <div>
+      <label for="limit">Limit</label>
+      <input type="number" name="limit" id="limit" value="${v('limit') || '50'}" min="1" max="200">
+    </div>
+    <button type="submit" class="btn btn-neutral">Filter</button>
+  </form>`;
+}
+
+function renderAssetsTable(data: AssetsPageData): string {
+  if (!data.result) {
+    return `<p class="empty" data-testid="assets-unavailable">Assets unavailable — is the API database configured?</p>`;
+  }
+  if (!data.result.assets.length) {
+    return `<p class="empty" data-testid="assets-empty">No assets match the current filters</p>`;
+  }
+
+  const rows = data.result.assets
+    .map(
+      (asset) => `
+    <tr data-testid="asset-row-${esc(asset.id)}">
+      <td>${renderAssetThumbnail(data.apiBaseUrl, asset.thumbnail)}</td>
+      <td><a href="/assets/${esc(asset.id)}">${esc(asset.filename)}</a></td>
+      <td>${esc(asset.mimeType)}</td>
+      <td>${formatDimensions(asset.dimensions)}</td>
+      <td>${esc(formatBytes(asset.sizeBytes))}</td>
+      <td>${assetStatusBadge(asset.status)}</td>
+      <td>${esc(asset.publisherCount)}</td>
+      <td>${formatDate(asset.createdAt)}</td>
+    </tr>`,
+    )
+    .join('');
+
+  return `
+  <p style="font-size:.85rem;color:#6b7280;margin-bottom:.75rem">
+    Showing ${esc(data.result.assets.length)} of ${esc(data.result.total)} assets
+    (offset ${esc(data.result.offset)}, limit ${esc(data.result.limit)})
+  </p>
+  <table data-testid="assets-table">
+    <thead>
+      <tr>
+        <th>Preview</th><th>Filename</th><th>MIME</th><th>Dimensions</th>
+        <th>Size</th><th>Status</th><th>Publishers</th><th>Created</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderAssetDetailSection(data: AssetDetailPageData): string {
+  const asset = data.asset;
+  if (!asset) {
+    return `<p class="empty" data-testid="asset-unavailable">Asset not found or API unavailable</p>`;
+  }
+
+  const preview = asset.thumbnail?.url
+    ? `<img class="asset-preview" src="${esc(assetMediaUrl(data.apiBaseUrl, asset.thumbnail.url))}" alt="${esc(asset.filename)}" data-testid="asset-detail-preview">`
+    : `<p class="empty" data-testid="asset-detail-preview-missing">No thumbnail available</p>`;
+
+  const downloadLink = asset.downloadUrl
+    ? `<a href="${esc(assetMediaUrl(data.apiBaseUrl, asset.downloadUrl))}" data-testid="asset-download-link">Download original</a>`
+    : `<p class="empty" data-testid="asset-download-unavailable">Download unavailable</p>`;
+
+  const timelineRows = asset.processingTimeline.length
+    ? asset.processingTimeline
+        .map(
+          (entry) => `
+      <tr data-testid="processing-row-${esc(entry.id)}">
+        <td>${esc(entry.processingType)}</td>
+        <td>${assetStatusBadge(entry.status)}</td>
+        <td>${esc(entry.retryCount)}</td>
+        <td>${formatDate(entry.startedAt)}</td>
+        <td>${formatDate(entry.completedAt)}</td>
+        <td>${esc(entry.failureReason ?? '—')}</td>
+      </tr>`,
+        )
+        .join('')
+    : `<tr><td colspan="6" class="empty">No processing jobs recorded</td></tr>`;
+
+  const publishRows = asset.publishingHistory.length
+    ? asset.publishingHistory
+        .map(
+          (item) => `
+      <tr data-testid="publish-row-${esc(item.id)}">
+        <td>${esc(item.publisher)}</td>
+        <td>${badge(item.status, item.status === 'published' ? 'ok' : 'neutral')}</td>
+        <td><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.slug)}</a></td>
+        <td>${formatDate(item.publishedAt)}</td>
+      </tr>`,
+        )
+        .join('')
+    : `<tr><td colspan="4" class="empty">No publishing history</td></tr>`;
+
+  const metadataEntries = Object.entries(asset.metadata)
+    .map(
+      ([ns, fields]) => `
+      <div class="detail-card" data-testid="metadata-ns-${esc(ns)}">
+        <h3>${esc(ns)}</h3>
+        <dl class="detail-list">
+          ${Object.entries(fields)
+            .map(([key, value]) => `<dt>${esc(key)}</dt><dd>${esc(String(value))}</dd>`)
+            .join('')}
+        </dl>
+      </div>`,
+    )
+    .join('');
+
+  const metadataSection = metadataEntries
+    ? `<div class="detail-grid">${metadataEntries}</div>`
+    : `<p class="empty">No metadata records</p>`;
+
+  const publisherSummary = asset.publishingSummary.publishers.length
+    ? asset.publishingSummary.publishers
+        .map((p) => `<li>${esc(p.publisher)}: ${esc(p.count)}</li>`)
+        .join('')
+    : '<li class="empty">None</li>';
+
+  return `
+  <section data-testid="asset-detail-section">
+    <p style="margin-bottom:1rem">
+      <a href="/assets">&larr; Back to assets</a>
+    </p>
+    <div class="cards" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="label">Status</div>
+        <div class="value small">${assetStatusBadge(asset.status)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Size</div>
+        <div class="value small">${esc(formatBytes(asset.sizeBytes))}</div>
+      </div>
+      <div class="card">
+        <div class="label">Dimensions</div>
+        <div class="value small">${formatDimensions(asset.dimensions)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Publishers</div>
+        <div class="value small">${esc(asset.publisherCount)}</div>
+      </div>
+    </div>
+    <div class="detail-grid" style="margin-bottom:1.5rem">
+      <div class="detail-card">
+        <h3>Preview</h3>
+        ${preview}
+        <div style="margin-top:1rem">${downloadLink}</div>
+      </div>
+      <div class="detail-card">
+        <h3>Metadata</h3>
+        <dl class="detail-list">
+          <dt>Asset ID</dt><dd>${esc(asset.id)}</dd>
+          <dt>Project ID</dt><dd>${esc(asset.projectId)}</dd>
+          <dt>Filename</dt><dd>${esc(asset.filename)}</dd>
+          <dt>Original filename</dt><dd>${esc(asset.originalFilename)}</dd>
+          <dt>MIME type</dt><dd>${esc(asset.mimeType)}</dd>
+          <dt>Storage</dt><dd>${esc(asset.storageProvider)} / ${esc(asset.storageKey)}</dd>
+          <dt>Checksum</dt><dd>${esc(asset.checksum ?? '—')}</dd>
+          <dt>Tags</dt><dd>${asset.tags.length ? esc(asset.tags.join(', ')) : '—'}</dd>
+          <dt>Alt text</dt><dd>${esc(asset.altText ?? '—')}</dd>
+          <dt>Created</dt><dd>${formatDate(asset.createdAt)}</dd>
+          <dt>Updated</dt><dd>${formatDate(asset.updatedAt)}</dd>
+        </dl>
+      </div>
+      <div class="detail-card">
+        <h3>Publishing summary</h3>
+        <p style="margin-bottom:.5rem">Total publishes: ${esc(asset.publishingSummary.total)}</p>
+        <ul class="config-list">${publisherSummary}</ul>
+      </div>
+    </div>
+    <div class="detail-card" style="margin-bottom:1.5rem">
+      <h3>Processing timeline</h3>
+      <table data-testid="processing-timeline-table">
+        <thead>
+          <tr>
+            <th>Type</th><th>Status</th><th>Retries</th>
+            <th>Started</th><th>Completed</th><th>Failure</th>
+          </tr>
+        </thead>
+        <tbody>${timelineRows}</tbody>
+      </table>
+    </div>
+    <div class="detail-card" style="margin-bottom:1.5rem">
+      <h3>Publishing history</h3>
+      <table data-testid="publishing-history-table">
+        <thead>
+          <tr><th>Publisher</th><th>Status</th><th>Slug</th><th>Published</th></tr>
+        </thead>
+        <tbody>${publishRows}</tbody>
+      </table>
+    </div>
+    <section>
+      <h2>Extended metadata</h2>
+      ${metadataSection}
+    </section>
+  </section>`;
+}
+
+export function renderAssetsPage(data: AssetsPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Asset Library</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Asset Library</h1>
+    <p>Read-only media browser &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('assets')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    <section data-testid="assets-section">
+      <h2>Uploaded Assets</h2>
+      ${renderAssetFilters(data.filters)}
+      ${renderAssetsTable(data)}
+    </section>
+  </main>
+  <footer>
+    <p>Read-only &middot; Upload and processing workflows unchanged</p>
+  </footer>
+</body>
+</html>`;
+}
+
+export function renderAssetDetailPage(data: AssetDetailPageData): string {
+  const title = data.asset?.filename ?? 'Asset Detail';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — ${esc(title)}</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Asset Detail</h1>
+    <p>${esc(title)} &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('assets')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderAssetDetailSection(data)}
+  </main>
+  <footer>
+    <p>Read-only inspection &middot; No edit or delete actions</p>
   </footer>
 </body>
 </html>`;

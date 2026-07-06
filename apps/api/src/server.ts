@@ -3,12 +3,15 @@ import { resolve } from 'node:path';
 import {
   getPrismaClient,
   MediaAssetRepository,
+  MetadataRecordRepository,
+  ProcessingArtifactRepository,
   ProcessingJobRepository,
   PublishedContentRepository,
 } from '@pcme/database';
 import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
+import { createAssetLibraryService } from './assets/asset-library-service.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
@@ -97,6 +100,29 @@ export async function startServer(config: Config): Promise<void> {
       .join(', ')}`,
   );
 
+  const assetLibrary =
+    assetRepository && config.databaseUrl
+      ? createAssetLibraryService({
+          listAssets: (projectId) => assetRepository.listByProject(projectId),
+          findAsset: (projectId, assetId) => assetRepository.findById(projectId, assetId),
+          findProcessingJobs: (projectId, assetId) =>
+            (jobScheduler ?? new ProcessingJobRepository()).findByAsset(projectId, assetId),
+          listArtifacts: (projectId, assetId) =>
+            new ProcessingArtifactRepository().listByAsset(projectId, assetId),
+          findDimensions: (projectId, assetId) =>
+            new MetadataRecordRepository().findByAssetNamespace(projectId, assetId, 'dimensions'),
+          findAllMetadata: (projectId, assetId) =>
+            new MetadataRecordRepository().findByAsset(projectId, assetId),
+          findPublished: (projectId, assetId) =>
+            publishedContentRepo?.findByAsset(projectId, assetId) ?? Promise.resolve([]),
+          storageProvider,
+        })
+      : undefined;
+
+  if (!assetLibrary) {
+    console.warn('[api/assets] Asset library disabled — set DATABASE_URL and default project');
+  }
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -111,6 +137,7 @@ export async function startServer(config: Config): Promise<void> {
     authConfig,
     queueService,
     publisherService,
+    assetLibrary,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

@@ -31,7 +31,8 @@
     "auth:smoke": "tsx scripts/auth-smoke.ts",
     "queue:smoke": "tsx scripts/queue-smoke.ts",
     "publisher-management:smoke": "tsx scripts/publisher-management-smoke.ts",
-    "jobs:smoke": "tsx scripts/jobs-smoke.ts"
+    "jobs:smoke": "tsx scripts/jobs-smoke.ts",
+    "assets:smoke": "tsx scripts/assets-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

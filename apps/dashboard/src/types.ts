@@ -239,3 +239,97 @@ export type JobDetailPageData = {
   flash?: DashboardFlash;
   apiKeyConfigured: boolean;
 };
+
+// ---------------------------------------------------------------------------
+// Asset library (Sprint 39)
+// ---------------------------------------------------------------------------
+
+export type AssetDimensions = { width?: number; height?: number };
+
+export type AssetThumbnail = {
+  mimeType?: string;
+  sizeBytes?: number;
+  storageKey?: string;
+  url?: string;
+};
+
+export type AssetListItem = {
+  id: string;
+  projectId: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  status: string;
+  dimensions?: AssetDimensions;
+  thumbnail?: AssetThumbnail;
+  publisherCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProcessingTimelineEntry = {
+  id: string;
+  processingType: string;
+  status: string;
+  retryCount: number;
+  startedAt?: string;
+  completedAt?: string;
+  failureReason?: string;
+  createdAt: string;
+};
+
+export type PublishingHistorySummaryItem = {
+  id: string;
+  publisher: string;
+  status: string;
+  url: string;
+  slug: string;
+  publishedAt: string;
+};
+
+export type AssetDetail = AssetListItem & {
+  originalFilename: string;
+  storageKey: string;
+  storageProvider: string;
+  altText?: string;
+  tags: string[];
+  checksum?: string;
+  processingTimeline: ProcessingTimelineEntry[];
+  publishingHistory: PublishingHistorySummaryItem[];
+  publishingSummary: {
+    total: number;
+    publishers: Array<{ publisher: string; count: number }>;
+  };
+  downloadUrl?: string;
+  metadata: Record<string, Record<string, unknown>>;
+};
+
+export type AssetListResult = {
+  assets: AssetListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type AssetListFilters = {
+  projectId?: string;
+  status?: string;
+  mimeType?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type AssetsPageData = {
+  result: AssetListResult | null;
+  filters: AssetListFilters;
+  fetchedAt: string;
+  errors: string[];
+  apiBaseUrl: string;
+};
+
+export type AssetDetailPageData = {
+  asset: AssetDetail | null;
+  fetchedAt: string;
+  errors: string[];
+  apiBaseUrl: string;
+};

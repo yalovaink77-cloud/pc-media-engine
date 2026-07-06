@@ -22,6 +22,7 @@ const app = buildDashboardApp({
   client,
   logLevel: config.logLevel,
   apiKeyConfigured: Boolean(config.apiKey),
+  apiBaseUrl: config.apiBaseUrl,
 });
 
 let shuttingDown = false;

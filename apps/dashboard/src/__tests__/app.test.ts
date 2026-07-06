@@ -104,6 +104,8 @@ function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardA
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => ({ jobs: [], total: 0, limit: 50, offset: 0 }),
     fetchJob: async () => null,
+    fetchAssets: async () => ({ assets: [], total: 0, limit: 50, offset: 0 }),
+    fetchAsset: async () => null,
     ...overrides,
   };
 }
@@ -130,6 +132,8 @@ function makeErrorClient(): DashboardApiClient {
     fetchPublisherHealth: async () => null,
     fetchJobs: async () => null,
     fetchJob: async () => null,
+    fetchAssets: async () => null,
+    fetchAsset: async () => null,
   };
 }
 
