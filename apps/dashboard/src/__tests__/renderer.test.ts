@@ -65,11 +65,27 @@ const recentFixture = {
   count: 2,
 };
 
+const metricsFixture = {
+  uploadsTotal: 15,
+  processedTotal: 12,
+  publishedTotal: 10,
+  retriesTotal: 2,
+  failuresTotal: 1,
+  duplicateSkipsTotal: 3,
+  schedulerJobsTotal: 4,
+  queueWaiting: 0,
+  queueActive: 1,
+  queueCompleted: 10,
+  queueFailed: 1,
+  collectedAt: NOW_ISO,
+};
+
 function makePageData(overrides: Partial<DashboardPageData> = {}): DashboardPageData {
   return {
     health: healthFixture,
     summary: summaryFixture,
     recent: recentFixture,
+    metrics: metricsFixture,
     fetchedAt: NOW_ISO,
     errors: [],
     ...overrides,
@@ -245,6 +261,48 @@ describe('renderDashboardPage — error state', () => {
     const html = renderDashboardPage(makePageData({ errors: ['<script>alert("xss")</script>'] }));
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
+  });
+});
+
+describe('renderDashboardPage — metrics section', () => {
+  it('renders metrics cards when metrics data is present', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="metrics-cards"');
+  });
+
+  it('renders upload count', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="metric-uploads"');
+    expect(html).toContain('>15<');
+  });
+
+  it('renders published count', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="metric-published"');
+    expect(html).toContain('>10<');
+  });
+
+  it('renders retry count', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="metric-retries"');
+    expect(html).toContain('>2<');
+  });
+
+  it('renders failure count', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="metric-failures"');
+    expect(html).toContain('>1<');
+  });
+
+  it('renders queue cards', () => {
+    const html = renderDashboardPage(makePageData());
+    expect(html).toContain('data-testid="queue-cards"');
+  });
+
+  it('shows unavailable message when metrics is null', () => {
+    const html = renderDashboardPage(makePageData({ metrics: null }));
+    expect(html).toContain('data-testid="metrics-unavailable"');
+    expect(html).toContain('Metrics data unavailable');
   });
 });
 

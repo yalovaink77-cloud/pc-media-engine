@@ -64,6 +64,7 @@ export async function executePublishingJobWithRetry(
     console.error(`${tag} — failed, retries exhausted: ${result.message ?? 'unknown error'}`);
   } else {
     console.log(`${tag} — failed, retry scheduled: ${result.message ?? 'unknown error'}`);
+    deps.metricsService?.inc('retriesTotal');
   }
 
   throw new Error(result.message ?? 'Publishing failed');

@@ -94,11 +94,27 @@ const recentFixture: DashboardRecentData = {
   count: 2,
 };
 
+const metricsFixture = {
+  uploadsTotal: 15,
+  processedTotal: 12,
+  publishedTotal: 10,
+  retriesTotal: 2,
+  failuresTotal: 1,
+  duplicateSkipsTotal: 3,
+  schedulerJobsTotal: 4,
+  queueWaiting: 0,
+  queueActive: 1,
+  queueCompleted: 10,
+  queueFailed: 1,
+  collectedAt: new Date().toISOString(),
+};
+
 function makeFixtureClient(): DashboardApiClient {
   return {
     fetchHealth: async () => healthFixture,
     fetchSummary: async () => summaryFixture,
     fetchRecent: async () => recentFixture,
+    fetchMetrics: async () => metricsFixture,
   };
 }
 
@@ -107,6 +123,7 @@ function makeErrorClient(): DashboardApiClient {
     fetchHealth: async () => null,
     fetchSummary: async () => null,
     fetchRecent: async () => null,
+    fetchMetrics: async () => null,
   };
 }
 
@@ -199,6 +216,7 @@ async function main(): Promise<void> {
     const client: DashboardApiClient = {
       ...makeFixtureClient(),
       fetchRecent: async () => ({ items: [], count: 0 }),
+      fetchMetrics: async () => metricsFixture,
     };
     const app = buildDashboardApp({ client, logLevel: 'silent' });
     try {

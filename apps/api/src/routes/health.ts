@@ -8,6 +8,8 @@ export type HealthResponse = {
   env: string;
   version: string;
   database: DatabaseStatus;
+  /** True when the in-process MetricsService is wired in (Sprint 29+). */
+  metricsEnabled: boolean;
 };
 
 export type HealthRouteOptions = {
@@ -18,6 +20,8 @@ export type HealthRouteOptions = {
    * Pass undefined to skip the check (tests, no DATABASE_URL).
    */
   checkDatabase?: () => Promise<DatabaseStatus>;
+  /** Whether the MetricsService is available (Sprint 29+). */
+  metricsEnabled?: boolean;
 };
 
 export async function healthRoutes(
@@ -37,6 +41,7 @@ export async function healthRoutes(
               env: { type: 'string' },
               version: { type: 'string' },
               database: { type: 'string' },
+              metricsEnabled: { type: 'boolean' },
             },
           },
         },
@@ -53,6 +58,7 @@ export async function healthRoutes(
         env: options.env,
         version: options.version,
         database,
+        metricsEnabled: options.metricsEnabled ?? false,
       };
 
       return reply.status(200).send(body);

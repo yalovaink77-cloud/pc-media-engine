@@ -52,11 +52,27 @@ const recentFixture: DashboardRecentData = {
   count: 1,
 };
 
+const metricsFixture = {
+  uploadsTotal: 5,
+  processedTotal: 4,
+  publishedTotal: 3,
+  retriesTotal: 1,
+  failuresTotal: 0,
+  duplicateSkipsTotal: 0,
+  schedulerJobsTotal: 1,
+  queueWaiting: 0,
+  queueActive: 0,
+  queueCompleted: 3,
+  queueFailed: 0,
+  collectedAt: NOW_ISO,
+};
+
 function makeFullClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiClient {
   return {
     fetchHealth: async () => healthFixture,
     fetchSummary: async () => summaryFixture,
     fetchRecent: async () => recentFixture,
+    fetchMetrics: async () => metricsFixture,
     ...overrides,
   };
 }
@@ -66,6 +82,7 @@ function makeErrorClient(): DashboardApiClient {
     fetchHealth: async () => null,
     fetchSummary: async () => null,
     fetchRecent: async () => null,
+    fetchMetrics: async () => null,
   };
 }
 
@@ -161,7 +178,7 @@ describe('GET / — empty recent list', () => {
 describe('GET / — partial API failure', () => {
   it('renders page with available data when only summary fails', async () => {
     app = buildDashboardApp({
-      client: makeFullClient({ fetchSummary: async () => null }),
+      client: makeFullClient({ fetchSummary: async () => null, fetchMetrics: async () => null }),
       logLevel: 'silent',
     });
     const res = await app.inject({ method: 'GET', url: '/' });

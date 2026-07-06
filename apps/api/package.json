@@ -25,7 +25,8 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "publishing-api:smoke": "tsx scripts/publishing-api-smoke.ts",
-    "dashboard-api:smoke": "tsx scripts/dashboard-api-smoke.ts"
+    "dashboard-api:smoke": "tsx scripts/dashboard-api-smoke.ts",
+    "metrics:smoke": "tsx scripts/metrics-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

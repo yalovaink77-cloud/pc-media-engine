@@ -1,5 +1,6 @@
 import { Queue } from 'bullmq';
 
+import type { WorkerMetricsService } from '../metrics.js';
 import { PUBLISHING_QUEUE } from './names.js';
 import type { PublishingJobPayload } from './publishing-payload.js';
 
@@ -13,6 +14,8 @@ export type PublishingEnqueueOptions = {
   maxRetries?: number;
   /** Initial exponential backoff delay in ms. Default: 5000. */
   backoffMs?: number;
+  /** Optional metrics accumulator — increments schedulerJobsTotal for delayed jobs. */
+  metricsService?: WorkerMetricsService;
 };
 
 /**
@@ -34,7 +37,7 @@ export function createPublishingEnqueuer(
   connection: { host: string; port: number },
   options: PublishingEnqueueOptions = {},
 ): PublishingQueueEnqueuer {
-  const { maxRetries = 3, backoffMs = 5000 } = options;
+  const { maxRetries = 3, backoffMs = 5000, metricsService } = options;
 
   const queue = new Queue(PUBLISHING_QUEUE, {
     connection,
@@ -47,6 +50,7 @@ export function createPublishingEnqueuer(
   return {
     async enqueue(payload: PublishingJobPayload): Promise<void> {
       const delay = computeScheduleDelay(payload.scheduledFor);
+      if (delay > 0) metricsService?.inc('schedulerJobsTotal');
       await queue.add('publish', payload, delay > 0 ? { delay } : undefined);
     },
     async close(): Promise<void> {

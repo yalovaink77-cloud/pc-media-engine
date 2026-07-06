@@ -10,6 +10,7 @@ import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
 import type { Config } from './config.js';
+import { MetricsService } from './metrics.js';
 import { buildProcessingEnqueuer } from './queue/redis-enqueue.js';
 import type { DatabaseStatus } from './routes/health.js';
 
@@ -52,6 +53,7 @@ export async function startServer(config: Config): Promise<void> {
   const processingEnqueuer = buildProcessingEnqueuer(config.redisUrl, config.autoEnqueueProcessing);
 
   const publishedContentRepo = config.databaseUrl ? new PublishedContentRepository() : undefined;
+  const metricsService = new MetricsService();
 
   const app = buildApp({
     config,
@@ -62,6 +64,7 @@ export async function startServer(config: Config): Promise<void> {
     processingEnqueuer,
     publishedContentRepo,
     dashboardRepo: publishedContentRepo,
+    metricsService,
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {

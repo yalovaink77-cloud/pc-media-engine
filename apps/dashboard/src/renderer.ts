@@ -216,6 +216,74 @@ function renderRecent(data: DashboardPageData): string {
 }
 
 // ---------------------------------------------------------------------------
+// Metrics section (Sprint 29)
+// ---------------------------------------------------------------------------
+
+function renderMetrics(data: DashboardPageData): string {
+  const m = data.metrics;
+  if (!m) {
+    return `
+  <section>
+    <h2>Observability &amp; Metrics</h2>
+    <p class="empty" data-testid="metrics-unavailable">Metrics data unavailable</p>
+  </section>`;
+  }
+  return `
+  <section>
+    <h2>Observability &amp; Metrics</h2>
+    <div class="cards" data-testid="metrics-cards">
+      <div class="card">
+        <div class="label">Uploads</div>
+        <div class="value" data-testid="metric-uploads">${esc(m.uploadsTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Processed</div>
+        <div class="value" data-testid="metric-processed">${esc(m.processedTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Published</div>
+        <div class="value" data-testid="metric-published">${esc(m.publishedTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Retries</div>
+        <div class="value" data-testid="metric-retries">${esc(m.retriesTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Failures</div>
+        <div class="value" data-testid="metric-failures">${esc(m.failuresTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Dup. Skips</div>
+        <div class="value" data-testid="metric-duplicates">${esc(m.duplicateSkipsTotal)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Scheduled</div>
+        <div class="value" data-testid="metric-scheduled">${esc(m.schedulerJobsTotal)}</div>
+      </div>
+    </div>
+    <div class="cards" style="margin-top:1rem" data-testid="queue-cards">
+      <div class="card">
+        <div class="label">Queue Waiting</div>
+        <div class="value">${esc(m.queueWaiting)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Queue Active</div>
+        <div class="value">${esc(m.queueActive)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Queue Completed</div>
+        <div class="value">${esc(m.queueCompleted)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Queue Failed</div>
+        <div class="value">${esc(m.queueFailed)}</div>
+      </div>
+    </div>
+    <p style="margin-top:.75rem;font-size:.75rem;color:#9ca3af">Collected at: ${esc(m.collectedAt)}</p>
+  </section>`;
+}
+
+// ---------------------------------------------------------------------------
 // Page shell
 // ---------------------------------------------------------------------------
 
@@ -269,6 +337,7 @@ export function renderDashboardPage(data: DashboardPageData): string {
     ${renderErrors(data.errors)}
     ${renderHealth(data)}
     ${renderSummary(data)}
+    ${renderMetrics(data)}
     ${renderRecent(data)}
   </main>
   <footer>

@@ -8,6 +8,7 @@
 import type { Publisher, PublishingFlowResult } from '@pcme/publishing';
 import { PublishingOrchestrator } from '@pcme/publishing';
 
+import type { WorkerMetricsService } from '../metrics.js';
 import type { PublishedContentWriter } from '../publishing/persist-published-content.js';
 import { persistPublishedContentIfSuccessful } from '../publishing/persist-published-content.js';
 import {
@@ -25,6 +26,8 @@ export type PublishingProcessorDeps = {
   publisherDriver?: PublisherDriver;
   env?: Record<string, string | undefined>;
   publishedContentRepo?: PublishedContentWriter;
+  /** Optional metrics accumulator — increments publisher-side counters. */
+  metricsService?: WorkerMetricsService;
 };
 
 function buildOrchestrator(deps: PublishingProcessorDeps): PublishingOrchestrator {
@@ -60,6 +63,7 @@ export async function processPublishingJob(
       console.log(
         `[publishing] ⤼ slug=${payload.slug} publisher=${publisherDriver} — duplicate detected, skipping`,
       );
+      deps.metricsService?.inc('duplicateSkipsTotal');
       return { success: false, skipped: true, reason: 'duplicate' };
     }
   }
@@ -88,6 +92,10 @@ export async function processPublishingJob(
       );
     }
   }
+
+  deps.metricsService?.inc('processedTotal');
+  if (result.success) deps.metricsService?.inc('publishedTotal');
+  if (!result.success && !result.skipped) deps.metricsService?.inc('failuresTotal');
 
   return result;
 }

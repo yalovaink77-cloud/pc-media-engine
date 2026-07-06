@@ -50,6 +50,21 @@ export type DashboardRecentData = {
   count: number;
 };
 
+export type DashboardMetricsData = {
+  uploadsTotal: number;
+  processedTotal: number;
+  publishedTotal: number;
+  retriesTotal: number;
+  failuresTotal: number;
+  duplicateSkipsTotal: number;
+  schedulerJobsTotal: number;
+  queueWaiting: number;
+  queueActive: number;
+  queueCompleted: number;
+  queueFailed: number;
+  collectedAt: string;
+};
+
 /** All data fetched for one page render. */
 export type DashboardPageData = {
   health: DashboardHealthData | null;
@@ -57,6 +72,7 @@ export type DashboardPageData = {
   recent: DashboardRecentData | null;
   /** ISO string; set at the time the server handles the request. */
   fetchedAt: string;
+  metrics: DashboardMetricsData | null;
   /** One or more user-visible error messages when any fetch failed. */
   errors: string[];
 };

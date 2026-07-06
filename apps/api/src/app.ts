@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import Fastify from 'fastify';
 
 import type { Config } from './config.js';
+import type { MetricsService } from './metrics.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
 import type { DashboardDataProvider } from './routes/dashboard.js';
@@ -11,6 +12,8 @@ import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
+import type { QueueMetricsProvider } from './routes/metrics.js';
+import { metricsRoutes } from './routes/metrics.js';
 import type { PublishedContentFinder } from './routes/publishing.js';
 import { publishingRoutes } from './routes/publishing.js';
 import { rootRoutes } from './routes/root.js';
@@ -62,6 +65,16 @@ export type AppOptions = {
    * In production the same PublishedContentRepository instance fulfils both roles.
    */
   dashboardRepo?: DashboardDataProvider;
+  /**
+   * Optional in-process metrics accumulator (Sprint 29+).
+   * When provided, upload events are tracked and GET /metrics returns live data.
+   */
+  metricsService?: MetricsService;
+  /**
+   * Optional BullMQ queue introspector (Sprint 29+).
+   * When provided, queue depth gauges are populated on GET /metrics.
+   */
+  queueMetricsProvider?: QueueMetricsProvider;
 };
 
 /**
@@ -81,6 +94,8 @@ export function buildApp(options: AppOptions) {
     processingEnqueuer,
     publishedContentRepo,
     dashboardRepo,
+    metricsService,
+    queueMetricsProvider,
   } = options;
 
   const app = Fastify({
@@ -106,6 +121,15 @@ export function buildApp(options: AppOptions) {
 
   app.addHook('onSend', async (request, reply) => {
     void reply.header('x-request-id', request.id);
+    // Track successful uploads (Sprint 29 metrics).
+    if (
+      metricsService &&
+      request.method === 'POST' &&
+      (request.routeOptions?.url ?? '') === '/media' &&
+      reply.statusCode === 201
+    ) {
+      metricsService.inc('uploadsTotal');
+    }
   });
 
   app.register(rootRoutes);
@@ -113,6 +137,7 @@ export function buildApp(options: AppOptions) {
     version: config.version,
     env: config.env,
     checkDatabase,
+    metricsEnabled: !!metricsService,
   });
   app.register(versionRoutes, {
     version: config.version,
@@ -140,6 +165,11 @@ export function buildApp(options: AppOptions) {
     repo: dashboardRepo,
     checkDatabase,
     publishingConfig: config,
+  });
+
+  app.register(metricsRoutes, {
+    metricsService,
+    queueMetricsProvider,
   });
 
   return app;
