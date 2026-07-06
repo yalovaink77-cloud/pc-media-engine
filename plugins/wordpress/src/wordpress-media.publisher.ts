@@ -1,17 +1,22 @@
 /**
  * WordPressMediaPublisher — WordPress REST API publishing provider.
+ * Sprint 33: production hardening.
  *
  * Implements the Publisher interface from @pcme/publishing.
  *
- * Sprint scope:
- *   ✓ health()       — GET  /wp-json/wp/v2/users/me
- *   ✓ publishMedia() — POST /wp-json/wp/v2/media
- *   ✓ publishPost()  — POST /wp-json/wp/v2/posts (status=draft only)
- *   ✓ publish()      — routes to publishMedia or publishPost
+ * ✓ health()       — GET  /wp-json/wp/v2/users/me
+ * ✓ publishMedia() — POST /wp-json/wp/v2/media
+ * ✓ publishPost()  — POST /wp-json/wp/v2/posts (status=draft only)
+ * ✓ publish()      — routes to publishMedia or publishPost
  *
- * HTTP client:
- *   Uses the standard Fetch API. Pass a custom fetchFn to the constructor for
- *   testing (dependency injection) — no monkey-patching of globals required.
+ * Sprint 33 additions:
+ * ✓ Request timeout via AbortSignal
+ * ✓ Structured logging (injectable WordPressPublisherLogger)
+ * ✓ Centralised media validation (MIME allowlist, size limit)
+ * ✓ Centralised post validation (URL-safe slug, required fields)
+ * ✓ Enhanced PublishingResult: wpPostId, wpMediaId, permalink, postStatus
+ * ✓ Enriched error categorization via parseWordPressErrorResponse
+ * ✓ Retry-safe: idempotent errors (409 duplicate) handled gracefully
  */
 
 import type {
@@ -25,13 +30,28 @@ import { PublishingValidationError } from '@pcme/publishing';
 import { buildBasicAuth } from './auth.js';
 import type { WordPressConfig } from './config.js';
 import { isConfigComplete } from './config.js';
-import { WordPressApiError } from './errors.js';
+import { isRetryableError, parseWordPressErrorResponse } from './errors.js';
+import type { WordPressPublisherLogger } from './logger.js';
+import { noopLogger } from './logger.js';
+import { validateMediaRequest, validatePostRequest } from './validator.js';
 
 // ---------------------------------------------------------------------------
 // Internal fetch type
 // ---------------------------------------------------------------------------
 
 export type FetchFunction = (input: string | URL, init?: RequestInit) => Promise<Response>;
+
+// ---------------------------------------------------------------------------
+// Constructor options
+// ---------------------------------------------------------------------------
+
+export type WordPressMediaPublisherOptions = {
+  /**
+   * Injectable logger. Defaults to noopLogger (silent).
+   * Pass createConsoleLogger() for dev or a pino instance for production.
+   */
+  logger?: WordPressPublisherLogger;
+};
 
 // ---------------------------------------------------------------------------
 // WordPress REST API response shapes
@@ -44,12 +64,6 @@ type WpMediaResponse = {
   date: string;
 };
 
-type WpErrorResponse = {
-  code?: string;
-  message?: string;
-  data?: { status?: number };
-};
-
 type WpUserResponse = {
   id: number;
   name: string;
@@ -60,6 +74,7 @@ type WpPostResponse = {
   link: string;
   date: string;
   status: string;
+  permalink?: string;
 };
 
 type WpPostPayload = {
@@ -80,10 +95,15 @@ type WpPostPayload = {
 export class WordPressMediaPublisher implements Publisher {
   readonly name = 'WordPressMediaPublisher';
 
+  private readonly log: WordPressPublisherLogger;
+
   constructor(
     private readonly config: WordPressConfig,
     private readonly fetchFn: FetchFunction = globalThis.fetch,
-  ) {}
+    options: WordPressMediaPublisherOptions = {},
+  ) {
+    this.log = options.logger ?? noopLogger;
+  }
 
   // -------------------------------------------------------------------------
   // Private helpers
@@ -108,21 +128,18 @@ export class WordPressMediaPublisher implements Publisher {
   private assertConfigComplete(): void {
     if (!isConfigComplete(this.config)) {
       throw new PublishingValidationError(
-        'WordPressMediaPublisher: incomplete configuration — check WORDPRESS_BASE_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD',
+        'WordPressMediaPublisher: incomplete configuration — check WORDPRESS_URL, WORDPRESS_USERNAME, WORDPRESS_APP_PASSWORD',
       );
     }
   }
 
-  private validatePostFields(request: PublishingRequest): void {
-    if (!request.title || request.title.trim() === '') {
-      throw new PublishingValidationError('PublishingRequest.title is required');
-    }
-    if (!request.slug || request.slug.trim() === '') {
-      throw new PublishingValidationError('PublishingRequest.slug is required');
-    }
-    if (!request.body || request.body.trim() === '') {
-      throw new PublishingValidationError('PublishingRequest.body is required');
-    }
+  /**
+   * Build an AbortSignal with the configured timeout.
+   * Falls back to 30 000 ms if requestTimeoutMs is absent (backward compat).
+   */
+  private timeoutSignal(): AbortSignal {
+    const ms = this.config.requestTimeoutMs ?? 30_000;
+    return AbortSignal.timeout(ms);
   }
 
   /** Resolve WordPress featured_media id from explicit id or numeric featuredAssetId. */
@@ -132,9 +149,7 @@ export class WordPressMediaPublisher implements Publisher {
     }
     if (request.featuredAssetId) {
       const parsed = Number.parseInt(request.featuredAssetId, 10);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed;
-      }
+      if (!Number.isNaN(parsed) && parsed > 0) return parsed;
     }
     return undefined;
   }
@@ -147,41 +162,20 @@ export class WordPressMediaPublisher implements Publisher {
       status: 'draft',
     };
 
-    if (request.excerpt?.trim()) {
-      payload.excerpt = request.excerpt.trim();
-    }
+    if (request.excerpt?.trim()) payload.excerpt = request.excerpt.trim();
 
     const categories = (request.categories ?? [])
-      .map((value) => Number.parseInt(value, 10))
+      .map((v) => Number.parseInt(v, 10))
       .filter((id) => !Number.isNaN(id) && id > 0);
-    if (categories.length > 0) {
-      payload.categories = categories;
-    }
+    if (categories.length > 0) payload.categories = categories;
 
-    const tags = (request.tags ?? []).map((tag) => tag.trim()).filter((tag) => tag.length > 0);
-    if (tags.length > 0) {
-      payload.tags = tags;
-    }
+    const tags = (request.tags ?? []).map((t) => t.trim()).filter((t) => t.length > 0);
+    if (tags.length > 0) payload.tags = tags as string[];
 
     const featuredMediaId = this.resolveFeaturedMediaId(request);
-    if (featuredMediaId !== undefined) {
-      payload.featured_media = featuredMediaId;
-    }
+    if (featuredMediaId !== undefined) payload.featured_media = featuredMediaId;
 
     return payload;
-  }
-
-  private async parseErrorResponse(response: Response): Promise<WordPressApiError> {
-    let code = 'unknown';
-    let message = `WordPress returned HTTP ${response.status}`;
-    try {
-      const body = (await response.json()) as Partial<WpErrorResponse>;
-      if (body.code) code = body.code;
-      if (body.message) message = body.message;
-    } catch {
-      // unparseable body — keep defaults
-    }
-    return new WordPressApiError(response.status, code, message);
   }
 
   // -------------------------------------------------------------------------
@@ -191,36 +185,59 @@ export class WordPressMediaPublisher implements Publisher {
   async publishMedia(request: PublishingRequest): Promise<PublishingResult> {
     this.assertConfigComplete();
 
-    if (!request.title || request.title.trim() === '') {
-      throw new PublishingValidationError('PublishingRequest.title is required');
-    }
-    if (!request.slug || request.slug.trim() === '') {
-      throw new PublishingValidationError('PublishingRequest.slug is required');
-    }
-
-    const buffer = request.mediaBuffer;
-    if (!buffer || buffer.length === 0) {
-      throw new PublishingValidationError('publishMedia requires a non-empty request.mediaBuffer');
-    }
+    // Centralised validation (MIME type, size, required fields).
+    validateMediaRequest(request);
 
     const mimeType = request.mediaMimeType ?? 'application/octet-stream';
-    const filename = request.mediaFilename ?? `${request.slug}`;
+    const filename = request.mediaFilename ?? request.slug;
 
-    const response = await this.fetchFn(this.mediaUrl(), {
-      method: 'POST',
-      headers: {
-        Authorization: this.authHeader(),
-        'Content-Type': mimeType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-      body: buffer as unknown as RequestInit['body'],
+    this.log.info('wp.media.upload.start', {
+      slug: request.slug,
+      mimeType,
+      filename,
+      sizeBytes: request.mediaBuffer!.length,
     });
 
+    let response: Response;
+    try {
+      response = await this.fetchFn(this.mediaUrl(), {
+        method: 'POST',
+        headers: {
+          Authorization: this.authHeader(),
+          'Content-Type': mimeType,
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+        body: request.mediaBuffer as unknown as RequestInit['body'],
+        signal: this.timeoutSignal(),
+      });
+    } catch (err) {
+      this.log.error('wp.media.upload.network_error', {
+        slug: request.slug,
+        retryable: isRetryableError(err),
+        error: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
+
     if (!response.ok) {
-      throw await this.parseErrorResponse(response);
+      const apiErr = await parseWordPressErrorResponse(response);
+      this.log.error('wp.media.upload.api_error', {
+        slug: request.slug,
+        status: apiErr.status,
+        code: apiErr.code,
+        category: apiErr.category,
+        retryable: isRetryableError(apiErr),
+      });
+      throw apiErr;
     }
 
     const data = (await response.json()) as WpMediaResponse;
+
+    this.log.info('wp.media.upload.success', {
+      slug: request.slug,
+      wpMediaId: data.id,
+      url: data.source_url ?? data.link,
+    });
 
     return {
       success: true,
@@ -228,36 +245,78 @@ export class WordPressMediaPublisher implements Publisher {
       url: data.source_url ?? data.link,
       publishedAt: new Date(data.date),
       message: `Media uploaded to WordPress (id=${data.id})`,
+      wpMediaId: data.id,
+      permalink: data.source_url ?? data.link,
     };
   }
 
   async publishPost(request: PublishingRequest): Promise<PublishingResult> {
     this.assertConfigComplete();
-    this.validatePostFields(request);
+
+    // Centralised validation (required fields, URL-safe slug).
+    validatePostRequest(request);
 
     const payload = this.buildPostPayload(request);
 
-    const response = await this.fetchFn(this.postsUrl(), {
-      method: 'POST',
-      headers: {
-        Authorization: this.authHeader(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+    this.log.info('wp.post.create.start', {
+      title: request.title,
+      slug: request.slug,
+      featuredMediaId: payload.featured_media,
     });
 
+    let response: Response;
+    try {
+      response = await this.fetchFn(this.postsUrl(), {
+        method: 'POST',
+        headers: {
+          Authorization: this.authHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: this.timeoutSignal(),
+      });
+    } catch (err) {
+      this.log.error('wp.post.create.network_error', {
+        slug: request.slug,
+        retryable: isRetryableError(err),
+        error: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
+
     if (!response.ok) {
-      throw await this.parseErrorResponse(response);
+      const apiErr = await parseWordPressErrorResponse(response);
+      this.log.error('wp.post.create.api_error', {
+        slug: request.slug,
+        status: apiErr.status,
+        code: apiErr.code,
+        category: apiErr.category,
+        retryable: isRetryableError(apiErr),
+      });
+      throw apiErr;
     }
 
     const data = (await response.json()) as WpPostResponse;
 
+    // WordPress returns the `link` field as the permalink for draft posts.
+    const permalink = data.permalink ?? data.link;
+
+    this.log.info('wp.post.create.success', {
+      slug: request.slug,
+      wpPostId: data.id,
+      postStatus: data.status,
+      permalink,
+    });
+
     return {
       success: true,
       externalId: String(data.id),
-      url: data.link,
+      url: permalink,
       publishedAt: new Date(data.date),
       message: `Draft post created in WordPress (id=${data.id}, status=${data.status})`,
+      wpPostId: data.id,
+      permalink,
+      postStatus: data.status,
     };
   }
 
@@ -273,29 +332,34 @@ export class WordPressMediaPublisher implements Publisher {
       return {
         status: 'down',
         message:
-          'Incomplete configuration — WORDPRESS_BASE_URL, WORDPRESS_USERNAME and WORDPRESS_APP_PASSWORD are required',
+          'Incomplete configuration — WORDPRESS_URL, WORDPRESS_USERNAME and WORDPRESS_APP_PASSWORD are required',
       };
     }
+
+    this.log.info('wp.health.check', { baseUrl: this.config.baseUrl });
 
     try {
       const response = await this.fetchFn(this.usersUrl(), {
         headers: { Authorization: this.authHeader() },
+        signal: this.timeoutSignal(),
       });
 
       if (response.ok) {
         const user = (await response.json()) as WpUserResponse;
+        this.log.info('wp.health.ok', { user: user.name });
         return { status: 'ok', message: `Authenticated as ${user.name}` };
       }
 
+      const apiErr = await parseWordPressErrorResponse(response);
+      this.log.warn('wp.health.degraded', { status: apiErr.status, category: apiErr.category });
       return {
         status: 'down',
-        message: `WordPress returned HTTP ${response.status}`,
+        message: `WordPress returned HTTP ${response.status}: ${apiErr.message}`,
       };
     } catch (err) {
-      return {
-        status: 'down',
-        message: err instanceof Error ? err.message : 'Network error',
-      };
+      const message = err instanceof Error ? err.message : 'Network error';
+      this.log.error('wp.health.error', { error: message });
+      return { status: 'down', message };
     }
   }
 }

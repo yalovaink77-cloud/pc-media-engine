@@ -599,3 +599,189 @@ describe('WordPressMediaPublisher.publishPost — network failure', () => {
     await expect(pub.publishPost(VALID_POST_REQUEST)).rejects.toThrow('ECONNREFUSED');
   });
 });
+
+// ===========================================================================
+// Sprint 33 — enhanced result fields, logging, timeout, error categories
+// ===========================================================================
+
+const VALID_CONFIG_S33: WordPressConfig = {
+  baseUrl: 'https://example.com',
+  username: 'admin',
+  appPassword: 'xxxx yyyy',
+  requestTimeoutMs: 30_000,
+};
+
+describe('Sprint 33 — publishMedia enhanced result', () => {
+  it('result.wpMediaId equals WordPress id', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          {
+            id: 77,
+            link: 'https://ex.com/?a=77',
+            source_url: 'https://ex.com/img.jpg',
+            date: '2024-01-01T00:00:00',
+          },
+          201,
+        ),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    const result = await pub.publishMedia({ ...VALID_REQUEST });
+    expect(result.wpMediaId).toBe(77);
+  });
+
+  it('result.permalink equals source_url', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          {
+            id: 77,
+            link: 'https://ex.com/?a=77',
+            source_url: 'https://ex.com/img.jpg',
+            date: '2024-01-01T00:00:00',
+          },
+          201,
+        ),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    const result = await pub.publishMedia({ ...VALID_REQUEST });
+    expect(result.permalink).toBe('https://ex.com/img.jpg');
+  });
+});
+
+describe('Sprint 33 — publishPost enhanced result', () => {
+  it('result.wpPostId equals WordPress id', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          { id: 200, link: 'https://ex.com/?p=200', date: '2024-01-01T00:00:00', status: 'draft' },
+          201,
+        ),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.wpPostId).toBe(200);
+  });
+
+  it('result.postStatus equals WordPress status', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          { id: 200, link: 'https://ex.com/?p=200', date: '2024-01-01T00:00:00', status: 'draft' },
+          201,
+        ),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.postStatus).toBe('draft');
+  });
+
+  it('result.permalink equals link field', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          { id: 200, link: 'https://ex.com/?p=200', date: '2024-01-01T00:00:00', status: 'draft' },
+          201,
+        ),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    const result = await pub.publishPost(VALID_POST_REQUEST);
+    expect(result.permalink).toBe('https://ex.com/?p=200');
+  });
+});
+
+describe('Sprint 33 — logger injection', () => {
+  it('calls logger.info on successful publishMedia', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse(
+          {
+            id: 1,
+            link: 'https://ex.com/?a=1',
+            source_url: 'https://ex.com/img.jpg',
+            date: '2024-01-01T00:00:00',
+          },
+          201,
+        ),
+      );
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch, { logger });
+    await pub.publishMedia({ ...VALID_REQUEST });
+    expect(logger.info).toHaveBeenCalled();
+    // At least one call should mention 'upload'
+    const events = (logger.info as ReturnType<typeof vi.fn>).mock.calls.map(
+      (c: unknown[]) => c[0] as string,
+    );
+    expect(events.some((e) => e.includes('upload'))).toBe(true);
+  });
+
+  it('calls logger.error on publishMedia API error', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse({ code: 'rest_not_logged_in', message: 'Not logged in.' }, 401),
+      );
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch, { logger });
+    await expect(pub.publishMedia({ ...VALID_REQUEST })).rejects.toThrow();
+    expect(logger.error).toHaveBeenCalled();
+  });
+});
+
+describe('Sprint 33 — error categories in API responses', () => {
+  it('WordPressApiError has category=auth for 401', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(
+        jsonResponse({ code: 'rest_not_logged_in', message: 'Not logged in' }, 401),
+      );
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    let caught: WordPressApiError | undefined;
+    try {
+      await pub.publishMedia({ ...VALID_REQUEST });
+    } catch (err) {
+      if (err instanceof WordPressApiError) caught = err;
+    }
+    expect(caught?.category).toBe('auth');
+  });
+
+  it('WordPressApiError has category=rate_limit for 429', async () => {
+    const mockFetch = vi
+      .fn<FetchFunction>()
+      .mockResolvedValue(jsonResponse({ code: 'too_many_requests', message: 'Slow down' }, 429));
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    let caught: WordPressApiError | undefined;
+    try {
+      await pub.publishMedia({ ...VALID_REQUEST });
+    } catch (err) {
+      if (err instanceof WordPressApiError) caught = err;
+    }
+    expect(caught?.category).toBe('rate_limit');
+  });
+});
+
+describe('Sprint 33 — validator integration', () => {
+  it('rejects disallowed MIME type via validateMediaRequest', async () => {
+    const mockFetch = vi.fn<FetchFunction>();
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    await expect(
+      pub.publishMedia({ ...VALID_REQUEST, mediaMimeType: 'text/html' }),
+    ).rejects.toThrow(PublishingValidationError);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('rejects non-URL-safe slug via validatePostRequest', async () => {
+    const mockFetch = vi.fn<FetchFunction>();
+    const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
+    await expect(
+      pub.publishPost({ ...VALID_POST_REQUEST, slug: 'My Invalid Slug!' }),
+    ).rejects.toThrow(PublishingValidationError);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+});

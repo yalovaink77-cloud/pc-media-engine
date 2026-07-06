@@ -67,6 +67,9 @@ export type PublishingRequest = {
 
 /**
  * The outcome of a publish operation.
+ *
+ * Core fields are platform-agnostic.
+ * Optional platform-specific fields are added by concrete publishers (Sprint 33+).
  */
 export type PublishingResult = {
   /** Whether the publish succeeded. */
@@ -79,6 +82,16 @@ export type PublishingResult = {
   publishedAt: Date;
   /** Optional human-readable status or error message. */
   message?: string;
+
+  // ---- WordPress-specific optional fields (Sprint 33+) -------------------
+  /** WordPress post ID when a post was created. */
+  wpPostId?: number;
+  /** WordPress media attachment ID when a media item was uploaded. */
+  wpMediaId?: number;
+  /** Final WordPress permalink URL for the post. */
+  permalink?: string;
+  /** WordPress post status at publish time (e.g. "draft", "publish"). */
+  postStatus?: string;
 };
 
 // ---------------------------------------------------------------------------

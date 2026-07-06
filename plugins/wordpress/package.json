@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/wordpress-smoke.ts"
+    "smoke": "tsx src/scripts/wordpress-smoke.ts",
+    "smoke:s33": "tsx src/scripts/wordpress-smoke-sprint33.ts"
   },
   "dependencies": {
     "@pcme/publishing": "workspace:*"
