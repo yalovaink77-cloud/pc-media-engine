@@ -15,6 +15,9 @@ import type {
   ComposerAssetListItem,
   ComposerAssetListQuery,
   ComposerAssetListResult,
+  ComposerBulkPublishInput,
+  ComposerBulkPublishResult,
+  ComposerBulkPublishSummary,
   ComposerPublishInput,
   ComposerPublishResult,
   ComposerValidateInput,
@@ -23,7 +26,12 @@ import type {
   PublisherCompatibility,
   PublishingReadiness,
 } from './types.js';
-import { DEFAULT_COMPOSER_LIMIT, MAX_COMPOSER_LIMIT } from './types.js';
+import {
+  DEFAULT_COMPOSER_LIMIT,
+  MAX_BULK_ASSETS,
+  MAX_BULK_PUBLISHERS,
+  MAX_COMPOSER_LIMIT,
+} from './types.js';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -447,6 +455,87 @@ export function createContentComposerService(deps: ContentComposerDeps): Content
       }
 
       return result;
+    },
+
+    async bulkPublish(input: ComposerBulkPublishInput): Promise<ComposerBulkPublishResult> {
+      const accepted: ComposerBulkPublishResult['accepted'] = [];
+      const skipped: ComposerBulkPublishResult['skipped'] = [];
+      const failures: ComposerBulkPublishResult['failures'] = [];
+
+      const uniqueAssetIds = [...new Set(input.assetIds.map((id) => id.trim()).filter(Boolean))];
+      const uniquePublisherIds = [
+        ...new Set(input.publisherIds.map((id) => id.trim()).filter(Boolean)),
+      ];
+
+      const buildSummary = (): ComposerBulkPublishSummary => ({
+        assets: uniqueAssetIds.length,
+        publishers: uniquePublisherIds.length,
+        pairs: uniqueAssetIds.length * uniquePublisherIds.length,
+        accepted: accepted.length,
+        skipped: skipped.length,
+        failures: failures.length,
+      });
+
+      if (!uniqueAssetIds.length) {
+        failures.push({
+          assetId: '*',
+          publisherId: '*',
+          reason: 'At least one assetId is required',
+        });
+        return { accepted, skipped, failures, summary: buildSummary() };
+      }
+      if (!uniquePublisherIds.length) {
+        failures.push({
+          assetId: '*',
+          publisherId: '*',
+          reason: 'At least one publisherId is required',
+        });
+        return { accepted, skipped, failures, summary: buildSummary() };
+      }
+      if (uniqueAssetIds.length > MAX_BULK_ASSETS) {
+        failures.push({
+          assetId: '*',
+          publisherId: '*',
+          reason: `Maximum ${MAX_BULK_ASSETS} assets per bulk publish request`,
+        });
+        return { accepted, skipped, failures, summary: buildSummary() };
+      }
+      if (uniquePublisherIds.length > MAX_BULK_PUBLISHERS) {
+        failures.push({
+          assetId: '*',
+          publisherId: '*',
+          reason: `Maximum ${MAX_BULK_PUBLISHERS} publishers per bulk publish request`,
+        });
+        return { accepted, skipped, failures, summary: buildSummary() };
+      }
+      if (!deps.publishingEnqueuer) {
+        failures.push({
+          assetId: '*',
+          publisherId: '*',
+          reason: 'Publishing queue is not available (Redis not configured)',
+        });
+        return { accepted, skipped, failures, summary: buildSummary() };
+      }
+
+      for (const assetId of uniqueAssetIds) {
+        const result = await this.publish({
+          projectId: input.projectId,
+          assetId,
+          publisherIds: uniquePublisherIds,
+        });
+
+        for (const item of result.accepted) {
+          accepted.push({ assetId, publisherId: item.publisherId, jobId: item.jobId });
+        }
+        for (const item of result.skipped) {
+          skipped.push({ assetId, publisherId: item.publisherId, reason: item.reason });
+        }
+        for (const item of result.failures) {
+          failures.push({ assetId, publisherId: item.publisherId, reason: item.reason });
+        }
+      }
+
+      return { accepted, skipped, failures, summary: buildSummary() };
     },
   };
 }

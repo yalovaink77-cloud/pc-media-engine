@@ -125,12 +125,55 @@ export type ComposerPublishResult = {
   failures: ComposerPublishFailure[];
 };
 
+export type ComposerBulkPublishInput = {
+  projectId: string;
+  assetIds: string[];
+  publisherIds: string[];
+};
+
+export type ComposerBulkPublishAccepted = {
+  assetId: string;
+  publisherId: string;
+  jobId: string;
+};
+
+export type ComposerBulkPublishSkipped = {
+  assetId: string;
+  publisherId: string;
+  reason: string;
+};
+
+export type ComposerBulkPublishFailure = {
+  assetId: string;
+  publisherId: string;
+  reason: string;
+};
+
+export type ComposerBulkPublishSummary = {
+  assets: number;
+  publishers: number;
+  pairs: number;
+  accepted: number;
+  skipped: number;
+  failures: number;
+};
+
+export type ComposerBulkPublishResult = {
+  accepted: ComposerBulkPublishAccepted[];
+  skipped: ComposerBulkPublishSkipped[];
+  failures: ComposerBulkPublishFailure[];
+  summary: ComposerBulkPublishSummary;
+};
+
 export const DEFAULT_COMPOSER_LIMIT = 50;
 export const MAX_COMPOSER_LIMIT = 200;
+export const MAX_BULK_ASSETS = 100;
+export const MAX_BULK_PUBLISHERS = 20;
 
 export interface ContentComposerService {
   listEligibleAssets(query: ComposerAssetListQuery): Promise<ComposerAssetListResult>;
   getComposerAsset(projectId: string, assetId: string): Promise<ComposerAssetDetail | null>;
   validate(input: ComposerValidateInput): Promise<ComposerValidateResult>;
   publish(input: ComposerPublishInput): Promise<ComposerPublishResult>;
+  bulkPublish(input: ComposerBulkPublishInput): Promise<ComposerBulkPublishResult>;
 }

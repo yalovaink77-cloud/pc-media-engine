@@ -65,6 +65,7 @@ function makeMockClient(): DashboardApiClient {
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
     publishComposer: async () => null,
+    bulkPublishComposer: async () => null,
   };
 }
 

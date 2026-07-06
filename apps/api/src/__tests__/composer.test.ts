@@ -102,6 +102,12 @@ function makeMockComposer(overrides: Partial<ContentComposerService> = {}): Cont
       skipped: [],
       failures: [],
     }),
+    bulkPublish: vi.fn().mockResolvedValue({
+      accepted: [],
+      skipped: [],
+      failures: [],
+      summary: { assets: 0, publishers: 0, pairs: 0, accepted: 0, skipped: 0, failures: 0 },
+    }),
     ...overrides,
   };
 }

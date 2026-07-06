@@ -288,4 +288,25 @@ describe('createDashboardApiClient — content composer', () => {
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('wordpress');
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('ghost');
   });
+
+  it('bulkPublishComposer calls POST /composer/bulk-publish', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          accepted: [],
+          skipped: [],
+          failures: [],
+          summary: { assets: 1, publishers: 1, pairs: 1, accepted: 0, skipped: 0, failures: 0 },
+        }),
+        { status: 202 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.bulkPublishComposer(['asset-1', 'asset-2'], ['wordpress']);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/composer/bulk-publish');
+    expect(fetchMock.mock.calls[0]?.[1]?.method).toBe('POST');
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('asset-1');
+  });
 });

@@ -111,6 +111,7 @@ function makeClient(): DashboardApiClient {
       missingRequirements: [],
     }),
     publishComposer: async () => mixedResult,
+    bulkPublishComposer: async () => null,
   };
 }
 

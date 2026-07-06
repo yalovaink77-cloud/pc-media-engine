@@ -3,8 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AppOptions } from '../app.js';
 import { buildApp } from '../app.js';
 import type { AuthConfig } from '../auth/config.js';
-import { signJwt } from '../auth/jwt.js';
-import type { ComposerPublishResult, ContentComposerService } from '../composer/types.js';
+import type { ComposerBulkPublishResult, ContentComposerService } from '../composer/types.js';
 import type { PublishingQueueEnqueuer } from '../queue/publishing-enqueue.js';
 
 const baseConfig: AppOptions['config'] = {
@@ -12,7 +11,7 @@ const baseConfig: AppOptions['config'] = {
   host: '127.0.0.1',
   logLevel: 'silent',
   env: 'test',
-  version: '0.41.0-test',
+  version: '0.42.0-test',
   databaseUrl: 'postgres://test',
   storageLocalRoot: '/tmp/storage',
   defaultOrgId: 'org-1',
@@ -30,17 +29,20 @@ const baseConfig: AppOptions['config'] = {
 const authConfig: AuthConfig = {
   enabled: true,
   jwtEnabled: true,
-  jwtSecret: 'publish-workflow-secret-at-least-32-chars',
+  jwtSecret: 'bulk-publish-secret-at-least-32-chars',
   jwtExpiresInSeconds: 3600,
   apiKeyEnabled: true,
   apiKeys: ['smoke-key'],
 };
 
-const publishResult: ComposerPublishResult = {
-  assetId: 'asset-001',
-  accepted: [{ publisherId: 'wordpress', jobId: 'job-1' }],
-  skipped: [{ publisherId: 'ghost', reason: 'Duplicate slug' }],
-  failures: [{ publisherId: 'unknown', reason: 'Publisher not registered' }],
+const bulkResult: ComposerBulkPublishResult = {
+  accepted: [
+    { assetId: 'asset-1', publisherId: 'wordpress', jobId: 'job-1' },
+    { assetId: 'asset-2', publisherId: 'wordpress', jobId: 'job-2' },
+  ],
+  skipped: [{ assetId: 'asset-1', publisherId: 'ghost', reason: 'Duplicate slug' }],
+  failures: [{ assetId: 'asset-3', publisherId: 'unknown', reason: 'Not registered' }],
+  summary: { assets: 3, publishers: 2, pairs: 6, accepted: 2, skipped: 1, failures: 1 },
 };
 
 function makeMockComposer(overrides: Partial<ContentComposerService> = {}): ContentComposerService {
@@ -48,21 +50,18 @@ function makeMockComposer(overrides: Partial<ContentComposerService> = {}): Cont
     listEligibleAssets: vi.fn(),
     getComposerAsset: vi.fn(),
     validate: vi.fn(),
-    publish: vi.fn().mockResolvedValue(publishResult),
-    bulkPublish: vi.fn(),
+    publish: vi.fn(),
+    bulkPublish: vi.fn().mockResolvedValue(bulkResult),
     ...overrides,
   };
 }
 
 function makeMockEnqueuer(): PublishingQueueEnqueuer {
-  return {
-    enqueue: vi.fn().mockResolvedValue('job-1'),
-    close: vi.fn(),
-  };
+  return { enqueue: vi.fn().mockResolvedValue('job-1'), close: vi.fn() };
 }
 
-describe('POST /composer/publish', () => {
-  it('enqueues jobs and returns 202 with summary', async () => {
+describe('POST /composer/bulk-publish', () => {
+  it('returns 202 with batch summary', async () => {
     const composer = makeMockComposer();
     const app = buildApp({
       config: baseConfig,
@@ -72,17 +71,20 @@ describe('POST /composer/publish', () => {
     });
     const res = await app.inject({
       method: 'POST',
-      url: '/composer/publish',
+      url: '/composer/bulk-publish',
       headers: { 'x-api-key': 'smoke-key' },
-      payload: { assetId: 'asset-001', publisherIds: ['wordpress', 'ghost'] },
+      payload: {
+        assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        publisherIds: ['wordpress', 'ghost'],
+      },
     });
     expect(res.statusCode).toBe(202);
-    const body = res.json() as ComposerPublishResult;
-    expect(body.accepted).toHaveLength(1);
-    expect(body.skipped).toHaveLength(1);
-    expect(composer.publish).toHaveBeenCalledWith({
+    const body = res.json() as ComposerBulkPublishResult;
+    expect(body.summary.accepted).toBe(2);
+    expect(body.accepted).toHaveLength(2);
+    expect(composer.bulkPublish).toHaveBeenCalledWith({
       projectId: 'proj-abc',
-      assetId: 'asset-001',
+      assetIds: ['asset-1', 'asset-2', 'asset-3'],
       publisherIds: ['wordpress', 'ghost'],
     });
     await app.close();
@@ -97,8 +99,8 @@ describe('POST /composer/publish', () => {
     });
     const res = await app.inject({
       method: 'POST',
-      url: '/composer/publish',
-      payload: { assetId: 'asset-001', publisherIds: ['wordpress'] },
+      url: '/composer/bulk-publish',
+      payload: { assetIds: ['asset-1'], publisherIds: ['wordpress'] },
     });
     expect(res.statusCode).toBe(401);
     await app.close();
@@ -110,18 +112,17 @@ describe('POST /composer/publish', () => {
       composerService: makeMockComposer(),
       authConfig,
     });
-    const token = signJwt({ sub: 'test' }, authConfig.jwtSecret, 3600);
     const res = await app.inject({
       method: 'POST',
-      url: '/composer/publish',
-      headers: { authorization: `Bearer ${token}` },
-      payload: { assetId: 'asset-001', publisherIds: ['wordpress'] },
+      url: '/composer/bulk-publish',
+      headers: { 'x-api-key': 'smoke-key' },
+      payload: { assetIds: ['asset-1'], publisherIds: ['wordpress'] },
     });
     expect(res.statusCode).toBe(503);
     await app.close();
   });
 
-  it('returns 400 when publisherIds empty', async () => {
+  it('returns 400 when assetIds empty', async () => {
     const app = buildApp({
       config: baseConfig,
       composerService: makeMockComposer(),
@@ -130,9 +131,9 @@ describe('POST /composer/publish', () => {
     });
     const res = await app.inject({
       method: 'POST',
-      url: '/composer/publish',
+      url: '/composer/bulk-publish',
       headers: { 'x-api-key': 'smoke-key' },
-      payload: { assetId: 'asset-001', publisherIds: [] },
+      payload: { assetIds: [], publisherIds: ['wordpress'] },
     });
     expect(res.statusCode).toBe(400);
     await app.close();

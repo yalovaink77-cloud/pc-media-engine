@@ -430,6 +430,20 @@ export type ComposerPublishResult = {
   failures: Array<{ publisherId: string; reason: string }>;
 };
 
+export type ComposerBulkPublishResult = {
+  accepted: Array<{ assetId: string; publisherId: string; jobId: string }>;
+  skipped: Array<{ assetId: string; publisherId: string; reason: string }>;
+  failures: Array<{ assetId: string; publisherId: string; reason: string }>;
+  summary: {
+    assets: number;
+    publishers: number;
+    pairs: number;
+    accepted: number;
+    skipped: number;
+    failures: number;
+  };
+};
+
 export type ComposerPageData = {
   assets: ComposerAssetListResult | null;
   selectedAsset: ComposerAssetDetail | null;
@@ -437,6 +451,18 @@ export type ComposerPageData = {
   selectedPublisherIds?: string[];
   publishResult: ComposerPublishResult | null;
   confirmPublish?: boolean;
+  fetchedAt: string;
+  errors: string[];
+  apiBaseUrl: string;
+};
+
+export type BulkPublishPageData = {
+  assets: ComposerAssetListResult | null;
+  publishers: PublisherListItem[];
+  selectedAssetIds?: string[];
+  selectedPublisherIds?: string[];
+  confirmBulkPublish?: boolean;
+  bulkResult: ComposerBulkPublishResult | null;
   fetchedAt: string;
   errors: string[];
   apiBaseUrl: string;

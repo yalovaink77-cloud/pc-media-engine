@@ -6,6 +6,7 @@ import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
 import {
   renderAssetDetailPage,
   renderAssetsPage,
+  renderBulkPublishPage,
   renderComposerPage,
   renderDashboardPage,
   renderJobDetailPage,
@@ -14,6 +15,7 @@ import {
 } from './renderer.js';
 import type {
   AssetListFilters,
+  ComposerBulkPublishResult,
   ComposerPublishResult,
   DashboardFlash,
   JobListFilters,
@@ -412,6 +414,105 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       void reply.redirect(302, `/composer?${params.toString()}`);
     },
   );
+
+  app.get('/bulk-publish', async (request, reply) => {
+    const query = request.query as {
+      confirmBulkPublish?: string;
+      assets?: string;
+      publishers?: string;
+      bulkSummary?: string;
+    };
+    const errors: string[] = [];
+    const assets = await client.fetchComposerAssets();
+    if (!assets) errors.push('Could not reach /composer/assets — is the API configured?');
+
+    const publishers = (await client.fetchPublishers()) ?? [];
+    if (!publishers.length) errors.push('Could not reach /publishers');
+
+    let bulkResult = null;
+    if (query.bulkSummary) {
+      try {
+        bulkResult = JSON.parse(decodeURIComponent(query.bulkSummary)) as ComposerBulkPublishResult;
+      } catch {
+        errors.push('Could not parse bulk publish result summary');
+      }
+    }
+
+    const selectedAssetIds = query.assets
+      ? query.assets
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : undefined;
+    const selectedPublisherIds = query.publishers
+      ? query.publishers
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : undefined;
+
+    const html = renderBulkPublishPage({
+      assets,
+      publishers,
+      selectedAssetIds,
+      selectedPublisherIds,
+      confirmBulkPublish: query.confirmBulkPublish === '1',
+      bulkResult,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.post<{
+    Body: { assetIds?: string | string[]; publisherIds?: string | string[]; confirm?: string };
+  }>('/ops/bulk-publish', async (request, reply) => {
+    const rawAssetIds = request.body?.assetIds;
+    const assetIds = Array.isArray(rawAssetIds)
+      ? rawAssetIds.map((id) => id.trim()).filter(Boolean)
+      : rawAssetIds
+        ? [rawAssetIds.trim()]
+        : [];
+    const rawPublisherIds = request.body?.publisherIds;
+    const publisherIds = Array.isArray(rawPublisherIds)
+      ? rawPublisherIds.map((id) => id.trim()).filter(Boolean)
+      : rawPublisherIds
+        ? [rawPublisherIds.trim()]
+        : [];
+    const confirmed = request.body?.confirm === 'on' || request.body?.confirm === 'true';
+
+    if (!assetIds.length || !publisherIds.length) {
+      void reply.redirect(302, '/bulk-publish');
+      return;
+    }
+
+    if (!confirmed) {
+      const params = new URLSearchParams({
+        confirmBulkPublish: '1',
+        assets: assetIds.join(','),
+        publishers: publisherIds.join(','),
+      });
+      void reply.redirect(302, `/bulk-publish?${params.toString()}`);
+      return;
+    }
+
+    const result = await client.bulkPublishComposer(assetIds, publisherIds);
+    if (!result) {
+      void reply.redirect(302, '/bulk-publish');
+      return;
+    }
+
+    const params = new URLSearchParams({
+      bulkSummary: encodeURIComponent(JSON.stringify(result)),
+    });
+    void reply.redirect(302, `/bulk-publish?${params.toString()}`);
+  });
 
   return app;
 }

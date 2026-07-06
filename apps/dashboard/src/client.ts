@@ -4,6 +4,7 @@ import type {
   AssetListResult,
   ComposerAssetDetail,
   ComposerAssetListResult,
+  ComposerBulkPublishResult,
   ComposerPublishResult,
   ComposerValidateResult,
   DashboardHealthData,
@@ -56,6 +57,10 @@ export interface DashboardApiClient {
     projectId?: string,
   ): Promise<ComposerValidateResult | null>;
   publishComposer(assetId: string, publisherIds: string[]): Promise<ComposerPublishResult | null>;
+  bulkPublishComposer(
+    assetIds: string[],
+    publisherIds: string[],
+  ): Promise<ComposerBulkPublishResult | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,6 +220,12 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
       postJson<ComposerPublishResult>(
         `${base}/composer/publish`,
         { assetId, publisherIds },
+        apiKey,
+      ),
+    bulkPublishComposer: (assetIds, publisherIds) =>
+      postJson<ComposerBulkPublishResult>(
+        `${base}/composer/bulk-publish`,
+        { assetIds, publisherIds },
         apiKey,
       ),
   };

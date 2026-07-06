@@ -3,6 +3,8 @@ import type {
   AssetDimensions,
   AssetsPageData,
   AssetThumbnail,
+  BulkPublishPageData,
+  ComposerBulkPublishResult,
   ComposerPageData,
   ComposerPublishResult,
   DashboardPageData,
@@ -61,12 +63,15 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
-function renderNav(active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer'): string {
+function renderNav(
+  active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'composer' | 'bulk-publish',
+): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
   const jobsCls = active === 'jobs' ? 'nav-active' : '';
   const assetsCls = active === 'assets' ? 'nav-active' : '';
   const composerCls = active === 'composer' ? 'nav-active' : '';
+  const bulkCls = active === 'bulk-publish' ? 'nav-active' : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
@@ -74,6 +79,7 @@ function renderNav(active: 'dashboard' | 'publishers' | 'jobs' | 'assets' | 'com
       <a href="/jobs" class="${jobsCls}">Jobs</a>
       <a href="/assets" class="${assetsCls}">Assets</a>
       <a href="/composer" class="${composerCls}">Composer</a>
+      <a href="/bulk-publish" class="${bulkCls}">Bulk Publish</a>
     </nav>`;
 }
 
@@ -1443,6 +1449,181 @@ export function renderComposerPage(data: ComposerPageData): string {
   </main>
   <footer>
     <p>Composer publish workflow &middot; Jobs enqueue independently per publisher</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function renderBulkPublishSummaryPanel(
+  assetCount: number,
+  publisherCount: number,
+  pairCount: number,
+): string {
+  return `
+  <div class="detail-card" data-testid="bulk-publish-summary-panel">
+    <h3>Batch Summary</h3>
+    <div class="cards">
+      <div class="card"><div class="label">Assets</div><div class="value">${esc(assetCount)}</div></div>
+      <div class="card"><div class="label">Publishers</div><div class="value">${esc(publisherCount)}</div></div>
+      <div class="card"><div class="label">Pairs</div><div class="value" data-testid="bulk-pair-count">${esc(pairCount)}</div></div>
+    </div>
+    <p style="font-size:.85rem;color:#6b7280;margin-top:.75rem">Each valid asset × publisher pair creates one independent queue job.</p>
+  </div>`;
+}
+
+function renderBulkPublishResultSummary(result: ComposerBulkPublishResult): string {
+  const queued = result.accepted.length
+    ? `<ul class="config-list">${result.accepted
+        .map(
+          (a) =>
+            `<li data-testid="bulk-queued-${esc(a.assetId)}-${esc(a.publisherId)}">${esc(a.assetId)} → ${esc(a.publisherId)} — <a href="/jobs/${esc(a.jobId)}">${esc(a.jobId)}</a></li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  const skipped = result.skipped.length
+    ? `<ul class="config-list">${result.skipped
+        .map(
+          (s) =>
+            `<li data-testid="bulk-skipped-${esc(s.assetId)}-${esc(s.publisherId)}">${esc(s.assetId)} → ${esc(s.publisherId)}: ${esc(s.reason)}</li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  const failures = result.failures.length
+    ? `<ul class="config-list">${result.failures
+        .map(
+          (f) =>
+            `<li data-testid="bulk-failure-${esc(f.assetId)}-${esc(f.publisherId)}">${esc(f.assetId)} → ${esc(f.publisherId)}: ${esc(f.reason)}</li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="empty">None</p>';
+
+  return `
+  <div class="detail-card" style="margin-top:1rem" data-testid="bulk-publish-result">
+    <h3>Bulk Publish Result</h3>
+    <div class="cards" style="margin-bottom:1rem">
+      <div class="card"><div class="label">Queued</div><div class="value">${esc(result.summary.accepted)}</div></div>
+      <div class="card"><div class="label">Skipped</div><div class="value">${esc(result.summary.skipped)}</div></div>
+      <div class="card"><div class="label">Failures</div><div class="value">${esc(result.summary.failures)}</div></div>
+      <div class="card"><div class="label">Pairs</div><div class="value">${esc(result.summary.pairs)}</div></div>
+    </div>
+    <div class="detail-grid">
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#065f46;margin-bottom:.35rem">Queued Jobs (${esc(result.accepted.length)})</h4>
+        ${queued}
+      </div>
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#92400e;margin-bottom:.35rem">Duplicates (${esc(result.skipped.length)})</h4>
+        ${skipped}
+      </div>
+      <div>
+        <h4 style="font-size:.75rem;text-transform:uppercase;color:#991b1b;margin-bottom:.35rem">Validation Failures (${esc(result.failures.length)})</h4>
+        ${failures}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBulkPublishForm(data: BulkPublishPageData): string {
+  const assets = data.assets?.assets ?? [];
+  const assetOptions = assets
+    .map((a) => {
+      const checked = data.selectedAssetIds?.includes(a.id) ? ' checked' : '';
+      return `<li>
+        <label>
+          <input type="checkbox" name="assetIds" value="${esc(a.id)}"${checked}>
+          ${esc(a.filename)} ${badge(a.readiness, a.readiness === 'ready' ? 'ok' : 'warn')}
+        </label>
+      </li>`;
+    })
+    .join('');
+
+  const publisherOptions = data.publishers
+    .map((p) => {
+      const checked = data.selectedPublisherIds?.includes(p.id) ? ' checked' : '';
+      const disabled = !p.enabled ? ' disabled' : '';
+      return `<li>
+        <label>
+          <input type="checkbox" name="publisherIds" value="${esc(p.id)}"${checked}${disabled}>
+          ${esc(p.displayName)} ${p.enabled ? badge('Enabled', 'ok') : badge('Disabled', 'warn')}
+        </label>
+      </li>`;
+    })
+    .join('');
+
+  const selectedAssetCount = data.selectedAssetIds?.length ?? 0;
+  const selectedPublisherCount = data.selectedPublisherIds?.length ?? 0;
+  const pairCount = selectedAssetCount * selectedPublisherCount;
+
+  const confirmPanel = data.confirmBulkPublish
+    ? `<div class="confirm-panel" data-testid="bulk-confirm-dialog">
+        <h3>Confirm Bulk Publish</h3>
+        <p>Queue <strong>${esc(pairCount)}</strong> jobs for <strong>${esc(selectedAssetCount)}</strong> assets × <strong>${esc(selectedPublisherCount)}</strong> publishers.</p>
+        <p style="font-size:.85rem;color:#6b7280;margin:.5rem 0">Failures on one pair do not block remaining jobs.</p>
+        <form method="post" action="/ops/bulk-publish" data-testid="bulk-confirm-form">
+          ${(data.selectedAssetIds ?? [])
+            .map((id) => `<input type="hidden" name="assetIds" value="${esc(id)}">`)
+            .join('')}
+          ${(data.selectedPublisherIds ?? [])
+            .map((id) => `<input type="hidden" name="publisherIds" value="${esc(id)}">`)
+            .join('')}
+          <input type="hidden" name="confirm" value="true">
+          <button type="submit" class="btn btn-ok" data-testid="bulk-confirm-button">Confirm Bulk Publish</button>
+          <a href="/bulk-publish" style="margin-left:.75rem;font-size:.85rem">Cancel</a>
+        </form>
+      </div>`
+    : '';
+
+  const resultPanel = data.bulkResult ? renderBulkPublishResultSummary(data.bulkResult) : '';
+
+  return `
+  <section data-testid="bulk-publish-section">
+    <form method="post" action="/ops/bulk-publish" data-testid="bulk-publish-form">
+      <div class="detail-grid" style="margin-bottom:1.5rem">
+        <div class="detail-card">
+          <h3>Select Assets</h3>
+          <ul class="publisher-checklist" data-testid="bulk-asset-multiselect">${assetOptions || '<li class="empty">No ready assets</li>'}</ul>
+        </div>
+        <div class="detail-card">
+          <h3>Select Publishers</h3>
+          <ul class="publisher-checklist" data-testid="bulk-publisher-multiselect">${publisherOptions || '<li class="empty">No publishers</li>'}</ul>
+        </div>
+      </div>
+      ${renderBulkPublishSummaryPanel(selectedAssetCount, selectedPublisherCount, pairCount)}
+      <div class="ops-row" style="margin-top:1rem">
+        <button type="submit" class="btn btn-ok" data-testid="bulk-publish-button">Bulk Publish</button>
+      </div>
+    </form>
+    ${confirmPanel}
+    ${resultPanel}
+  </section>`;
+}
+
+export function renderBulkPublishPage(data: BulkPublishPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Bulk Publish</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Bulk Publish</h1>
+    <p>Batch publish multiple assets to multiple publishers &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('bulk-publish')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    <section>
+      <h2>Bulk Publish</h2>
+      ${renderBulkPublishForm(data)}
+    </section>
+  </main>
+  <footer>
+    <p>One queue job per valid asset × publisher pair &middot; Duplicate detection per pair</p>
   </footer>
 </body>
 </html>`;

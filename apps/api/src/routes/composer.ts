@@ -6,6 +6,7 @@
  *   GET  /composer/assets/:id
  *   POST /composer/validate
  *   POST /composer/publish
+ *   POST /composer/bulk-publish
  */
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
@@ -39,6 +40,18 @@ type ComposerPublishBody = {
   publisherIds?: string[] | string;
   projectId?: string;
 };
+
+type ComposerBulkPublishBody = {
+  assetIds?: string[] | string;
+  publisherIds?: string[] | string;
+  projectId?: string;
+};
+
+function parseIdList(raw: string[] | string | undefined): string[] {
+  if (Array.isArray(raw)) return raw.map((id) => id.trim()).filter(Boolean);
+  if (raw) return [raw.trim()].filter(Boolean);
+  return [];
+}
 
 async function queueUnavailable(reply: FastifyReply): Promise<void> {
   await reply.status(503).send({
@@ -199,11 +212,50 @@ export async function composerRoutes(
       return reply.status(202).send(result);
     },
   );
+
+  app.post<{ Body: ComposerBulkPublishBody }>(
+    '/composer/bulk-publish',
+    { preHandler: authMiddleware ? [authMiddleware.requireAuth] : [] },
+    async (request, reply) => {
+      if (!composerService) return serviceUnavailable(reply);
+      if (!publishingEnqueuer) return queueUnavailable(reply);
+
+      const projectId = request.body?.projectId ?? defaultProjectId;
+      const assetIds = parseIdList(request.body?.assetIds);
+      const publisherIds = parseIdList(request.body?.publisherIds);
+
+      if (!assetIds.length) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'assetIds must contain at least one asset',
+          statusCode: 400,
+        });
+      }
+      if (!publisherIds.length) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'publisherIds must contain at least one publisher',
+          statusCode: 400,
+        });
+      }
+      if (!projectId) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'projectId is required',
+          statusCode: 400,
+        });
+      }
+
+      const result = await composerService.bulkPublish({ projectId, assetIds, publisherIds });
+      return reply.status(202).send(result);
+    },
+  );
 }
 
 export type {
   ComposerAssetDetail,
   ComposerAssetListResult,
+  ComposerBulkPublishResult,
   ComposerPublishResult,
   ComposerValidateResult,
 } from '../composer/types.js';

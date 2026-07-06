@@ -54,33 +54,41 @@ function makeAssetLibrary(overrides: Partial<AssetLibraryService> = {}): AssetLi
   };
 }
 
-function makePublisherService(enabled = true): PublisherManagementService {
+function makePublisherService(enabled = true, includeGhost = false): PublisherManagementService {
+  const publishers = [
+    {
+      id: 'wordpress',
+      displayName: 'WordPress',
+      version: '1.0.0',
+      enabled,
+      capabilities,
+      supportsHealthCheck: true,
+    },
+  ];
+  if (includeGhost) {
+    publishers.push({
+      id: 'ghost',
+      displayName: 'Ghost',
+      version: '1.0.0',
+      enabled,
+      capabilities,
+      supportsHealthCheck: true,
+    });
+  }
   return {
-    listPublishers: () => [
-      {
-        id: 'wordpress',
-        displayName: 'WordPress',
-        version: '1.0.0',
-        enabled,
-        capabilities,
-        supportsHealthCheck: true,
-      },
-    ],
-    getPublisher: (id) =>
-      id === 'wordpress'
-        ? {
-            id: 'wordpress',
-            displayName: 'WordPress',
-            version: '1.0.0',
-            description: 'WordPress REST API',
-            enabled,
-            capabilities,
-            supportsHealthCheck: true,
-            configurationRequirements: [
-              { envVar: 'WORDPRESS_URL', required: true, description: 'Site URL' },
-            ],
-          }
-        : null,
+    listPublishers: () => publishers,
+    getPublisher: (id) => {
+      const p = publishers.find((x) => x.id === id);
+      if (!p) return null;
+      return {
+        ...p,
+        description: `${p.displayName} publisher`,
+        configurationRequirements:
+          id === 'wordpress'
+            ? [{ envVar: 'WORDPRESS_URL', required: true, description: 'Site URL' }]
+            : [{ envVar: 'GHOST_URL', required: true, description: 'Site URL' }],
+      };
+    },
     checkHealth: async () => ({ healthy: true, latency: 10, message: 'ok' }),
   };
 }
@@ -265,5 +273,118 @@ describe('createContentComposerService.publish', () => {
     });
     expect(result.failures[0]?.publisherId).toBe('*');
     expect(result.failures[0]?.reason).toContain('queue');
+  });
+});
+
+describe('createContentComposerService.bulkPublish', () => {
+  it('fans out jobs across asset × publisher pairs', async () => {
+    const enqueued: Array<{ assetId: string; publisherId: string }> = [];
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary({
+        listAssets: async () => ({
+          assets: [listItem, { ...listItem, id: 'asset-2', filename: 'second.jpg' }],
+          total: 2,
+          limit: 50,
+          offset: 0,
+        }),
+        getAsset: async (_p, id) => {
+          if (id === 'asset-1') return detail;
+          if (id === 'asset-2') return { ...detail, id: 'asset-2', filename: 'second.jpg' };
+          return null;
+        },
+        getThumbnailStorageKey: async () => 'proj/hero_thumb.webp',
+      }),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: {
+        enqueue: async (payload) => {
+          enqueued.push({
+            assetId: payload.assetId ?? '',
+            publisherId: payload.publisherId ?? '',
+          });
+          return `job-${enqueued.length}`;
+        },
+        close: async () => {},
+      },
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+
+    const result = await service.bulkPublish({
+      projectId: 'proj-1',
+      assetIds: ['asset-1', 'asset-2'],
+      publisherIds: ['wordpress'],
+    });
+
+    expect(result.summary.accepted).toBe(2);
+    expect(result.accepted).toHaveLength(2);
+    expect(enqueued).toHaveLength(2);
+    expect(result.summary.pairs).toBe(2);
+  });
+
+  it('skips duplicates per asset/publisher pair independently', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary(),
+      publisherService: makePublisherService(true, true),
+      publishingEnqueuer: makeEnqueuer(['job-1', 'job-2']),
+      storageProvider: makeStorage(),
+      findDuplicate: async (_projectId, publisher, slug) =>
+        publisher === 'wordpress' && slug === 'hero-photo',
+      env: { WORDPRESS_URL: 'https://wp.test', GHOST_URL: 'https://ghost.test' },
+    });
+
+    const result = await service.bulkPublish({
+      projectId: 'proj-1',
+      assetIds: ['asset-1'],
+      publisherIds: ['wordpress', 'ghost'],
+    });
+
+    expect(result.skipped.some((s) => s.publisherId === 'wordpress')).toBe(true);
+    expect(result.summary.skipped).toBeGreaterThanOrEqual(1);
+  });
+
+  it('continues after validation failures on some pairs', async () => {
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary({
+        getAsset: async (_p, id) => (id === 'asset-1' ? detail : null),
+      }),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+
+    const result = await service.bulkPublish({
+      projectId: 'proj-1',
+      assetIds: ['asset-1', 'missing-asset'],
+      publisherIds: ['wordpress', 'unknown'],
+    });
+
+    expect(result.summary.failures).toBeGreaterThan(0);
+    expect(result.summary.accepted).toBeGreaterThanOrEqual(1);
+  });
+
+  it('handles large batch within limits', async () => {
+    const assetIds = Array.from({ length: 10 }, (_, i) => `asset-${i + 1}`);
+    const service = createContentComposerService({
+      assetLibrary: makeAssetLibrary({
+        getAsset: async (_p, id) =>
+          id.startsWith('asset-') ? { ...detail, id, filename: `${id}.jpg` } : null,
+        getThumbnailStorageKey: async () => 'proj/hero_thumb.webp',
+      }),
+      publisherService: makePublisherService(),
+      publishingEnqueuer: makeEnqueuer(),
+      storageProvider: makeStorage(),
+      env: { WORDPRESS_URL: 'https://wp.test' },
+    });
+
+    const result = await service.bulkPublish({
+      projectId: 'proj-1',
+      assetIds,
+      publisherIds: ['wordpress'],
+    });
+
+    expect(result.summary.assets).toBe(10);
+    expect(result.summary.pairs).toBe(10);
+    expect(result.summary.accepted).toBe(10);
   });
 });

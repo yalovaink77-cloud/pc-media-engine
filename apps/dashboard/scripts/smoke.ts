@@ -133,6 +133,7 @@ function makeFixtureClient(): DashboardApiClient {
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
     publishComposer: async () => null,
+    bulkPublishComposer: async () => null,
   };
 }
 
@@ -160,6 +161,7 @@ function makeErrorClient(): DashboardApiClient {
     fetchComposerAsset: async () => null,
     validateComposer: async () => null,
     publishComposer: async () => null,
+    bulkPublishComposer: async () => null,
   };
 }
 

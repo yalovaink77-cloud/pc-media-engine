@@ -85,6 +85,7 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
       skipped: [],
       failures: [],
     }),
+    bulkPublishComposer: async () => null,
     ...overrides,
   };
 }

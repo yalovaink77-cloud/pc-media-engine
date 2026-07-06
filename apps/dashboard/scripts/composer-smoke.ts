@@ -104,6 +104,7 @@ function makeClient(): DashboardApiClient {
       skipped: [],
       failures: [],
     }),
+    bulkPublishComposer: async () => null,
   };
 }
 
