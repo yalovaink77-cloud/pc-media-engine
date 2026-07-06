@@ -152,13 +152,11 @@ describe('createDashboardApiClient — publisher management', () => {
   });
 
   it('fetchPublisherHealth calls GET /publishers/:id/health', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ healthy: true, latency: 30, message: 'Connected' }), {
-          status: 200,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ healthy: true, latency: 30, message: 'Connected' }), {
+        status: 200,
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const client = createDashboardApiClient('http://api.test');
@@ -178,5 +176,34 @@ describe('createDashboardApiClient — publisher management', () => {
     expect(await client.fetchPublishers()).toBeNull();
     expect(await client.fetchPublisherDetail('x')).toBeNull();
     expect(await client.fetchPublisherHealth('x')).toBeNull();
+  });
+});
+
+describe('createDashboardApiClient — publishing jobs', () => {
+  it('fetchJobs calls GET /jobs with filters', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ jobs: [], total: 0, limit: 10, offset: 0 }), { status: 200 }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test', 'key');
+    await client.fetchJobs({ status: 'failed', limit: 10 });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      'http://api.test/jobs?status=failed&limit=10',
+    );
+    expect(fetchMock.mock.calls[0]?.[1]?.headers?.['x-api-key']).toBe('key');
+  });
+
+  it('fetchJob calls GET /jobs/:id', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ id: 'job-1' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const client = createDashboardApiClient('http://api.test');
+    await client.fetchJob('job-1');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://api.test/jobs/job-1');
   });
 });

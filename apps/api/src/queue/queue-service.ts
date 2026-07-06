@@ -9,6 +9,12 @@
 // Types
 // ---------------------------------------------------------------------------
 
+import type { JobListQuery, JobListResult } from './job-types.js';
+import type { JobDetail } from './job-types.js';
+
+export type { JobDetail, JobListItem, JobListQuery, JobListResult } from './job-types.js';
+export { DEFAULT_JOB_LIMIT, isJobStatus, JOB_STATUSES, MAX_JOB_LIMIT } from './job-types.js';
+
 export type QueueStatus = {
   /** Whether the queue is paused (not consuming new jobs). */
   paused: boolean;
@@ -72,4 +78,14 @@ export interface QueueService {
    * Throws `QueueJobNotFoundError` if the job does not exist.
    */
   removeJob(jobId: string): Promise<void>;
+  /**
+   * List publishing jobs with optional filters and pagination (Sprint 38).
+   * Throws nothing — returns empty list when no jobs match.
+   */
+  listJobs(query: JobListQuery, publisherDriver: string): Promise<JobListResult>;
+  /**
+   * Return full detail for a single job (Sprint 38).
+   * Throws `QueueJobNotFoundError` when the job does not exist.
+   */
+  getJob(jobId: string, publisherDriver: string): Promise<JobDetail>;
 }

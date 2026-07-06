@@ -3,8 +3,18 @@ import Fastify from 'fastify';
 
 import type { DashboardApiClient } from './client.js';
 import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
-import { renderDashboardPage, renderPublishersPage } from './renderer.js';
-import type { DashboardFlash, PublisherHealthResult, QueueActionResult } from './types.js';
+import {
+  renderDashboardPage,
+  renderJobDetailPage,
+  renderJobsPage,
+  renderPublishersPage,
+} from './renderer.js';
+import type {
+  DashboardFlash,
+  JobListFilters,
+  PublisherHealthResult,
+  QueueActionResult,
+} from './types.js';
 
 export type DashboardAppOptions = {
   client: DashboardApiClient;
@@ -17,6 +27,46 @@ function redirectWithFlash(reply: FastifyReply, result: QueueActionResult): void
   const type = result.ok ? 'ok' : 'err';
   const flash = encodeURIComponent(result.message);
   void reply.redirect(302, `/?flash=${flash}&flashType=${type}`);
+}
+
+function redirectJobsWithFlash(reply: FastifyReply, message: string, type: 'ok' | 'err'): void {
+  const flash = encodeURIComponent(message);
+  void reply.redirect(302, `/jobs?flash=${flash}&flashType=${type}`);
+}
+
+function redirectJobDetailWithFlash(
+  reply: FastifyReply,
+  jobId: string,
+  message: string,
+  type: 'ok' | 'err',
+): void {
+  const flash = encodeURIComponent(message);
+  void reply.redirect(302, `/jobs/${encodeURIComponent(jobId)}?flash=${flash}&flashType=${type}`);
+}
+
+function parseJobFilters(query: Record<string, string | undefined>): JobListFilters {
+  const filters: JobListFilters = {};
+  if (query.status) filters.status = query.status;
+  if (query.publisher) filters.publisher = query.publisher;
+  if (query.projectId) filters.projectId = query.projectId;
+  if (query.assetId) filters.assetId = query.assetId;
+  if (query.limit) {
+    const limit = parseInt(query.limit, 10);
+    if (!Number.isNaN(limit)) filters.limit = limit;
+  }
+  if (query.offset) {
+    const offset = parseInt(query.offset, 10);
+    if (!Number.isNaN(offset)) filters.offset = offset;
+  }
+  return filters;
+}
+
+function parseFlash(query: { flash?: string; flashType?: string }): DashboardFlash | undefined {
+  if (!query.flash) return undefined;
+  return {
+    message: decodeURIComponent(query.flash),
+    type: query.flashType === 'ok' ? 'ok' : 'err',
+  };
 }
 
 function redirectPublishersWithFlash(
@@ -62,14 +112,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   );
 
   app.get('/', async (request, reply) => {
-    const query = request.query as { flash?: string; flashType?: string };
-    let flash: DashboardFlash | undefined;
-    if (query.flash) {
-      flash = {
-        message: decodeURIComponent(query.flash),
-        type: query.flashType === 'ok' ? 'ok' : 'err',
-      };
-    }
+    const flash = parseFlash(request.query as { flash?: string; flashType?: string });
 
     const { health, summary, recent, metrics, queueStatus, errors } =
       await fetchAllDashboardData(client);
@@ -124,14 +167,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
   });
 
   app.get('/publishers', async (request, reply) => {
-    const query = request.query as { flash?: string; flashType?: string };
-    let flash: DashboardFlash | undefined;
-    if (query.flash) {
-      flash = {
-        message: decodeURIComponent(query.flash),
-        type: query.flashType === 'ok' ? 'ok' : 'err',
-      };
-    }
+    const flash = parseFlash(request.query as { flash?: string; flashType?: string });
 
     const { publishers, details, errors } = await fetchAllPublishersData(client);
 
@@ -154,6 +190,67 @@ export function buildDashboardApp(options: DashboardAppOptions) {
     const { id } = request.params;
     const result = formatHealthFlash(id, await client.fetchPublisherHealth(id));
     redirectPublishersWithFlash(reply, result.message, result.ok ? 'ok' : 'err');
+  });
+
+  app.get('/jobs', async (request, reply) => {
+    const query = request.query as Record<string, string | undefined>;
+    const filters = parseJobFilters(query);
+    const result = await client.fetchJobs(filters);
+    const errors: string[] = [];
+    if (!result) errors.push('Could not reach /jobs — check DASHBOARD_API_KEY and Redis');
+
+    const html = renderJobsPage({
+      result,
+      filters,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      flash: parseFlash(query),
+      apiKeyConfigured,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.get<{ Params: { id: string } }>('/jobs/:id', async (request, reply) => {
+    const { id } = request.params;
+    const query = request.query as { flash?: string; flashType?: string };
+    const job = await client.fetchJob(id);
+    const errors: string[] = [];
+    if (!job) errors.push(`Could not load job "${id}"`);
+
+    const html = renderJobDetailPage({
+      job,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      flash: parseFlash(query),
+      apiKeyConfigured,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.post<{ Params: { id: string } }>('/ops/jobs/:id/retry', async (request, reply) => {
+    const { id } = request.params;
+    const result = await client.retryJob(id);
+    redirectJobDetailWithFlash(reply, id, result.message, result.ok ? 'ok' : 'err');
+  });
+
+  app.post<{ Params: { id: string } }>('/ops/jobs/:id/remove', async (request, reply) => {
+    const { id } = request.params;
+    const result = await client.removeJob(id);
+    if (result.ok) {
+      redirectJobsWithFlash(reply, result.message, 'ok');
+      return;
+    }
+    redirectJobDetailWithFlash(reply, id, result.message, 'err');
   });
 
   return app;

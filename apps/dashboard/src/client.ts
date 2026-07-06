@@ -4,6 +4,9 @@ import type {
   DashboardQueueData,
   DashboardRecentData,
   DashboardSummaryData,
+  JobDetail,
+  JobListFilters,
+  JobListResult,
   PublisherDetail,
   PublisherHealthResult,
   PublisherListItem,
@@ -31,6 +34,9 @@ export interface DashboardApiClient {
   fetchPublishers(): Promise<PublisherListItem[] | null>;
   fetchPublisherDetail(id: string): Promise<PublisherDetail | null>;
   fetchPublisherHealth(id: string): Promise<PublisherHealthResult | null>;
+  /** Sprint 38 publishing jobs — require auth when PCME_AUTH_ENABLED=true. */
+  fetchJobs(filters?: JobListFilters): Promise<JobListResult | null>;
+  fetchJob(id: string): Promise<JobDetail | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,6 +121,19 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
       fetchJson<PublisherDetail>(`${base}/publishers/${encodeURIComponent(id)}`),
     fetchPublisherHealth: (id: string) =>
       fetchJson<PublisherHealthResult>(`${base}/publishers/${encodeURIComponent(id)}/health`),
+    fetchJobs: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.status) params.set('status', filters.status);
+      if (filters.publisher) params.set('publisher', filters.publisher);
+      if (filters.projectId) params.set('projectId', filters.projectId);
+      if (filters.assetId) params.set('assetId', filters.assetId);
+      if (filters.limit !== undefined) params.set('limit', String(filters.limit));
+      if (filters.offset !== undefined) params.set('offset', String(filters.offset));
+      const qs = params.toString();
+      return fetchJson<JobListResult>(`${base}/jobs${qs ? `?${qs}` : ''}`, apiKey);
+    },
+    fetchJob: (id: string) =>
+      fetchJson<JobDetail>(`${base}/jobs/${encodeURIComponent(id)}`, apiKey),
   };
 }
 

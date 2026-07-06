@@ -94,6 +94,8 @@ function makePublisherClient(): DashboardApiClient {
         message: 'Provider is disabled — required configuration is missing',
       };
     },
+    fetchJobs: async () => null,
+    fetchJob: async () => null,
   };
 }
 

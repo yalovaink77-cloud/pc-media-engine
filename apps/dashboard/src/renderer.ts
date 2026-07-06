@@ -1,4 +1,10 @@
-import type { DashboardPageData, PublishersPageData, RecentItem } from './types.js';
+import type {
+  DashboardPageData,
+  JobDetailPageData,
+  JobsPageData,
+  PublishersPageData,
+  RecentItem,
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -49,14 +55,24 @@ function renderErrors(errors: string[]): string {
   </section>`;
 }
 
-function renderNav(active: 'dashboard' | 'publishers'): string {
+function renderNav(active: 'dashboard' | 'publishers' | 'jobs'): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
+  const jobsCls = active === 'jobs' ? 'nav-active' : '';
   return `
     <nav class="nav" data-testid="dashboard-nav">
       <a href="/" class="${dashCls}">Dashboard</a>
       <a href="/publishers" class="${pubCls}">Publishers</a>
+      <a href="/jobs" class="${jobsCls}">Jobs</a>
     </nav>`;
+}
+
+function jobStatusBadge(status: string): string {
+  if (status === 'completed') return badge(status, 'ok');
+  if (status === 'failed') return badge(status, 'err');
+  if (status === 'active') return badge(status, 'ok');
+  if (status === 'delayed') return badge(status, 'warn');
+  return badge(status, 'neutral');
 }
 
 function capabilityBadges(caps: PublishersPageData['publishers'][0]['capabilities']): string {
@@ -77,7 +93,9 @@ function capabilityBadges(caps: PublishersPageData['publishers'][0]['capabilitie
     .join(' ');
 }
 
-function renderFlash(flash: DashboardPageData['flash'] | PublishersPageData['flash']): string {
+function renderFlash(
+  flash: DashboardPageData['flash'] | PublishersPageData['flash'] | JobsPageData['flash'],
+): string {
   if (!flash) return '';
   const cls = flash.type === 'ok' ? 'flash-ok' : 'flash-err';
   return `
@@ -468,8 +486,274 @@ const CSS = `
   .config-list{margin:.5rem 0 0;padding-left:1.1rem;font-size:.8rem;color:#4b5563}
   .config-list li{margin-bottom:.25rem}
   .publisher-actions{margin-top:1rem}
+  .filter-form{background:#fff;border-radius:8px;padding:1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end}
+  .filter-form label{font-size:.75rem;color:#6b7280;display:block;margin-bottom:.25rem}
+  .filter-form input,.filter-form select{padding:.4rem .55rem;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem}
+  .detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+  .detail-card{background:#fff;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .detail-card h3{font-size:.75rem;text-transform:uppercase;color:#9ca3af;margin-bottom:.5rem}
+  .detail-list{font-size:.85rem;color:#374151}
+  .detail-list dt{font-weight:600;margin-top:.5rem}
+  .detail-list dd{margin-left:0;color:#6b7280;word-break:break-all}
+  .retry-list{margin:.5rem 0 0;padding-left:1.1rem;font-size:.8rem}
+  .retry-list li{margin-bottom:.35rem}
   footer{max-width:1200px;margin:0 auto;padding:0 2rem 2rem;font-size:.75rem;color:#9ca3af}
 `.trim();
+
+function renderJobFilters(filters: JobsPageData['filters']): string {
+  const v = (key: keyof JobsPageData['filters']) => esc(filters[key] ?? '');
+  return `
+  <form class="filter-form" method="get" action="/jobs" data-testid="jobs-filter-form">
+    <div>
+      <label for="status">Status</label>
+      <select name="status" id="status">
+        <option value="">All</option>
+        ${['waiting', 'active', 'delayed', 'failed', 'completed']
+          .map(
+            (s) => `<option value="${s}"${filters.status === s ? ' selected' : ''}>${s}</option>`,
+          )
+          .join('')}
+      </select>
+    </div>
+    <div>
+      <label for="publisher">Publisher</label>
+      <input type="text" name="publisher" id="publisher" value="${v('publisher')}" placeholder="mock">
+    </div>
+    <div>
+      <label for="projectId">Project ID</label>
+      <input type="text" name="projectId" id="projectId" value="${v('projectId')}">
+    </div>
+    <div>
+      <label for="assetId">Asset ID</label>
+      <input type="text" name="assetId" id="assetId" value="${v('assetId')}">
+    </div>
+    <div>
+      <label for="limit">Limit</label>
+      <input type="number" name="limit" id="limit" value="${v('limit') || '50'}" min="1" max="200">
+    </div>
+    <button type="submit" class="btn btn-neutral">Filter</button>
+  </form>`;
+}
+
+function renderJobsTable(data: JobsPageData): string {
+  if (!data.result) {
+    return `<p class="empty" data-testid="jobs-unavailable">Jobs unavailable — configure DASHBOARD_API_KEY and Redis</p>`;
+  }
+  if (!data.result.jobs.length) {
+    return `<p class="empty" data-testid="jobs-empty">No publishing jobs match the current filters</p>`;
+  }
+
+  const rows = data.result.jobs
+    .map(
+      (job) => `
+    <tr data-testid="job-row-${esc(job.id)}">
+      <td><a href="/jobs/${esc(job.id)}">${esc(job.id)}</a></td>
+      <td>${jobStatusBadge(job.status)}</td>
+      <td>${esc(job.publisher)}</td>
+      <td>${esc(job.title)}</td>
+      <td>${esc(job.retryCount)} / ${esc(job.maxAttempts)}</td>
+      <td>${formatDate(job.createdAt)}</td>
+      <td>${formatDate(job.updatedAt)}</td>
+    </tr>`,
+    )
+    .join('');
+
+  return `
+  <p style="font-size:.85rem;color:#6b7280;margin-bottom:.75rem">
+    Showing ${esc(data.result.jobs.length)} of ${esc(data.result.total)} jobs
+    (offset ${esc(data.result.offset)}, limit ${esc(data.result.limit)})
+  </p>
+  <table data-testid="jobs-table">
+    <thead>
+      <tr>
+        <th>Job ID</th><th>Status</th><th>Publisher</th><th>Title</th>
+        <th>Retries</th><th>Created</th><th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderJobDetailSection(data: JobDetailPageData): string {
+  const job = data.job;
+  if (!job) {
+    return `<p class="empty" data-testid="job-unavailable">Job not found or API unavailable</p>`;
+  }
+
+  const retryRows = job.retryHistory.length
+    ? `<ol class="retry-list">${job.retryHistory
+        .map((r) => `<li>Attempt ${esc(r.attempt)}: ${esc(r.error ?? '—')}</li>`)
+        .join('')}</ol>`
+    : `<p class="empty">No retry attempts recorded</p>`;
+
+  const errorBlock = job.error
+    ? `<p><strong>${esc(job.error.message ?? 'Unknown error')}</strong></p>${
+        job.error.stacktrace?.length
+          ? `<pre style="font-size:.75rem;overflow:auto;margin-top:.5rem">${esc(job.error.stacktrace.join('\n'))}</pre>`
+          : ''
+      }`
+    : `<p class="empty">No error recorded</p>`;
+
+  const retryForm =
+    job.status === 'failed'
+      ? `<form method="post" action="/ops/jobs/${esc(job.id)}/retry" data-testid="job-retry-form">
+          <button type="submit" class="btn btn-ok">Retry Job</button>
+        </form>`
+      : '';
+
+  const removeForm = `<form method="post" action="/ops/jobs/${esc(job.id)}/remove" data-testid="job-remove-form">
+      <button type="submit" class="btn btn-danger">Remove Job</button>
+    </form>`;
+
+  return `
+  <section data-testid="job-detail-section">
+    <p style="margin-bottom:1rem">
+      <a href="/jobs">&larr; Back to jobs</a>
+    </p>
+    <div class="cards" style="margin-bottom:1rem">
+      <div class="card">
+        <div class="label">Status</div>
+        <div class="value small">${jobStatusBadge(job.status)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Publisher</div>
+        <div class="value small">${esc(job.publisher)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Retries</div>
+        <div class="value small">${esc(job.retryCount)} / ${esc(job.maxAttempts)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Queue</div>
+        <div class="value small">${job.queuePaused ? badge('Paused', 'warn') : badge('Running', 'ok')}</div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <h3>Metadata</h3>
+        <dl class="detail-list">
+          <dt>Job ID</dt><dd>${esc(job.id)}</dd>
+          <dt>Name</dt><dd>${esc(job.name)}</dd>
+          <dt>Queue State</dt><dd>${esc(job.queueState)}</dd>
+          <dt>Created</dt><dd>${formatDate(job.createdAt)}</dd>
+          <dt>Processed</dt><dd>${formatDate(job.processedAt)}</dd>
+          <dt>Finished</dt><dd>${formatDate(job.finishedAt)}</dd>
+          <dt>Scheduled</dt><dd>${formatDate(job.scheduledTime ?? job.scheduledFor)}</dd>
+        </dl>
+      </div>
+      <div class="detail-card">
+        <h3>Payload Summary</h3>
+        <dl class="detail-list">
+          <dt>Title</dt><dd>${esc(job.payload.title)}</dd>
+          <dt>Slug</dt><dd>${esc(job.payload.slug)}</dd>
+          <dt>Project ID</dt><dd>${esc(job.payload.projectId ?? '—')}</dd>
+          <dt>Asset ID</dt><dd>${esc(job.payload.assetId ?? '—')}</dd>
+          <dt>Processing Job</dt><dd>${esc(job.payload.processingJobId ?? '—')}</dd>
+          <dt>Media</dt><dd>${job.payload.hasMedia ? esc(job.payload.mediaMimeType ?? 'yes') : '—'}</dd>
+        </dl>
+      </div>
+      <div class="detail-card">
+        <h3>Error Information</h3>
+        ${errorBlock}
+      </div>
+      <div class="detail-card">
+        <h3>Retry History</h3>
+        ${retryRows}
+      </div>
+    </div>
+    <div class="ops-row" style="margin-top:1.25rem" data-testid="job-ops-panel">
+      ${retryForm}
+      ${removeForm}
+    </div>
+    ${!data.apiKeyConfigured ? `<p class="ops-hint warn" data-testid="jobs-api-key-hint">Set DASHBOARD_API_KEY to run queue actions</p>` : ''}
+  </section>`;
+}
+
+export function renderJobsPage(data: JobsPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Publishing Jobs</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Publishing Jobs</h1>
+    <p>Queue job inspection &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('jobs')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    <section data-testid="jobs-section">
+      <h2>Publishing Jobs</h2>
+      ${renderJobFilters(data.filters)}
+      ${renderJobsTable(data)}
+    </section>
+  </main>
+  <footer>
+    <p>Read-only list &middot; Use job detail page for retry/remove actions</p>
+  </footer>
+</body>
+</html>`;
+}
+
+export function renderJobDetailPage(data: JobDetailPageData): string {
+  const title = data.job?.title ?? 'Job Detail';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — ${esc(title)}</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Job Detail</h1>
+    <p>${esc(title)} &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('jobs')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    ${renderJobDetailSection(data)}
+  </main>
+  <footer>
+    <p>Queue actions use existing Sprint 32 retry/remove APIs</p>
+  </footer>
+</body>
+</html>`;
+}
+
+export function renderPublishersPage(data: PublishersPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Publisher Management</title>
+  <style>${CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Publisher Management</h1>
+    <p>Read-only provider registry &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('publishers')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    ${renderPublishersSection(data)}
+  </main>
+  <footer>
+    <p>Reload to refresh &middot; Health checks call provider APIs when configured</p>
+  </footer>
+</body>
+</html>`;
+}
 
 function renderPublisherCard(
   publisher: PublishersPageData['publishers'][0],
@@ -533,33 +817,6 @@ function renderPublishersSection(data: PublishersPageData): string {
     <p style="font-size:.85rem;color:#6b7280;margin-bottom:1rem">Read-only view of Publisher SDK providers. No editing or credentials management.</p>
     <div class="publisher-grid">${cards}</div>
   </section>`;
-}
-
-export function renderPublishersPage(data: PublishersPageData): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PC Media Engine — Publisher Management</title>
-  <style>${CSS}</style>
-</head>
-<body>
-  <header>
-    <h1>PC Media Engine — Publisher Management</h1>
-    <p>Read-only provider registry &middot; Last fetched: ${esc(data.fetchedAt)}</p>
-    ${renderNav('publishers')}
-  </header>
-  <main>
-    ${renderErrors(data.errors)}
-    ${renderFlash(data.flash)}
-    ${renderPublishersSection(data)}
-  </main>
-  <footer>
-    <p>Reload to refresh &middot; Health checks call provider APIs when configured</p>
-  </footer>
-</body>
-</html>`;
 }
 
 export function renderDashboardPage(data: DashboardPageData): string {

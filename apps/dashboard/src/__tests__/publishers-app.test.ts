@@ -58,6 +58,8 @@ function makeMockClient(): DashboardApiClient {
       latency: 25,
       message: id === 'wordpress' ? 'Authenticated as admin' : 'Not configured',
     }),
+    fetchJobs: async () => null,
+    fetchJob: async () => null,
   };
 }
 

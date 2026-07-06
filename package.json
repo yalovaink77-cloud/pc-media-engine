@@ -41,7 +41,8 @@
     "publisher-sdk:smoke": "pnpm --filter @pcme/publisher-sdk smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",
-    "publisher-management:smoke": "pnpm --filter @pcme/api publisher-management:smoke && pnpm --filter @pcme/dashboard smoke:publishers"
+    "publisher-management:smoke": "pnpm --filter @pcme/api publisher-management:smoke && pnpm --filter @pcme/dashboard smoke:publishers",
+    "jobs:smoke": "pnpm --filter @pcme/api jobs:smoke && pnpm --filter @pcme/dashboard smoke:jobs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

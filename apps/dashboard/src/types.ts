@@ -156,3 +156,86 @@ export type PublishersPageData = {
   errors: string[];
   flash?: DashboardFlash;
 };
+
+// ---------------------------------------------------------------------------
+// Publishing jobs (Sprint 38)
+// ---------------------------------------------------------------------------
+
+export type JobPayloadSummary = {
+  title: string;
+  slug: string;
+  organizationId?: string;
+  projectId?: string;
+  assetId?: string;
+  processingJobId?: string;
+  scheduledFor?: string;
+  mediaMimeType?: string;
+  mediaFilename?: string;
+  hasMedia: boolean;
+};
+
+export type JobListItem = {
+  id: string;
+  name: string;
+  status: string;
+  publisher: string;
+  projectId?: string;
+  assetId?: string;
+  title: string;
+  slug: string;
+  retryCount: number;
+  maxAttempts: number;
+  createdAt: string;
+  updatedAt?: string;
+  scheduledFor?: string;
+};
+
+export type JobRetryAttempt = {
+  attempt: number;
+  error?: string;
+};
+
+export type JobDetail = JobListItem & {
+  payload: JobPayloadSummary;
+  queueState: string;
+  scheduledTime?: string;
+  processedAt?: string;
+  finishedAt?: string;
+  delayMs?: number;
+  error?: { message?: string; stacktrace?: string[] };
+  retryHistory: JobRetryAttempt[];
+  queuePaused: boolean;
+};
+
+export type JobListResult = {
+  jobs: JobListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type JobListFilters = {
+  status?: string;
+  publisher?: string;
+  projectId?: string;
+  assetId?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type JobsPageData = {
+  result: JobListResult | null;
+  filters: JobListFilters;
+  fetchedAt: string;
+  errors: string[];
+  flash?: DashboardFlash;
+  apiKeyConfigured: boolean;
+};
+
+export type JobDetailPageData = {
+  job: JobDetail | null;
+  fetchedAt: string;
+  errors: string[];
+  flash?: DashboardFlash;
+  apiKeyConfigured: boolean;
+};

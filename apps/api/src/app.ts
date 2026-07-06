@@ -16,6 +16,7 @@ import type { DashboardDataProvider } from './routes/dashboard.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import type { DatabaseStatus } from './routes/health.js';
 import { healthRoutes } from './routes/health.js';
+import { jobsRoutes } from './routes/jobs.js';
 import type { AssetCreator, FileStorer } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
 import type { QueueMetricsProvider } from './routes/metrics.js';
@@ -228,6 +229,12 @@ export function buildApp(options: AppOptions) {
   app.register(queueRoutes, {
     queueService,
     authMiddleware,
+  });
+
+  app.register(jobsRoutes, {
+    queueService,
+    authMiddleware,
+    publishingConfig: config,
   });
 
   app.register(publishersRoutes, {

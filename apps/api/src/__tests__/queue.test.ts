@@ -7,10 +7,6 @@ import { signJwt } from '../auth/jwt.js';
 import type { QueueService, QueueStatus } from '../queue/queue-service.js';
 import { QueueJobNotFoundError, QueueJobStateError } from '../queue/queue-service.js';
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
 const baseConfig: AppOptions['config'] = {
   port: 3001,
   host: '127.0.0.1',
@@ -58,6 +54,8 @@ function makeMockQueueService(overrides: Partial<QueueService> = {}): QueueServi
     drain: vi.fn().mockResolvedValue(undefined),
     retryJob: vi.fn().mockResolvedValue(undefined),
     removeJob: vi.fn().mockResolvedValue(undefined),
+    listJobs: vi.fn().mockResolvedValue({ jobs: [], total: 0, limit: 50, offset: 0 }),
+    getJob: vi.fn().mockRejectedValue(new QueueJobNotFoundError('none')),
     ...overrides,
   };
 }
