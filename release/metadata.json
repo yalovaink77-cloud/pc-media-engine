@@ -1,0 +1,22 @@
+{
+  "version": "0.50.0-beta-rc",
+  "codename": "Beta Release Candidate",
+  "releaseDate": "2026-07-07",
+  "sprintsCompleted": 49,
+  "sprint50Status": "release-candidate",
+  "repository": "pc-media-engine",
+  "packages": {
+    "root": "0.50.0-beta-rc",
+    "workspace": "0.0.0"
+  },
+  "supportedPublishers": ["mock", "wordpress", "ghost"],
+  "healthEndpoints": [
+    "GET /health",
+    "GET /dashboard/health",
+    "GET /publishing/health",
+    "GET /auth/health"
+  ],
+  "metricsEndpoint": "GET /metrics",
+  "offlineSmokeSuites": 28,
+  "liveSmokeSuitesSkipped": ["e2e:smoke", "publishing-history:smoke"]
+}

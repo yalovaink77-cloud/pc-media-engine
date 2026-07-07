@@ -140,6 +140,11 @@ function makeFixtureClient(): DashboardApiClient {
     fetchProviderConfig: async () => null,
     validateProviderConfig: async () => null,
     updateProviderConfig: async () => ({ ok: false, status: 0, detail: null, validation: null }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
+    fetchNotifications: async () => ({ notifications: [], total: 0, unreadCount: 0, limit: 50 }),
+    markNotificationRead: async () => ({ ok: true, status: 200 }),
+    markAllNotificationsRead: async () => ({ ok: true, status: 200, marked: 0 }),
   };
 }
 
@@ -174,6 +179,11 @@ function makeErrorClient(): DashboardApiClient {
     fetchProviderConfig: async () => null,
     validateProviderConfig: async () => null,
     updateProviderConfig: async () => ({ ok: false, status: 0, detail: null, validation: null }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
+    fetchNotifications: async () => ({ notifications: [], total: 0, unreadCount: 0, limit: 50 }),
+    markNotificationRead: async () => ({ ok: true, status: 200 }),
+    markAllNotificationsRead: async () => ({ ok: true, status: 200, marked: 0 }),
   };
 }
 

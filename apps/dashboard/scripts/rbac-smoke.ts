@@ -53,6 +53,11 @@ function makeClient(): DashboardApiClient {
     fetchProviderConfig: nullFn,
     validateProviderConfig: nullFn,
     updateProviderConfig: async () => ({ ok: true, status: 200, detail: null, validation: null }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
+    fetchNotifications: async () => ({ notifications: [], total: 0, unreadCount: 0, limit: 50 }),
+    markNotificationRead: async () => ({ ok: true, status: 200 }),
+    markAllNotificationsRead: async () => ({ ok: true, status: 200, marked: 0 }),
   };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "pc-media-engine",
-  "version": "0.1.0-alpha",
+  "version": "0.50.0-beta-rc",
   "private": true,
   "description": "Reusable media and content operating system",
   "packageManager": "pnpm@9.15.0",
@@ -53,7 +53,8 @@
     "audit:smoke": "pnpm --filter @pcme/api audit:smoke && pnpm --filter @pcme/dashboard audit:smoke",
     "notifications:smoke": "pnpm --filter @pcme/api notifications:smoke && pnpm --filter @pcme/dashboard notifications:smoke",
     "deployment:smoke": "pnpm --filter @pcme/api deployment:smoke",
-    "performance:smoke": "pnpm --filter @pcme/api performance:smoke"
+    "performance:smoke": "pnpm --filter @pcme/api performance:smoke",
+    "beta-rc:smoke": "pnpm --filter @pcme/api exec tsx ../../scripts/beta-rc-smoke.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
