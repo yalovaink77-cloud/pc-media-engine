@@ -40,7 +40,8 @@
     "provider-config:smoke": "tsx scripts/provider-config-smoke.ts",
     "rbac:smoke": "tsx scripts/rbac-smoke.ts",
     "audit:smoke": "tsx scripts/audit-smoke.ts",
-    "notifications:smoke": "tsx scripts/notifications-smoke.ts"
+    "notifications:smoke": "tsx scripts/notifications-smoke.ts",
+    "deployment:smoke": "tsx scripts/deployment-smoke.ts"
   },
   "dependencies": {
     "@fastify/multipart": "^8.3.1",

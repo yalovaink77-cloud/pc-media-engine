@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.github
+.husky
+coverage
+**/*.test.ts
+**/__tests__
+apps/**/scripts/*-smoke.ts
+scripts/deployment-smoke.ts
+storage
+deploy/backups
+*.md
+!packages/database/prisma/**

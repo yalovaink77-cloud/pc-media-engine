@@ -1,0 +1,26 @@
+# PC Media Engine — Dashboard production image (Sprint 48)
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/dashboard/package.json apps/dashboard/
+COPY apps/dashboard apps/dashboard
+RUN pnpm install --frozen-lockfile --filter @pcme/dashboard...
+RUN pnpm --filter @pcme/dashboard build
+
+FROM base AS runner
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/dashboard/dist ./apps/dashboard/dist
+COPY --from=builder /app/apps/dashboard/package.json ./apps/dashboard/package.json
+COPY --from=builder /app/package.json ./package.json
+
+EXPOSE 3002
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "apps/dashboard/dist/index.js"]

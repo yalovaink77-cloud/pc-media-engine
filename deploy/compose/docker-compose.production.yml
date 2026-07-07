@@ -1,0 +1,176 @@
+# PC Media Engine — Production Docker Compose (Sprint 48)
+#
+# Usage:
+#   cp deploy/env/.env.production.example deploy/env/.env.production
+#   # Edit secrets and IDs, then:
+#   deploy/scripts/startup.sh
+#
+# Requires Docker Compose v2.
+
+name: pcme-production
+
+networks:
+  pcme_data:
+    driver: bridge
+    internal: true
+  pcme_app:
+    driver: bridge
+  pcme_edge:
+    driver: bridge
+
+volumes:
+  pcme_postgres_data:
+  pcme_redis_data:
+  pcme_storage:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pcme-postgres
+    restart: unless-stopped
+    networks: [pcme_data]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pcme_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    container_name: pcme-redis
+    restart: unless-stopped
+    networks: [pcme_data]
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - pcme_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  migrate:
+    profiles: [tools]
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.api
+    networks: [pcme_data]
+    env_file:
+      - ../env/.env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ['sh', '-c', 'cd packages/database && npx prisma migrate deploy']
+    restart: 'no'
+
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.api
+    container_name: pcme-api
+    restart: unless-stopped
+    networks: [pcme_data, pcme_app, pcme_edge]
+    env_file:
+      - ../env/.env.production
+    ports:
+      - '${API_PORT:-3001}:3001'
+    volumes:
+      - pcme_storage:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: pcme-worker
+    restart: unless-stopped
+    networks: [pcme_data, pcme_app]
+    env_file:
+      - ../env/.env.production
+    volumes:
+      - pcme_storage:/data/storage
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'pgrep -f "apps/worker/dist/index.js" > /dev/null || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  dashboard:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.dashboard
+    container_name: pcme-dashboard
+    restart: unless-stopped
+    networks: [pcme_app, pcme_edge]
+    env_file:
+      - ../env/.env.production
+    ports:
+      - '${DASHBOARD_PORT:-3002}:3002'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M

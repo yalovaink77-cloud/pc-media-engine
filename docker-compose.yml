@@ -1,11 +1,28 @@
-# Local development only — not for production use.
+# Local development infrastructure — Sprint 48 enhanced
+#
+# Starts PostgreSQL and Redis only. Run API, Worker, and Dashboard on the host:
+#   pnpm install && pnpm build
+#   pnpm --filter @pcme/api dev
+#   pnpm --filter @pcme/worker dev
+#   pnpm --filter @pcme/dashboard dev
+#
 # Requires .env (copy from .env.example): cp .env.example .env
+#
+# Production deployment: see deploy/compose/docker-compose.production.yml
+
+name: pcme-dev
+
+networks:
+  pcme_dev:
+    name: pcme_dev
+    driver: bridge
 
 services:
   postgres:
     image: postgres:16-alpine
     container_name: pcme-postgres
     restart: unless-stopped
+    networks: [pcme_dev]
     ports:
       - '5432:5432'
     environment:
@@ -25,8 +42,10 @@ services:
     image: redis:7-alpine
     container_name: pcme-redis
     restart: unless-stopped
+    networks: [pcme_dev]
     ports:
       - '6379:6379'
+    command: ['redis-server', '--appendonly', 'yes']
     volumes:
       - pcme_redis_data:/data
     healthcheck:
