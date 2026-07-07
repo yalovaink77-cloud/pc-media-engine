@@ -1,28 +1,29 @@
 /**
- * Activity dashboard app tests — Sprint 46.
+ * Notifications dashboard app tests — Sprint 47.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import { buildDashboardApp } from '../app.js';
 import type { DashboardApiClient } from '../client.js';
-import type { ActivityEvent, ActivityListResult } from '../types.js';
+import type { NotificationListResult } from '../types.js';
 
-const events: ActivityListResult = {
-  events: [
+const notifications: NotificationListResult = {
+  notifications: [
     {
-      id: 'evt-1',
-      type: 'composer.publish',
-      category: 'composer',
-      severity: 'info',
-      actor: { type: 'user', id: 'publisher', role: 'publisher' },
-      target: { type: 'asset', id: 'asset-1' },
-      correlationId: 'req-1',
-      metadata: { accepted: 1 },
-      timestamp: '2026-07-06T12:00:00.000Z',
+      id: 'n-1',
+      type: 'publish.failed',
+      category: 'publishing',
+      severity: 'error',
+      title: 'Publish failed',
+      message: 'Network error',
+      read: false,
+      correlationId: 'req-9',
+      createdAt: '2026-07-07T10:00:00.000Z',
     },
   ],
   total: 1,
+  unreadCount: 1,
   limit: 50,
 };
 
@@ -61,30 +62,32 @@ function makeClient(): DashboardApiClient {
       detail: null,
       validation: null,
     }),
-    fetchActivity: async () => events,
-    fetchActivityEvent: async (id: string): Promise<ActivityEvent | null> =>
-      events.events.find((e) => e.id === id) ?? null,
-    fetchNotifications: async () => null,
-    markNotificationRead: async () => ({ ok: false, status: 0 }),
-    markAllNotificationsRead: async () => ({ ok: false, status: 0 }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
+    fetchNotifications: async () => notifications,
+    markNotificationRead: async () => ({ ok: true, status: 200 }),
+    markAllNotificationsRead: async () => ({ ok: true, status: 200, marked: 1 }),
   };
 }
 
-describe('GET /activity', () => {
-  it('renders activity center page', async () => {
+describe('GET /notifications', () => {
+  it('renders notification center page', async () => {
     const app = buildDashboardApp({ client: makeClient(), logLevel: 'silent' });
-    const res = await app.inject({ method: 'GET', url: '/activity' });
+    const res = await app.inject({ method: 'GET', url: '/notifications' });
     expect(res.statusCode).toBe(200);
-    expect(res.body).toContain('data-testid="activity-section"');
-    expect(res.body).toContain('composer.publish');
+    expect(res.body).toContain('data-testid="notifications-section"');
+    expect(res.body).toContain('publish.failed');
+    expect(res.body).toContain('data-testid="notification-unread-badge"');
     await app.close();
   });
+});
 
-  it('renders event detail when eventId provided', async () => {
+describe('POST /ops/notifications/read-all', () => {
+  it('redirects with flash after mark all read', async () => {
     const app = buildDashboardApp({ client: makeClient(), logLevel: 'silent' });
-    const res = await app.inject({ method: 'GET', url: '/activity?eventId=evt-1' });
-    expect(res.body).toContain('data-testid="activity-event-detail"');
-    expect(res.body).toContain('req-1');
+    const res = await app.inject({ method: 'POST', url: '/ops/notifications/read-all' });
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain('/notifications');
     await app.close();
   });
 });

@@ -20,6 +20,9 @@ import { createCalendarService } from './calendar/calendar-service.js';
 import { createContentComposerService } from './composer/content-composer-service.js';
 import type { Config } from './config.js';
 import { MetricsService } from './metrics.js';
+import { createInMemoryNotificationRepository } from './notifications/in-memory-repository.js';
+import { createNotificationService } from './notifications/notification-service.js';
+import { createNotifyingAuditRepository } from './notifications/notifying-audit-repository.js';
 import { ProviderConfigStore } from './providers/config-store.js';
 import { createProviderConfigService } from './providers/provider-config-service.js';
 import {
@@ -184,7 +187,12 @@ export async function startServer(config: Config): Promise<void> {
     : undefined;
 
   const auditRepository = createInMemoryAuditRepository();
-  const auditService = createAuditService({ repository: auditRepository });
+  const notificationService = createNotificationService({
+    repository: createInMemoryNotificationRepository(),
+  });
+  const auditService = createAuditService({
+    repository: createNotifyingAuditRepository(auditRepository, notificationService),
+  });
 
   const app = buildApp({
     config,
@@ -206,6 +214,7 @@ export async function startServer(config: Config): Promise<void> {
     calendarService,
     providerConfigService,
     auditService,
+    notificationService,
   });
 
   auditService.record({

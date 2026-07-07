@@ -21,7 +21,8 @@ export type Permission =
   | 'providers:read'
   | 'providers:write'
   | 'media:write'
-  | 'activity:read';
+  | 'activity:read'
+  | 'notifications:read';
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
   admin: '*',
@@ -39,6 +40,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'providers:read',
     'media:write',
     'activity:read',
+    'notifications:read',
   ],
   publisher: [
     'dashboard:read',
@@ -50,6 +52,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'composer:write',
     'publishing:write',
     'activity:read',
+    'notifications:read',
   ],
   viewer: [
     'dashboard:read',
@@ -58,6 +61,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'assets:read',
     'publishers:read',
     'activity:read',
+    'notifications:read',
   ],
 };
 

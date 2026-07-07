@@ -609,3 +609,37 @@ export type ActivityPageData = {
   fetchedAt: string;
   errors: string[];
 };
+
+// ---------------------------------------------------------------------------
+// Notifications (Sprint 47)
+// ---------------------------------------------------------------------------
+
+export type NotificationItem = {
+  id: string;
+  type: string;
+  category: string;
+  severity: 'info' | 'warn' | 'error' | 'critical';
+  title: string;
+  message: string;
+  read: boolean;
+  correlationId?: string;
+  auditEventId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type NotificationListResult = {
+  notifications: NotificationItem[];
+  total: number;
+  unreadCount: number;
+  limit: number;
+};
+
+export type NotificationsPageData = {
+  notifications: NotificationListResult | null;
+  selectedNotification: NotificationItem | null;
+  showUnreadOnly: boolean;
+  fetchedAt: string;
+  errors: string[];
+  flash?: DashboardFlash;
+};

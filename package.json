@@ -50,7 +50,8 @@
     "calendar:smoke": "pnpm --filter @pcme/api calendar:smoke && pnpm --filter @pcme/dashboard calendar:smoke",
     "provider-config:smoke": "pnpm --filter @pcme/api provider-config:smoke && pnpm --filter @pcme/dashboard provider-config:smoke",
     "rbac:smoke": "pnpm --filter @pcme/api rbac:smoke && pnpm --filter @pcme/dashboard rbac:smoke",
-    "audit:smoke": "pnpm --filter @pcme/api audit:smoke && pnpm --filter @pcme/dashboard audit:smoke"
+    "audit:smoke": "pnpm --filter @pcme/api audit:smoke && pnpm --filter @pcme/dashboard audit:smoke",
+    "notifications:smoke": "pnpm --filter @pcme/api notifications:smoke && pnpm --filter @pcme/dashboard notifications:smoke"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

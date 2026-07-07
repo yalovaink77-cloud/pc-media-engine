@@ -19,6 +19,7 @@ import type {
   JobDetail,
   JobListFilters,
   JobListResult,
+  NotificationListResult,
   ProviderConfigDetail,
   ProviderConfigListResult,
   ProviderConfigValidationResult,
@@ -105,6 +106,14 @@ export interface DashboardApiClient {
     limit?: number;
   }): Promise<ActivityListResult | null>;
   fetchActivityEvent(id: string): Promise<ActivityEvent | null>;
+  /** Sprint 47 notification center. */
+  fetchNotifications(filters?: {
+    unread?: boolean;
+    severity?: string;
+    limit?: number;
+  }): Promise<NotificationListResult | null>;
+  markNotificationRead(id: string): Promise<{ ok: boolean; status: number }>;
+  markAllNotificationsRead(): Promise<{ ok: boolean; status: number; marked?: number }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -356,6 +365,51 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
     },
     fetchActivityEvent: (id: string) =>
       fetchJson<ActivityEvent>(`${base}/activity/${encodeURIComponent(id)}`, apiKey),
+    fetchNotifications: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.unread === true) params.set('unread', 'true');
+      if (filters.unread === false) params.set('unread', 'false');
+      if (filters.severity) params.set('severity', filters.severity);
+      if (filters.limit) params.set('limit', String(filters.limit));
+      const qs = params.toString();
+      return fetchJson<NotificationListResult>(
+        `${base}/notifications${qs ? `?${qs}` : ''}`,
+        apiKey,
+      );
+    },
+    markNotificationRead: async (id: string) => {
+      try {
+        const headers: Record<string, string> = { accept: 'application/json' };
+        if (apiKey) headers['x-api-key'] = apiKey;
+        const res = await fetch(`${base}/notifications/${encodeURIComponent(id)}/read`, {
+          method: 'POST',
+          headers,
+          signal: AbortSignal.timeout(10_000),
+        });
+        return { ok: res.ok, status: res.status };
+      } catch {
+        return { ok: false, status: 0 };
+      }
+    },
+    markAllNotificationsRead: async () => {
+      try {
+        const headers: Record<string, string> = { accept: 'application/json' };
+        if (apiKey) headers['x-api-key'] = apiKey;
+        const res = await fetch(`${base}/notifications/read-all`, {
+          method: 'POST',
+          headers,
+          signal: AbortSignal.timeout(10_000),
+        });
+        let marked: number | undefined;
+        if (res.ok) {
+          const body = (await res.json()) as { marked?: number };
+          marked = body.marked;
+        }
+        return { ok: res.ok, status: res.status, marked };
+      } catch {
+        return { ok: false, status: 0 };
+      }
+    },
   };
 }
 

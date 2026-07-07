@@ -25,7 +25,8 @@
     "calendar:smoke": "tsx scripts/calendar-smoke.ts",
     "provider-config:smoke": "tsx scripts/provider-config-smoke.ts",
     "rbac:smoke": "tsx scripts/rbac-smoke.ts",
-    "audit:smoke": "tsx scripts/audit-smoke.ts"
+    "audit:smoke": "tsx scripts/audit-smoke.ts",
+    "notifications:smoke": "tsx scripts/notifications-smoke.ts"
   },
   "dependencies": {
     "fastify": "^4.29.0"

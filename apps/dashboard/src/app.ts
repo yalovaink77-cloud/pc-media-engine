@@ -5,7 +5,7 @@ import type { DashboardApiClient } from './client.js';
 import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
 import type { DashboardRbac } from './rbac.js';
 import { loadDashboardRbac, permissionDeniedMessage } from './rbac.js';
-import { setDashboardRbacContext } from './renderer.js';
+import { setDashboardNotificationContext, setDashboardRbacContext } from './renderer.js';
 import {
   renderActivityPage,
   renderAssetDetailPage,
@@ -16,6 +16,7 @@ import {
   renderDashboardPage,
   renderJobDetailPage,
   renderJobsPage,
+  renderNotificationsPage,
   renderProviderConfigPage,
   renderPublishersPage,
 } from './renderer.js';
@@ -173,6 +174,20 @@ export function buildDashboardApp(options: DashboardAppOptions) {
     return false;
   }
 
+  async function refreshNotificationBadge(): Promise<void> {
+    const list = await client.fetchNotifications({ limit: 1 });
+    setDashboardNotificationContext(list?.unreadCount ?? 0);
+  }
+
+  function redirectNotificationsWithFlash(
+    reply: FastifyReply,
+    message: string,
+    type: 'ok' | 'err',
+  ): void {
+    const flash = encodeURIComponent(message);
+    void reply.redirect(302, `/notifications?flash=${flash}&flashType=${type}`);
+  }
+
   const app = Fastify({ logger: { level: logLevel } });
 
   // Parse HTML form bodies for job ID forms.
@@ -196,6 +211,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
 
     const { health, summary, recent, metrics, queueStatus, errors } =
       await fetchAllDashboardData(client);
+    await refreshNotificationBadge();
 
     const html = renderDashboardPage({
       health,
@@ -806,6 +822,75 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       filters,
       fetchedAt: new Date().toISOString(),
       errors,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.post<{ Params: { id: string } }>('/ops/notifications/:id/read', async (request, reply) => {
+    const result = await client.markNotificationRead(request.params.id);
+    if (!result.ok) {
+      redirectNotificationsWithFlash(reply, 'Could not mark notification as read', 'err');
+      return;
+    }
+    redirectNotificationsWithFlash(reply, 'Notification marked as read', 'ok');
+  });
+
+  app.post('/ops/notifications/read-all', async (_request, reply) => {
+    const result = await client.markAllNotificationsRead();
+    if (!result.ok) {
+      redirectNotificationsWithFlash(reply, 'Could not mark all notifications as read', 'err');
+      return;
+    }
+    redirectNotificationsWithFlash(
+      reply,
+      `Marked ${result.marked ?? 0} notification(s) as read`,
+      'ok',
+    );
+  });
+
+  app.get('/notifications', async (request, reply) => {
+    const query = request.query as {
+      unread?: string;
+      notificationId?: string;
+      flash?: string;
+      flashType?: string;
+    };
+    const flash = parseFlash(query);
+    const showUnreadOnly = query.unread === 'true';
+    const errors: string[] = [];
+
+    const notifications = await client.fetchNotifications({
+      unread: showUnreadOnly ? true : undefined,
+      limit: 50,
+    });
+    if (!notifications) {
+      errors.push('Could not reach /notifications — is the API configured?');
+    }
+    setDashboardNotificationContext(notifications?.unreadCount ?? 0);
+
+    let selectedNotification = null;
+    if (query.notificationId && notifications) {
+      selectedNotification =
+        notifications.notifications.find((n) => n.id === query.notificationId) ?? null;
+      if (!selectedNotification) {
+        const fetched = await client.fetchNotifications({ limit: 200 });
+        selectedNotification =
+          fetched?.notifications.find((n) => n.id === query.notificationId) ?? null;
+      }
+    }
+
+    const html = renderNotificationsPage({
+      notifications,
+      selectedNotification,
+      showUnreadOnly,
+      fetchedAt: new Date().toISOString(),
+      errors,
+      flash,
     });
 
     return reply

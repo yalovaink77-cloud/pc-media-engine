@@ -15,6 +15,7 @@ import type {
   DashboardPageData,
   JobDetailPageData,
   JobsPageData,
+  NotificationsPageData,
   ProviderConfigPageData,
   PublishersPageData,
   RecentItem,
@@ -22,9 +23,14 @@ import type {
 } from './types.js';
 
 let pageRbac: DashboardRbac = { enabled: false, role: 'admin', can: () => true };
+let notificationUnreadCount = 0;
 
 export function setDashboardRbacContext(rbac: DashboardRbac): void {
   pageRbac = rbac;
+}
+
+export function setDashboardNotificationContext(unreadCount: number): void {
+  notificationUnreadCount = Math.max(0, unreadCount);
 }
 
 function canAccess(permission: Permission): boolean {
@@ -91,7 +97,8 @@ function renderNav(
     | 'composer'
     | 'bulk-publish'
     | 'calendar'
-    | 'activity',
+    | 'activity'
+    | 'notifications',
 ): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
@@ -102,6 +109,7 @@ function renderNav(
   const bulkCls = active === 'bulk-publish' ? 'nav-active' : '';
   const calendarCls = active === 'calendar' ? 'nav-active' : '';
   const activityCls = active === 'activity' ? 'nav-active' : '';
+  const notificationsCls = active === 'notifications' ? 'nav-active' : '';
   const composerLink = canAccess('composer:read')
     ? `<a href="/composer" class="${composerCls}">Composer</a>`
     : '';
@@ -113,6 +121,13 @@ function renderNav(
     : '';
   const activityLink = canAccess('activity:read')
     ? `<a href="/activity" class="${activityCls}">Activity</a>`
+    : '';
+  const bellBadge =
+    notificationUnreadCount > 0
+      ? `<span class="badge err" data-testid="notification-unread-badge">${notificationUnreadCount}</span>`
+      : '';
+  const notificationsLink = canAccess('notifications:read')
+    ? `<a href="/notifications" class="${notificationsCls}" data-testid="notification-bell">Notifications${bellBadge}</a>`
     : '';
   const configLink = canAccess('providers:read')
     ? `<a href="/provider-config" class="${configCls}">Provider Config</a>`
@@ -128,6 +143,7 @@ function renderNav(
       ${bulkLink}
       ${calendarLink}
       ${activityLink}
+      ${notificationsLink}
     </nav>`;
 }
 
@@ -2150,6 +2166,116 @@ export function renderActivityPage(data: ActivityPageData): string {
   </main>
   <footer>
     <p>Append-only audit trail &middot; Correlation IDs match X-Request-Id</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function notificationSeverityBadge(severity: string): string {
+  if (severity === 'critical') return badge('critical', 'err');
+  if (severity === 'error') return badge('error', 'err');
+  if (severity === 'warn') return badge('warn', 'warn');
+  return badge('info', 'ok');
+}
+
+function renderNotificationsList(data: NotificationsPageData): string {
+  const items = data.notifications?.notifications ?? [];
+  if (!items.length) {
+    return '<p class="empty" data-testid="notifications-empty">No notifications</p>';
+  }
+  const rows = items
+    .map((n) => {
+      const readCls = n.read ? 'notification-read' : 'notification-unread';
+      const selected = data.selectedNotification?.id === n.id ? 'notification-row-selected' : '';
+      return `
+      <tr class="${readCls} ${selected}" data-testid="notification-row-${esc(n.id)}">
+        <td>${formatDate(n.createdAt)}</td>
+        <td>${notificationSeverityBadge(n.severity)}</td>
+        <td>${n.read ? badge('read', 'neutral') : badge('unread', 'warn')}</td>
+        <td><strong>${esc(n.title)}</strong><br/><span style="font-size:.85rem;color:#6b7280">${esc(n.message)}</span></td>
+        <td><code>${esc(n.type)}</code></td>
+        <td>
+          <a href="/notifications?notificationId=${esc(n.id)}${data.showUnreadOnly ? '&unread=true' : ''}">Details</a>
+          ${!n.read ? `<form method="post" action="/ops/notifications/${esc(n.id)}/read" style="display:inline;margin-left:.5rem"><button type="submit">Mark read</button></form>` : ''}
+        </td>
+      </tr>`;
+    })
+    .join('');
+  return `
+  <div data-testid="notifications-list">
+    <p style="font-size:.85rem;color:#6b7280">${data.notifications?.unreadCount ?? 0} unread of ${data.notifications?.total ?? 0} total</p>
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Severity</th><th>Status</th><th>Notification</th><th>Type</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderNotificationDetail(
+  notification: NotificationsPageData['selectedNotification'],
+): string {
+  if (!notification) return '';
+  const metadata = notification.metadata
+    ? `<pre class="json-viewer" data-testid="notification-metadata">${esc(JSON.stringify(notification.metadata, null, 2))}</pre>`
+    : '<p class="empty">No metadata</p>';
+  return `
+  <div class="detail-card" data-testid="notification-detail">
+    <h3>Notification Detail</h3>
+    <dl>
+      <dt>ID</dt><dd><code>${esc(notification.id)}</code></dd>
+      <dt>Type</dt><dd><code>${esc(notification.type)}</code></dd>
+      <dt>Severity</dt><dd>${notificationSeverityBadge(notification.severity)}</dd>
+      <dt>Status</dt><dd>${notification.read ? badge('read', 'neutral') : badge('unread', 'warn')}</dd>
+      <dt>Created</dt><dd>${formatDate(notification.createdAt)}</dd>
+      <dt>Correlation ID</dt><dd><code data-testid="notification-correlation">${esc(notification.correlationId ?? '—')}</code></dd>
+      <dt>Audit Event</dt><dd><code>${esc(notification.auditEventId ?? '—')}</code></dd>
+    </dl>
+    <p><strong>${esc(notification.title)}</strong> — ${esc(notification.message)}</p>
+    <h4>Metadata</h4>
+    ${metadata}
+    ${!notification.read ? `<form method="post" action="/ops/notifications/${esc(notification.id)}/read"><button type="submit">Mark as read</button></form>` : ''}
+  </div>`;
+}
+
+export function renderNotificationsPage(data: NotificationsPageData): string {
+  const unreadToggle = data.showUnreadOnly ? 'true' : 'false';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Notification Center</title>
+  <style>${CSS}
+  .notification-unread { font-weight:600; }
+  .notification-read { color:#6b7280; }
+  .notification-row-selected { background:#eff6ff; }
+  .json-viewer { background:#f3f4f6; padding:1rem; border-radius:.5rem; overflow:auto; font-size:.8rem; max-height:320px; }
+  .detail-card dl { display:grid; grid-template-columns:140px 1fr; gap:.35rem .75rem; font-size:.9rem; }
+  .detail-card dt { font-weight:600; color:#6b7280; }
+  .toolbar { display:flex; gap:1rem; align-items:center; margin-bottom:1rem; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Notification Center</h1>
+    <p>Operator alerts derived from audit events &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('notifications')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    ${renderFlash(data.flash)}
+    <section data-testid="notifications-section">
+      <h2>Notifications</h2>
+      <div class="toolbar" data-testid="notifications-toolbar">
+        <a href="/notifications?unread=${unreadToggle === 'true' ? 'false' : 'true'}">${data.showUnreadOnly ? 'Show all' : 'Unread only'}</a>
+        <form method="post" action="/ops/notifications/read-all"><button type="submit">Mark all read</button></form>
+      </div>
+      ${renderNotificationsList(data)}
+      ${renderNotificationDetail(data.selectedNotification)}
+    </section>
+  </main>
+  <footer>
+    <p>Derived from audit log &middot; No external delivery in Sprint 47</p>
   </footer>
 </body>
 </html>`;

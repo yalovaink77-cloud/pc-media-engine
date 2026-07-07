@@ -13,6 +13,10 @@ import type { CalendarService } from './calendar/types.js';
 import type { ContentComposerService } from './composer/types.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
+import { createInMemoryNotificationRepository } from './notifications/in-memory-repository.js';
+import { createNotificationService } from './notifications/notification-service.js';
+import { createNotifyingAuditRepository } from './notifications/notifying-audit-repository.js';
+import type { NotificationService } from './notifications/types.js';
 import type { JobScheduler } from './orchestration/processing.orchestrator.js';
 import type { ProviderConfigService } from './providers/types.js';
 import type { PublisherManagementService } from './publishers/types.js';
@@ -34,6 +38,7 @@ import type { AssetCreator } from './routes/media.js';
 import { mediaRoutes } from './routes/media.js';
 import type { QueueMetricsProvider } from './routes/metrics.js';
 import { metricsRoutes } from './routes/metrics.js';
+import { notificationsRoutes } from './routes/notifications.js';
 import { providerConfigRoutes } from './routes/provider-config.js';
 import { publishersRoutes } from './routes/publishers.js';
 import type { PublishedContentFinder } from './routes/publishing.js';
@@ -147,6 +152,11 @@ export type AppOptions = {
    * When absent, /activity/* routes return 503 and audit recording is disabled.
    */
   auditService?: AuditService;
+  /**
+   * Optional notification service (Sprint 47+).
+   * When absent, /notifications/* routes return 503.
+   */
+  notificationService?: NotificationService;
 };
 
 /**
@@ -178,10 +188,21 @@ export function buildApp(options: AppOptions) {
     calendarService,
     providerConfigService,
     auditService: injectedAuditService,
+    notificationService: injectedNotificationService,
   } = options;
 
+  const notificationService =
+    injectedNotificationService ??
+    createNotificationService({ repository: createInMemoryNotificationRepository() });
+
   const auditService =
-    injectedAuditService ?? createAuditService({ repository: createInMemoryAuditRepository() });
+    injectedAuditService ??
+    createAuditService({
+      repository: createNotifyingAuditRepository(
+        createInMemoryAuditRepository(),
+        notificationService,
+      ),
+    });
 
   const defaultAuthConfig: AuthConfig = {
     enabled: false,
@@ -328,6 +349,11 @@ export function buildApp(options: AppOptions) {
 
   app.register(activityRoutes, {
     auditService,
+    authMiddleware,
+  });
+
+  app.register(notificationsRoutes, {
+    notificationService,
     authMiddleware,
   });
 

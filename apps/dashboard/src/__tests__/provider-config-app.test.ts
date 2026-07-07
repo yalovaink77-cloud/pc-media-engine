@@ -74,6 +74,9 @@ function makeClient(): DashboardApiClient {
     }),
     fetchActivity: async () => null,
     fetchActivityEvent: async () => null,
+    fetchNotifications: async () => null,
+    markNotificationRead: async () => ({ ok: false, status: 0 }),
+    markAllNotificationsRead: async () => ({ ok: false, status: 0 }),
   };
 }
 

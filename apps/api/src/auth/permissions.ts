@@ -20,7 +20,8 @@ export type Permission =
   | 'providers:read'
   | 'providers:write'
   | 'media:write'
-  | 'activity:read';
+  | 'activity:read'
+  | 'notifications:read';
 
 export const ALL_PERMISSIONS: readonly Permission[] = [
   'dashboard:read',
@@ -39,6 +40,7 @@ export const ALL_PERMISSIONS: readonly Permission[] = [
   'providers:write',
   'media:write',
   'activity:read',
+  'notifications:read',
 ] as const;
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
@@ -57,6 +59,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'providers:read',
     'media:write',
     'activity:read',
+    'notifications:read',
   ],
   publisher: [
     'dashboard:read',
@@ -68,6 +71,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'composer:write',
     'publishing:write',
     'activity:read',
+    'notifications:read',
   ],
   viewer: [
     'dashboard:read',
@@ -76,6 +80,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'assets:read',
     'publishers:read',
     'activity:read',
+    'notifications:read',
   ],
 };
 
