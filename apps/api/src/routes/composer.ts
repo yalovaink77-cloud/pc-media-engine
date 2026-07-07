@@ -12,6 +12,8 @@
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
 
+import { auditBulkPublishResult, auditPublishResult, auditRecord } from '../audit/helpers.js';
+import type { AuditService } from '../audit/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
 import type { ContentComposerService } from '../composer/types.js';
 import { DEFAULT_COMPOSER_LIMIT, MAX_COMPOSER_LIMIT } from '../composer/types.js';
@@ -22,6 +24,7 @@ export type ComposerRouteOptions = {
   publishingEnqueuer?: PublishingQueueEnqueuer;
   authMiddleware?: AuthMiddleware;
   defaultProjectId: string;
+  auditService?: AuditService;
 };
 
 type ComposerListQuery = {
@@ -97,7 +100,8 @@ export async function composerRoutes(
   app: FastifyInstance,
   options: ComposerRouteOptions,
 ): Promise<void> {
-  const { composerService, publishingEnqueuer, authMiddleware, defaultProjectId } = options;
+  const { composerService, publishingEnqueuer, authMiddleware, defaultProjectId, auditService } =
+    options;
 
   const readGuard = authMiddleware ? [authMiddleware.requirePermission('composer:read')] : [];
   const validateGuard = authMiddleware ? [authMiddleware.requirePermission('composer:write')] : [];
@@ -186,6 +190,17 @@ export async function composerRoutes(
         publisherId: publisherId.trim(),
       });
 
+      auditRecord(
+        auditService,
+        {
+          type: 'composer.validation',
+          severity: result.ready ? 'info' : 'warn',
+          target: { type: 'asset', id: assetId.trim() },
+          metadata: { publisherId: publisherId.trim(), ready: result.ready },
+        },
+        request,
+      );
+
       return reply.status(200).send(result);
     },
   );
@@ -229,6 +244,7 @@ export async function composerRoutes(
       }
 
       const result = await composerService.publish({ projectId, assetId, publisherIds });
+      auditPublishResult(auditService, request, assetId, result);
       return reply.status(202).send(result);
     },
   );
@@ -267,6 +283,7 @@ export async function composerRoutes(
       }
 
       const result = await composerService.bulkPublish({ projectId, assetIds, publisherIds });
+      auditBulkPublishResult(auditService, request, result);
       return reply.status(202).send(result);
     },
   );
@@ -318,6 +335,16 @@ export async function composerRoutes(
         publisherIds,
         scheduledFor,
       });
+      auditRecord(
+        auditService,
+        {
+          type: 'composer.schedule',
+          severity: 'info',
+          target: { type: 'asset', id: assetId },
+          metadata: { publisherIds, scheduledFor },
+        },
+        request,
+      );
       return reply.status(202).send(result);
     },
   );

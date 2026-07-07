@@ -19,7 +19,8 @@ export type Permission =
   | 'queue:write'
   | 'providers:read'
   | 'providers:write'
-  | 'media:write';
+  | 'media:write'
+  | 'activity:read';
 
 export const ALL_PERMISSIONS: readonly Permission[] = [
   'dashboard:read',
@@ -37,6 +38,7 @@ export const ALL_PERMISSIONS: readonly Permission[] = [
   'providers:read',
   'providers:write',
   'media:write',
+  'activity:read',
 ] as const;
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
@@ -54,6 +56,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'queue:write',
     'providers:read',
     'media:write',
+    'activity:read',
   ],
   publisher: [
     'dashboard:read',
@@ -64,8 +67,16 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'composer:read',
     'composer:write',
     'publishing:write',
+    'activity:read',
   ],
-  viewer: ['dashboard:read', 'metrics:read', 'jobs:read', 'assets:read', 'publishers:read'],
+  viewer: [
+    'dashboard:read',
+    'metrics:read',
+    'jobs:read',
+    'assets:read',
+    'publishers:read',
+    'activity:read',
+  ],
 };
 
 export type RoleMetadata = {

@@ -1,5 +1,6 @@
 import type { DashboardRbac, Permission } from './rbac.js';
 import type {
+  ActivityPageData,
   AssetDetailPageData,
   AssetDimensions,
   AssetsPageData,
@@ -89,7 +90,8 @@ function renderNav(
     | 'assets'
     | 'composer'
     | 'bulk-publish'
-    | 'calendar',
+    | 'calendar'
+    | 'activity',
 ): string {
   const dashCls = active === 'dashboard' ? 'nav-active' : '';
   const pubCls = active === 'publishers' ? 'nav-active' : '';
@@ -99,6 +101,7 @@ function renderNav(
   const composerCls = active === 'composer' ? 'nav-active' : '';
   const bulkCls = active === 'bulk-publish' ? 'nav-active' : '';
   const calendarCls = active === 'calendar' ? 'nav-active' : '';
+  const activityCls = active === 'activity' ? 'nav-active' : '';
   const composerLink = canAccess('composer:read')
     ? `<a href="/composer" class="${composerCls}">Composer</a>`
     : '';
@@ -107,6 +110,9 @@ function renderNav(
     : '';
   const calendarLink = canAccess('calendar:read')
     ? `<a href="/calendar" class="${calendarCls}">Calendar</a>`
+    : '';
+  const activityLink = canAccess('activity:read')
+    ? `<a href="/activity" class="${activityCls}">Activity</a>`
     : '';
   const configLink = canAccess('providers:read')
     ? `<a href="/provider-config" class="${configCls}">Provider Config</a>`
@@ -121,6 +127,7 @@ function renderNav(
       ${composerLink}
       ${bulkLink}
       ${calendarLink}
+      ${activityLink}
     </nav>`;
 }
 
@@ -2017,6 +2024,132 @@ export function renderProviderConfigPage(data: ProviderConfigPageData): string {
   </main>
   <footer>
     <p>Reuses Publisher SDK validation &middot; Hot reload for WordPress and Ghost</p>
+  </footer>
+</body>
+</html>`;
+}
+
+function severityBadgeFor(severity: string): string {
+  if (severity === 'critical') return badge('critical', 'err');
+  if (severity === 'error') return badge('error', 'err');
+  if (severity === 'warn') return badge('warn', 'warn');
+  return badge('info', 'ok');
+}
+
+function renderActivityFilters(data: ActivityPageData): string {
+  const f = data.filters;
+  return `
+  <form class="filter-form" method="get" action="/activity" data-testid="activity-filters">
+    <label>Type <input type="text" name="type" value="${esc(f.type ?? '')}" placeholder="e.g. queue.pause" /></label>
+    <label>Actor <input type="text" name="actor" value="${esc(f.actor ?? '')}" /></label>
+    <label>Target <input type="text" name="target" value="${esc(f.target ?? '')}" /></label>
+    <label>Start <input type="datetime-local" name="start" value="${esc(f.start ?? '')}" /></label>
+    <label>End <input type="datetime-local" name="end" value="${esc(f.end ?? '')}" /></label>
+    <label>Limit <input type="number" name="limit" value="${esc(f.limit ?? 50)}" min="1" max="200" /></label>
+    <button type="submit">Filter</button>
+    <a href="/activity">Clear</a>
+  </form>`;
+}
+
+function fQuery(filters: ActivityPageData['filters']): string {
+  const params = new URLSearchParams();
+  if (filters.type) params.set('type', filters.type);
+  if (filters.actor) params.set('actor', filters.actor);
+  if (filters.target) params.set('target', filters.target);
+  if (filters.start) params.set('start', filters.start);
+  if (filters.end) params.set('end', filters.end);
+  if (filters.limit) params.set('limit', String(filters.limit));
+  const qs = params.toString();
+  return qs ? `&${qs}` : '';
+}
+
+function renderActivityTimeline(data: ActivityPageData): string {
+  const events = data.events?.events ?? [];
+  if (!events.length) {
+    return '<p class="empty" data-testid="activity-empty">No activity events recorded</p>';
+  }
+  const rows = events
+    .map((e) => {
+      const selected = data.selectedEvent?.id === e.id ? 'activity-row-selected' : '';
+      const target = e.target ? `${esc(e.target.type)}:${esc(e.target.id)}` : '—';
+      return `
+      <tr class="${selected}" data-testid="activity-row-${esc(e.id)}">
+        <td>${formatDate(e.timestamp)}</td>
+        <td>${severityBadgeFor(e.severity)}</td>
+        <td><code>${esc(e.type)}</code></td>
+        <td>${esc(e.actor.id)}${e.actor.role ? ` (${esc(e.actor.role)})` : ''}</td>
+        <td>${target}</td>
+        <td><a href="/activity?eventId=${esc(e.id)}${fQuery(data.filters)}">Details</a></td>
+      </tr>`;
+    })
+    .join('');
+  return `
+  <div data-testid="activity-timeline">
+    <p style="font-size:.85rem;color:#6b7280">Showing ${events.length} of ${data.events?.total ?? 0} events</p>
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Severity</th><th>Type</th><th>Actor</th><th>Target</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderActivityDetail(event: ActivityPageData['selectedEvent']): string {
+  if (!event) return '';
+  const metadata = event.metadata
+    ? `<pre class="json-viewer" data-testid="activity-metadata">${esc(JSON.stringify(event.metadata, null, 2))}</pre>`
+    : '<p class="empty">No metadata</p>';
+  return `
+  <div class="detail-card" data-testid="activity-event-detail">
+    <h3>Event Detail</h3>
+    <dl>
+      <dt>ID</dt><dd><code>${esc(event.id)}</code></dd>
+      <dt>Type</dt><dd><code>${esc(event.type)}</code></dd>
+      <dt>Category</dt><dd>${esc(event.category)}</dd>
+      <dt>Severity</dt><dd>${severityBadgeFor(event.severity)}</dd>
+      <dt>Timestamp</dt><dd>${formatDate(event.timestamp)}</dd>
+      <dt>Actor</dt><dd>${esc(event.actor.type)} / ${esc(event.actor.id)}${event.actor.role ? ` (${esc(event.actor.role)})` : ''}</dd>
+      <dt>Target</dt><dd>${event.target ? `${esc(event.target.type)}:${esc(event.target.id)}` : '—'}</dd>
+      <dt>Correlation ID</dt><dd><code data-testid="activity-correlation">${esc(event.correlationId ?? '—')}</code></dd>
+    </dl>
+    <h4>Metadata</h4>
+    ${metadata}
+  </div>`;
+}
+
+export function renderActivityPage(data: ActivityPageData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Media Engine — Activity Center</title>
+  <style>${CSS}
+  .filter-form { display:flex; flex-wrap:wrap; gap:.75rem; align-items:flex-end; margin-bottom:1rem; font-size:.85rem; }
+  .filter-form label { display:flex; flex-direction:column; gap:.2rem; }
+  .filter-form input { padding:.35rem .5rem; border:1px solid #d1d5db; border-radius:.35rem; }
+  .json-viewer { background:#f3f4f6; padding:1rem; border-radius:.5rem; overflow:auto; font-size:.8rem; max-height:320px; }
+  .activity-row-selected { background:#eff6ff; }
+  .detail-card dl { display:grid; grid-template-columns:140px 1fr; gap:.35rem .75rem; font-size:.9rem; }
+  .detail-card dt { font-weight:600; color:#6b7280; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PC Media Engine — Activity Center</h1>
+    <p>Operational audit log &middot; Last fetched: ${esc(data.fetchedAt)}</p>
+    ${renderNav('activity')}
+  </header>
+  <main>
+    ${renderErrors(data.errors)}
+    <section data-testid="activity-section">
+      <h2>Activity Timeline</h2>
+      ${renderActivityFilters(data)}
+      ${renderActivityTimeline(data)}
+      ${renderActivityDetail(data.selectedEvent)}
+    </section>
+  </main>
+  <footer>
+    <p>Append-only audit trail &middot; Correlation IDs match X-Request-Id</p>
   </footer>
 </body>
 </html>`;

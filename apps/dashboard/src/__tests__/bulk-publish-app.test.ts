@@ -85,6 +85,8 @@ function makeClient(overrides: Partial<DashboardApiClient> = {}): DashboardApiCl
     fetchProviderConfig: async () => null,
     validateProviderConfig: async () => null,
     updateProviderConfig: async () => ({ ok: false, status: 0, detail: null, validation: null }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
     ...overrides,
   };
 }

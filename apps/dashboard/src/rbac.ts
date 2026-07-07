@@ -20,7 +20,8 @@ export type Permission =
   | 'queue:write'
   | 'providers:read'
   | 'providers:write'
-  | 'media:write';
+  | 'media:write'
+  | 'activity:read';
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
   admin: '*',
@@ -37,6 +38,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'queue:write',
     'providers:read',
     'media:write',
+    'activity:read',
   ],
   publisher: [
     'dashboard:read',
@@ -47,8 +49,16 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[] | '*'> = {
     'composer:read',
     'composer:write',
     'publishing:write',
+    'activity:read',
   ],
-  viewer: ['dashboard:read', 'metrics:read', 'jobs:read', 'assets:read', 'publishers:read'],
+  viewer: [
+    'dashboard:read',
+    'metrics:read',
+    'jobs:read',
+    'assets:read',
+    'publishers:read',
+    'activity:read',
+  ],
 };
 
 export type DashboardRbac = {

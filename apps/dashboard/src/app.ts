@@ -7,6 +7,7 @@ import type { DashboardRbac } from './rbac.js';
 import { loadDashboardRbac, permissionDeniedMessage } from './rbac.js';
 import { setDashboardRbacContext } from './renderer.js';
 import {
+  renderActivityPage,
   renderAssetDetailPage,
   renderAssetsPage,
   renderBulkPublishPage,
@@ -756,6 +757,55 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       fetchedAt: new Date().toISOString(),
       errors,
       apiBaseUrl,
+    });
+
+    return reply
+      .status(200)
+      .header('content-type', 'text/html; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(html);
+  });
+
+  app.get('/activity', async (request, reply) => {
+    const query = request.query as {
+      type?: string;
+      actor?: string;
+      target?: string;
+      start?: string;
+      end?: string;
+      limit?: string;
+      eventId?: string;
+    };
+
+    const filters = {
+      type: query.type,
+      actor: query.actor,
+      target: query.target,
+      start: query.start,
+      end: query.end,
+      limit: query.limit ? parseInt(query.limit, 10) : 50,
+    };
+
+    const errors: string[] = [];
+    const events = await client.fetchActivity(filters);
+    if (!events) {
+      errors.push('Could not reach /activity — is the API configured?');
+    }
+
+    let selectedEvent = null;
+    if (query.eventId) {
+      selectedEvent = await client.fetchActivityEvent(query.eventId);
+      if (!selectedEvent) {
+        errors.push(`Could not load activity event "${query.eventId}"`);
+      }
+    }
+
+    const html = renderActivityPage({
+      events,
+      selectedEvent,
+      filters,
+      fetchedAt: new Date().toISOString(),
+      errors,
     });
 
     return reply

@@ -1,4 +1,6 @@
 import type {
+  ActivityEvent,
+  ActivityListResult,
   AssetDetail,
   AssetListFilters,
   AssetListResult,
@@ -93,6 +95,16 @@ export interface DashboardApiClient {
     detail: ProviderConfigDetail | null;
     validation: ProviderConfigValidationResult | null;
   }>;
+  /** Sprint 46 activity / audit log. */
+  fetchActivity(filters?: {
+    type?: string;
+    actor?: string;
+    target?: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+  }): Promise<ActivityListResult | null>;
+  fetchActivityEvent(id: string): Promise<ActivityEvent | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -331,6 +343,19 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
       const validation = result.data && 'valid' in result.data ? result.data : null;
       return { ok: false, status: result.status, detail: null, validation };
     },
+    fetchActivity: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.type) params.set('type', filters.type);
+      if (filters.actor) params.set('actor', filters.actor);
+      if (filters.target) params.set('target', filters.target);
+      if (filters.start) params.set('start', filters.start);
+      if (filters.end) params.set('end', filters.end);
+      if (filters.limit) params.set('limit', String(filters.limit));
+      const qs = params.toString();
+      return fetchJson<ActivityListResult>(`${base}/activity${qs ? `?${qs}` : ''}`, apiKey);
+    },
+    fetchActivityEvent: (id: string) =>
+      fetchJson<ActivityEvent>(`${base}/activity/${encodeURIComponent(id)}`, apiKey),
   };
 }
 

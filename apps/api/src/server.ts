@@ -12,6 +12,9 @@ import { LocalStorageProvider } from '@pcme/media';
 
 import { buildApp } from './app.js';
 import { createAssetLibraryService } from './assets/asset-library-service.js';
+import { createAuditService } from './audit/audit-service.js';
+import { systemActor } from './audit/helpers.js';
+import { createInMemoryAuditRepository } from './audit/in-memory-repository.js';
 import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import { createCalendarService } from './calendar/calendar-service.js';
 import { createContentComposerService } from './composer/content-composer-service.js';
@@ -180,6 +183,9 @@ export async function startServer(config: Config): Promise<void> {
       })
     : undefined;
 
+  const auditRepository = createInMemoryAuditRepository();
+  const auditService = createAuditService({ repository: auditRepository });
+
   const app = buildApp({
     config,
     checkDatabase,
@@ -199,9 +205,28 @@ export async function startServer(config: Config): Promise<void> {
     publishingEnqueuer,
     calendarService,
     providerConfigService,
+    auditService,
+  });
+
+  auditService.record({
+    type: 'system.startup',
+    severity: 'info',
+    actor: systemActor(),
+    metadata: {
+      version: config.version,
+      env: config.env,
+      port: config.port,
+      startedAt,
+    },
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
+    auditService.record({
+      type: 'system.shutdown',
+      severity: 'info',
+      actor: systemActor(),
+      metadata: { signal },
+    });
     app.log.info({ signal }, '[api] Shutdown signal received — draining connections');
     try {
       await app.close();
@@ -214,11 +239,23 @@ export async function startServer(config: Config): Promise<void> {
   };
 
   process.on('uncaughtException', (err) => {
+    auditService.record({
+      type: 'system.fatal_error',
+      severity: 'critical',
+      actor: systemActor(),
+      metadata: { reason: 'uncaughtException', message: String(err) },
+    });
     app.log.fatal({ err }, '[api] Uncaught exception — shutting down');
     void gracefulShutdown('uncaughtException');
   });
 
   process.on('unhandledRejection', (reason) => {
+    auditService.record({
+      type: 'system.fatal_error',
+      severity: 'critical',
+      actor: systemActor(),
+      metadata: { reason: 'unhandledRejection', message: String(reason) },
+    });
     app.log.fatal({ reason }, '[api] Unhandled rejection — shutting down');
     void gracefulShutdown('unhandledRejection');
   });

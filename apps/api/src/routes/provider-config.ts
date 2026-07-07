@@ -10,12 +10,15 @@
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
 
+import { auditRecord } from '../audit/helpers.js';
+import type { AuditService } from '../audit/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
 import type { ProviderConfigService } from '../providers/types.js';
 
 export type ProviderConfigRouteOptions = {
   providerConfigService?: ProviderConfigService;
   authMiddleware?: AuthMiddleware;
+  auditService?: AuditService;
 };
 
 const CONFIG_FIELD_SCHEMA = {
@@ -75,7 +78,7 @@ export async function providerConfigRoutes(
   app: FastifyInstance,
   options: ProviderConfigRouteOptions,
 ): Promise<void> {
-  const { providerConfigService, authMiddleware } = options;
+  const { providerConfigService, authMiddleware, auditService } = options;
   const readPreHandler = authMiddleware ? [authMiddleware.requirePermission('providers:read')] : [];
   const writePreHandler = authMiddleware
     ? [authMiddleware.requirePermission('providers:write')]
@@ -143,6 +146,16 @@ export async function providerConfigRoutes(
         });
       }
       const result = providerConfigService.validateConfig(providerId, request.body ?? {});
+      auditRecord(
+        auditService,
+        {
+          type: 'provider.validation',
+          severity: result.valid ? 'info' : 'warn',
+          target: { type: 'provider', id: providerId },
+          metadata: { valid: result.valid, errors: result.errors },
+        },
+        request,
+      );
       return reply.status(200).send(result);
     },
   );
@@ -195,6 +208,16 @@ export async function providerConfigRoutes(
         });
       }
       if (isValidationResult(result)) {
+        auditRecord(
+          auditService,
+          {
+            type: 'provider.config_updated',
+            severity: 'warn',
+            target: { type: 'provider', id: providerId },
+            metadata: { success: false, errors: result.errors },
+          },
+          request,
+        );
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Configuration validation failed',
@@ -202,6 +225,16 @@ export async function providerConfigRoutes(
           ...result,
         });
       }
+      auditRecord(
+        auditService,
+        {
+          type: 'provider.config_updated',
+          severity: 'info',
+          target: { type: 'provider', id: providerId },
+          metadata: { success: true },
+        },
+        request,
+      );
       return reply.status(200).send(result);
     },
   );

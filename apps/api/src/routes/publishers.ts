@@ -1,11 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 
+import { auditRecord } from '../audit/helpers.js';
+import type { AuditService } from '../audit/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
 import type { PublisherManagementService } from '../publishers/types.js';
 
 export type PublishersRouteOptions = {
   publisherService?: PublisherManagementService;
   authMiddleware?: AuthMiddleware;
+  auditService?: AuditService;
 };
 
 const CAPABILITIES_SCHEMA = {
@@ -48,7 +51,7 @@ export async function publishersRoutes(
   app: FastifyInstance,
   options: PublishersRouteOptions,
 ): Promise<void> {
-  const { publisherService, authMiddleware } = options;
+  const { publisherService, authMiddleware, auditService } = options;
   const readGuard = authMiddleware ? [authMiddleware.requirePermission('publishers:read')] : [];
 
   app.get('/publishers', {
@@ -161,6 +164,16 @@ export async function publishersRoutes(
         return reply.status(404).send({ error: `Publisher "${request.params.id}" not found` });
       }
       const health = await publisherService.checkHealth(request.params.id);
+      auditRecord(
+        auditService,
+        {
+          type: 'provider.health_check',
+          severity: health.healthy ? 'info' : 'warn',
+          target: { type: 'publisher', id: request.params.id },
+          metadata: { healthy: health.healthy, latency: health.latency, message: health.message },
+        },
+        request,
+      );
       return reply.status(200).send(health);
     },
   });

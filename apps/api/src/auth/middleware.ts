@@ -4,6 +4,8 @@
 
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
+import { actorFromAuth, auditRecord } from '../audit/helpers.js';
+import type { AuditService } from '../audit/types.js';
 import { compareRawApiKeys } from './api-key.js';
 import type { AuthConfig } from './config.js';
 import { verifyJwt } from './jwt.js';
@@ -61,7 +63,10 @@ export type AuthMiddleware = {
   ): (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
 };
 
-export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
+export function createAuthMiddleware(
+  config: AuthConfig,
+  auditService?: AuditService,
+): AuthMiddleware {
   async function authenticateRequest(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
     if (!config.enabled) return;
 
@@ -78,6 +83,18 @@ export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
             permissions: [] as Permission[],
           };
           request.auth = enrichAuthContext(base, config);
+          if (config.enabled) {
+            auditRecord(
+              auditService,
+              {
+                type: 'auth.login_success',
+                severity: 'info',
+                actor: actorFromAuth(request.auth),
+                metadata: { method: 'jwt' },
+              },
+              request,
+            );
+          }
           return;
         }
         return;
@@ -96,6 +113,18 @@ export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
             permissions: [] as Permission[],
           };
           request.auth = enrichAuthContext(base, config, match);
+          if (config.enabled) {
+            auditRecord(
+              auditService,
+              {
+                type: 'auth.api_key_authenticated',
+                severity: 'info',
+                actor: actorFromAuth(request.auth),
+                metadata: { method: 'api-key' },
+              },
+              request,
+            );
+          }
         }
       }
     }
@@ -105,6 +134,16 @@ export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
     await authenticateRequest(request, reply);
 
     if (config.enabled && !request.auth) {
+      auditRecord(
+        auditService,
+        {
+          type: 'auth.login_failure',
+          severity: 'warn',
+          actor: { type: 'anonymous', id: 'anonymous' },
+          metadata: { reason: 'missing_credentials' },
+        },
+        request,
+      );
       await reply.status(401).send({
         error: 'Unauthorized',
         message: 'A valid Bearer JWT or API key is required',
@@ -120,6 +159,16 @@ export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
       await authenticateRequest(request, reply);
 
       if (!request.auth) {
+        auditRecord(
+          auditService,
+          {
+            type: 'auth.login_failure',
+            severity: 'warn',
+            actor: { type: 'anonymous', id: 'anonymous' },
+            metadata: { reason: 'missing_credentials', permission },
+          },
+          request,
+        );
         await reply.status(401).send({
           error: 'Unauthorized',
           message: 'A valid Bearer JWT or API key is required',
@@ -129,6 +178,16 @@ export function createAuthMiddleware(config: AuthConfig): AuthMiddleware {
       }
 
       if (!hasPermission(request.auth, permission)) {
+        auditRecord(
+          auditService,
+          {
+            type: 'auth.rbac_denied',
+            severity: 'warn',
+            actor: actorFromAuth(request.auth),
+            metadata: { permission, role: request.auth.role },
+          },
+          request,
+        );
         await reply.status(403).send({
           error: 'Forbidden',
           message: `Permission denied — requires ${permission}`,

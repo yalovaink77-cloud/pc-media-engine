@@ -4,6 +4,9 @@ import type { StorageProvider } from '@pcme/media';
 import Fastify from 'fastify';
 
 import type { AssetLibraryService } from './assets/types.js';
+import { createAuditService } from './audit/audit-service.js';
+import { createInMemoryAuditRepository } from './audit/in-memory-repository.js';
+import type { AuditService } from './audit/types.js';
 import type { AuthConfig } from './auth/index.js';
 import { createAuthMiddleware } from './auth/middleware.js';
 import type { CalendarService } from './calendar/types.js';
@@ -16,6 +19,7 @@ import type { PublisherManagementService } from './publishers/types.js';
 import type { ProcessingEnqueuer } from './queue/processing-enqueue.js';
 import type { PublishingQueueEnqueuer } from './queue/publishing-enqueue.js';
 import type { QueueService } from './queue/queue-service.js';
+import { activityRoutes } from './routes/activity.js';
 import { assetsRoutes } from './routes/assets.js';
 import type { AuthRouteOptions } from './routes/auth.js';
 import { authRoutes } from './routes/auth.js';
@@ -138,6 +142,11 @@ export type AppOptions = {
    * When absent, /providers/config/* routes return 503.
    */
   providerConfigService?: ProviderConfigService;
+  /**
+   * Optional audit service (Sprint 46+).
+   * When absent, /activity/* routes return 503 and audit recording is disabled.
+   */
+  auditService?: AuditService;
 };
 
 /**
@@ -168,7 +177,11 @@ export function buildApp(options: AppOptions) {
     publishingEnqueuer,
     calendarService,
     providerConfigService,
+    auditService: injectedAuditService,
   } = options;
+
+  const auditService =
+    injectedAuditService ?? createAuditService({ repository: createInMemoryAuditRepository() });
 
   const defaultAuthConfig: AuthConfig = {
     enabled: false,
@@ -182,7 +195,7 @@ export function buildApp(options: AppOptions) {
     defaultApiKeyRole: 'admin',
   };
   const resolvedAuthConfig = authConfig ?? defaultAuthConfig;
-  const authMiddleware = createAuthMiddleware(resolvedAuthConfig);
+  const authMiddleware = createAuthMiddleware(resolvedAuthConfig, auditService);
 
   const app = Fastify({
     logger: {
@@ -272,6 +285,7 @@ export function buildApp(options: AppOptions) {
   app.register(queueRoutes, {
     queueService,
     authMiddleware,
+    auditService,
   });
 
   app.register(jobsRoutes, {
@@ -283,6 +297,7 @@ export function buildApp(options: AppOptions) {
   app.register(publishersRoutes, {
     publisherService,
     authMiddleware,
+    auditService,
   });
 
   app.register(assetsRoutes, {
@@ -297,6 +312,7 @@ export function buildApp(options: AppOptions) {
     publishingEnqueuer,
     authMiddleware,
     defaultProjectId: config.defaultProjectId,
+    auditService,
   });
 
   app.register(calendarRoutes, {
@@ -306,6 +322,12 @@ export function buildApp(options: AppOptions) {
 
   app.register(providerConfigRoutes, {
     providerConfigService,
+    authMiddleware,
+    auditService,
+  });
+
+  app.register(activityRoutes, {
+    auditService,
     authMiddleware,
   });
 

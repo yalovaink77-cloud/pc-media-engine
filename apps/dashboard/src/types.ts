@@ -572,3 +572,40 @@ export type CalendarPageData = {
   errors: string[];
   apiBaseUrl: string;
 };
+
+// ---------------------------------------------------------------------------
+// Activity / audit log (Sprint 46)
+// ---------------------------------------------------------------------------
+
+export type ActivityEvent = {
+  id: string;
+  type: string;
+  category: string;
+  severity: 'info' | 'warn' | 'error' | 'critical';
+  actor: { type: string; id: string; role?: string };
+  target?: { type: string; id: string };
+  correlationId?: string;
+  metadata?: Record<string, unknown>;
+  timestamp: string;
+};
+
+export type ActivityListResult = {
+  events: ActivityEvent[];
+  total: number;
+  limit: number;
+};
+
+export type ActivityPageData = {
+  events: ActivityListResult | null;
+  selectedEvent: ActivityEvent | null;
+  filters: {
+    type?: string;
+    actor?: string;
+    target?: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+  };
+  fetchedAt: string;
+  errors: string[];
+};

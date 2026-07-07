@@ -72,6 +72,8 @@ function makeClient(): DashboardApiClient {
       detail: wordpressDetail,
       validation: null,
     }),
+    fetchActivity: async () => null,
+    fetchActivityEvent: async () => null,
   };
 }
 
