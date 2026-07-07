@@ -2,6 +2,7 @@ import type { PublishedContent } from '@pcme/database';
 import type { FastifyInstance } from 'fastify';
 
 import type { Config } from '../config.js';
+import { parseStrictLimit } from '../pagination.js';
 import type { DatabaseStatus } from './health.js';
 
 // ---------------------------------------------------------------------------
@@ -132,14 +133,6 @@ function toRecentItem(r: PublishedContent): RecentItem {
     publishedAt: r.publishedAt.toISOString(),
     createdAt: r.createdAt.toISOString(),
   };
-}
-
-function parseLimit(raw: unknown, max: number, def: number): { value: number; error?: string } {
-  if (raw === undefined || raw === null) return { value: def };
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n < 1) return { value: 0, error: 'limit must be a positive integer' };
-  if (n > max) return { value: 0, error: `limit must not exceed ${max}` };
-  return { value: n };
 }
 
 // ---------------------------------------------------------------------------
@@ -297,7 +290,11 @@ export async function dashboardRoutes(
         return reply.status(503).send({ statusCode: 503, error: 'Repository not configured' });
       }
 
-      const limitResult = parseLimit(request.query.limit, MAX_RECENT_LIMIT, DEFAULT_RECENT_LIMIT);
+      const limitResult = parseStrictLimit(
+        request.query.limit,
+        MAX_RECENT_LIMIT,
+        DEFAULT_RECENT_LIMIT,
+      );
       if (limitResult.error) {
         return reply.status(400).send({ statusCode: 400, error: limitResult.error });
       }

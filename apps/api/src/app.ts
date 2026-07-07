@@ -13,6 +13,7 @@ import type { CalendarService } from './calendar/types.js';
 import type { ContentComposerService } from './composer/types.js';
 import type { Config } from './config.js';
 import type { MetricsService } from './metrics.js';
+import { registerPerformanceMiddleware } from './middleware/response-timing.js';
 import { createInMemoryNotificationRepository } from './notifications/in-memory-repository.js';
 import { createNotificationService } from './notifications/notification-service.js';
 import { createNotifyingAuditRepository } from './notifications/notifying-audit-repository.js';
@@ -241,6 +242,8 @@ export function buildApp(options: AppOptions) {
 
   // Global optional-auth hook — populates request.auth when valid credentials present.
   app.addHook('onRequest', authMiddleware.authenticateRequest);
+
+  registerPerformanceMiddleware(app, metricsService);
 
   app.addHook('onSend', async (request, reply) => {
     void reply.header('x-request-id', request.id);

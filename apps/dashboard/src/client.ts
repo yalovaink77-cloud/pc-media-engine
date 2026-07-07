@@ -1,3 +1,4 @@
+import { clampDashboardLimit, DEFAULT_DASHBOARD_LIST_LIMIT } from './limits.js';
 import type {
   ActivityEvent,
   ActivityListResult,
@@ -57,7 +58,7 @@ export interface DashboardApiClient {
   fetchAssets(filters?: AssetListFilters): Promise<AssetListResult | null>;
   fetchAsset(id: string, projectId?: string): Promise<AssetDetail | null>;
   /** Sprint 40 content composer — read-only + validation. */
-  fetchComposerAssets(projectId?: string): Promise<ComposerAssetListResult | null>;
+  fetchComposerAssets(projectId?: string, limit?: number): Promise<ComposerAssetListResult | null>;
   fetchComposerAsset(id: string, projectId?: string): Promise<ComposerAssetDetail | null>;
   validateComposer(
     assetId: string,
@@ -280,11 +281,12 @@ export function createDashboardApiClient(baseUrl: string, apiKey?: string): Dash
         `${base}/assets/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`,
       );
     },
-    fetchComposerAssets: (projectId?: string) => {
+    fetchComposerAssets: (projectId?: string, limit?: number) => {
       const params = new URLSearchParams();
       if (projectId) params.set('projectId', projectId);
+      params.set('limit', String(clampDashboardLimit(limit ?? DEFAULT_DASHBOARD_LIST_LIMIT)));
       const qs = params.toString();
-      return fetchJson<ComposerAssetListResult>(`${base}/composer/assets${qs ? `?${qs}` : ''}`);
+      return fetchJson<ComposerAssetListResult>(`${base}/composer/assets?${qs}`);
     },
     fetchComposerAsset: (id: string, projectId?: string) => {
       const params = new URLSearchParams();

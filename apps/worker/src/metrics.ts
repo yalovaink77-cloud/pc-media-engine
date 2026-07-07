@@ -18,6 +18,11 @@ export type WorkerMetricCounters = {
   schedulerJobsTotal: number;
 };
 
+export type WorkerMetricsSnapshot = WorkerMetricCounters & {
+  processedPerMinute: number;
+  publishSuccessRate: number;
+};
+
 const ZERO: WorkerMetricCounters = {
   processedTotal: 0,
   publishedTotal: 0,
@@ -29,13 +34,28 @@ const ZERO: WorkerMetricCounters = {
 
 export class WorkerMetricsService {
   private counters: WorkerMetricCounters = { ...ZERO };
+  private readonly startedAtMs: number;
+
+  constructor(startedAt?: string | Date) {
+    const parsed = startedAt ? new Date(startedAt).getTime() : Date.now();
+    this.startedAtMs = Number.isNaN(parsed) ? Date.now() : parsed;
+  }
 
   inc(key: keyof WorkerMetricCounters, by = 1): void {
     this.counters[key] += by;
   }
 
-  snapshot(): Readonly<WorkerMetricCounters> {
-    return { ...this.counters };
+  snapshot(): WorkerMetricsSnapshot {
+    const uptimeMinutes = Math.max((Date.now() - this.startedAtMs) / 60_000, 1 / 60);
+    const publishAttempts = this.counters.publishedTotal + this.counters.failuresTotal;
+    return {
+      ...this.counters,
+      processedPerMinute: Math.round((this.counters.processedTotal / uptimeMinutes) * 100) / 100,
+      publishSuccessRate:
+        publishAttempts > 0
+          ? Math.round((this.counters.publishedTotal / publishAttempts) * 10_000) / 100
+          : 100,
+    };
   }
 
   reset(): void {

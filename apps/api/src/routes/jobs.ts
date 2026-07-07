@@ -13,6 +13,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 
 import type { AuthMiddleware } from '../auth/middleware.js';
 import type { Config } from '../config.js';
+import { clampLimit, clampOffset } from '../pagination.js';
 import { DEFAULT_JOB_LIMIT, isJobStatus, MAX_JOB_LIMIT } from '../queue/job-types.js';
 import type { JobDetail, JobListResult } from '../queue/queue-service.js';
 import type { QueueService } from '../queue/queue-service.js';
@@ -45,18 +46,6 @@ async function notFound(reply: FastifyReply, message: string): Promise<void> {
   await reply.status(404).send({ error: 'Not Found', message, statusCode: 404 });
 }
 
-function parseLimit(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : DEFAULT_JOB_LIMIT;
-  if (Number.isNaN(n) || n < 1) return DEFAULT_JOB_LIMIT;
-  return Math.min(n, MAX_JOB_LIMIT);
-}
-
-function parseOffset(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : 0;
-  if (Number.isNaN(n) || n < 0) return 0;
-  return n;
-}
-
 export async function jobsRoutes(app: FastifyInstance, options: JobsRouteOptions): Promise<void> {
   const { queueService, authMiddleware, publishingConfig } = options;
   const { requirePermission } = authMiddleware;
@@ -83,8 +72,8 @@ export async function jobsRoutes(app: FastifyInstance, options: JobsRouteOptions
           publisher,
           projectId,
           assetId,
-          limit: parseLimit(limit),
-          offset: parseOffset(offset),
+          limit: clampLimit(limit, DEFAULT_JOB_LIMIT, MAX_JOB_LIMIT),
+          offset: clampOffset(offset),
         },
         publisherDriver,
       );

@@ -3,6 +3,7 @@ import Fastify from 'fastify';
 
 import type { DashboardApiClient } from './client.js';
 import { fetchAllDashboardData, fetchAllPublishersData } from './client.js';
+import { MAX_DASHBOARD_LIST_LIMIT } from './limits.js';
 import type { DashboardRbac } from './rbac.js';
 import { loadDashboardRbac, permissionDeniedMessage } from './rbac.js';
 import { setDashboardNotificationContext, setDashboardRbacContext } from './renderer.js';
@@ -878,7 +879,7 @@ export function buildDashboardApp(options: DashboardAppOptions) {
       selectedNotification =
         notifications.notifications.find((n) => n.id === query.notificationId) ?? null;
       if (!selectedNotification) {
-        const fetched = await client.fetchNotifications({ limit: 200 });
+        const fetched = await client.fetchNotifications({ limit: MAX_DASHBOARD_LIST_LIMIT });
         selectedNotification =
           fetched?.notifications.find((n) => n.id === query.notificationId) ?? null;
       }

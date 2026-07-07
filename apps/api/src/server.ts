@@ -19,6 +19,7 @@ import { loadAuthConfig, validateAuthConfig } from './auth/index.js';
 import { createCalendarService } from './calendar/calendar-service.js';
 import { createContentComposerService } from './composer/content-composer-service.js';
 import type { Config } from './config.js';
+import { createCachedDatabaseCheck } from './database-check-cache.js';
 import { MetricsService } from './metrics.js';
 import { createInMemoryNotificationRepository } from './notifications/in-memory-repository.js';
 import { createNotificationService } from './notifications/notification-service.js';
@@ -59,7 +60,9 @@ export async function startServer(config: Config): Promise<void> {
   assertNoFatalErrors(diagnostic);
   logApiStartupSummary(config, startedAt);
 
-  const checkDatabase = config.databaseUrl ? buildDatabaseCheck(config.databaseUrl) : undefined;
+  const checkDatabase = config.databaseUrl
+    ? createCachedDatabaseCheck(buildDatabaseCheck(config.databaseUrl))
+    : undefined;
 
   const assetRepository =
     config.defaultOrgId && config.defaultProjectId ? new MediaAssetRepository() : undefined;
@@ -96,7 +99,7 @@ export async function startServer(config: Config): Promise<void> {
   );
 
   const publishedContentRepo = config.databaseUrl ? new PublishedContentRepository() : undefined;
-  const metricsService = new MetricsService();
+  const metricsService = new MetricsService(startedAt);
 
   // Sprint 32: queue management service — only when Redis is configured.
   const queueService = config.redisUrl
@@ -105,6 +108,20 @@ export async function startServer(config: Config): Promise<void> {
   if (!queueService) {
     console.warn('[api/queue] Queue management disabled — set REDIS_URL to enable');
   }
+
+  const queueMetricsProvider = queueService
+    ? {
+        async getQueueMetrics() {
+          const status = await queueService.getStatus();
+          return {
+            waiting: status.waiting,
+            active: status.active,
+            completed: status.completed,
+            failed: status.failed,
+          };
+        },
+      }
+    : undefined;
 
   const publisherRegistry = createDefaultPublisherRegistry();
   const providerConfigStore = new ProviderConfigStore({ baseEnv: process.env });
@@ -204,6 +221,7 @@ export async function startServer(config: Config): Promise<void> {
     publishedContentRepo,
     dashboardRepo: publishedContentRepo,
     metricsService,
+    queueMetricsProvider,
     startedAt,
     authConfig,
     queueService,

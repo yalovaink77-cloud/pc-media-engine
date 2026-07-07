@@ -17,6 +17,7 @@ import type { AuditService } from '../audit/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
 import type { ContentComposerService } from '../composer/types.js';
 import { DEFAULT_COMPOSER_LIMIT, MAX_COMPOSER_LIMIT } from '../composer/types.js';
+import { clampLimit, clampOffset } from '../pagination.js';
 import type { PublishingQueueEnqueuer } from '../queue/publishing-enqueue.js';
 
 export type ComposerRouteOptions = {
@@ -84,18 +85,6 @@ async function notFound(reply: FastifyReply, message: string): Promise<void> {
   await reply.status(404).send({ error: 'Not Found', message, statusCode: 404 });
 }
 
-function parseLimit(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : DEFAULT_COMPOSER_LIMIT;
-  if (Number.isNaN(n) || n < 1) return DEFAULT_COMPOSER_LIMIT;
-  return Math.min(n, MAX_COMPOSER_LIMIT);
-}
-
-function parseOffset(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : 0;
-  if (Number.isNaN(n) || n < 0) return 0;
-  return n;
-}
-
 export async function composerRoutes(
   app: FastifyInstance,
   options: ComposerRouteOptions,
@@ -123,8 +112,8 @@ export async function composerRoutes(
 
       const result = await composerService.listEligibleAssets({
         projectId,
-        limit: parseLimit(request.query.limit),
-        offset: parseOffset(request.query.offset),
+        limit: clampLimit(request.query.limit, DEFAULT_COMPOSER_LIMIT, MAX_COMPOSER_LIMIT),
+        offset: clampOffset(request.query.offset),
       });
 
       return reply.status(200).send(result);

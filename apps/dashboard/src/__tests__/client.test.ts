@@ -250,7 +250,7 @@ describe('createDashboardApiClient — content composer', () => {
     const client = createDashboardApiClient('http://api.test');
     await client.fetchComposerAssets('proj-abc');
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
-      'http://api.test/composer/assets?projectId=proj-abc',
+      'http://api.test/composer/assets?projectId=proj-abc&limit=50',
     );
   });
 

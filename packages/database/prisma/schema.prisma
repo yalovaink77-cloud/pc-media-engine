@@ -521,6 +521,8 @@ model PublishedContent {
   @@index([projectId, assetId])
   @@index([publisher, externalId])
   @@index([projectId, publisher, slug])
+  @@index([projectId, publishedAt(sort: Desc)])
+  @@index([status])
   @@map("published_content")
 }
 

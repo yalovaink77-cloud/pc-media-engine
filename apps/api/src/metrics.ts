@@ -5,8 +5,10 @@
  * Queue gauges (waiting/active/completed/failed) are populated by an optional
  * BullMQ introspection function injected at startup.
  *
+ * Sprint 49 adds derived performance fields on snapshot():
+ *   apiResponseTimeMs, workerProcessedPerMinute, publishSuccessRate, queueDepthTotal
+ *
  * No external dependencies — fully offline capable.
- * Future: expose in Prometheus text format by mapping this snapshot.
  */
 
 export type MetricCounters = {
@@ -26,6 +28,14 @@ export type MetricCounters = {
 export type MetricsSnapshot = MetricCounters & {
   /** ISO timestamp when the snapshot was taken. */
   collectedAt: string;
+  /** Milliseconds for the most recent API response (Sprint 49). */
+  apiResponseTimeMs: number;
+  /** Approximate processed jobs per minute since process start (Sprint 49). */
+  workerProcessedPerMinute: number;
+  /** Publish success percentage 0–100 based on published vs failed counters (Sprint 49). */
+  publishSuccessRate: number;
+  /** Sum of waiting + active queue jobs (Sprint 49). */
+  queueDepthTotal: number;
 };
 
 const ZERO_COUNTERS: MetricCounters = {
@@ -44,8 +54,15 @@ const ZERO_COUNTERS: MetricCounters = {
 
 export class MetricsService {
   private counters: MetricCounters = { ...ZERO_COUNTERS };
+  private apiResponseTimeMs = 0;
+  private readonly startedAtMs: number;
 
-  /** Increment a counter by `by` (default 1). Ignores gauge keys for safety. */
+  constructor(startedAt?: string | Date) {
+    const parsed = startedAt ? new Date(startedAt).getTime() : Date.now();
+    this.startedAtMs = Number.isNaN(parsed) ? Date.now() : parsed;
+  }
+
+  /** Increment a counter by `by` (default 1). */
   inc(key: keyof MetricCounters, by = 1): void {
     this.counters[key] += by;
   }
@@ -55,13 +72,36 @@ export class MetricsService {
     this.counters[key] = value;
   }
 
-  /** Return a frozen copy of the current counters + timestamp. */
+  /** Record the latest API response duration in milliseconds. */
+  recordResponseTime(ms: number): void {
+    if (Number.isFinite(ms) && ms >= 0) {
+      this.apiResponseTimeMs = Math.round(ms);
+    }
+  }
+
+  /** Return a frozen copy of counters plus derived performance fields. */
   snapshot(): MetricsSnapshot {
-    return { ...this.counters, collectedAt: new Date().toISOString() };
+    const uptimeMinutes = Math.max((Date.now() - this.startedAtMs) / 60_000, 1 / 60);
+    const publishAttempts = this.counters.publishedTotal + this.counters.failuresTotal;
+    const publishSuccessRate =
+      publishAttempts > 0
+        ? Math.round((this.counters.publishedTotal / publishAttempts) * 10_000) / 100
+        : 100;
+
+    return {
+      ...this.counters,
+      collectedAt: new Date().toISOString(),
+      apiResponseTimeMs: this.apiResponseTimeMs,
+      workerProcessedPerMinute:
+        Math.round((this.counters.processedTotal / uptimeMinutes) * 100) / 100,
+      publishSuccessRate,
+      queueDepthTotal: this.counters.queueWaiting + this.counters.queueActive,
+    };
   }
 
   /** Reset all counters to zero (useful between test cases). */
   reset(): void {
     this.counters = { ...ZERO_COUNTERS };
+    this.apiResponseTimeMs = 0;
   }
 }

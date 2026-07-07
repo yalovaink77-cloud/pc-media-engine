@@ -11,6 +11,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { AuditService } from '../audit/types.js';
 import { DEFAULT_AUDIT_LIMIT, MAX_AUDIT_LIMIT } from '../audit/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
+import { clampLimit } from '../pagination.js';
 
 export type ActivityRouteOptions = {
   auditService?: AuditService;
@@ -34,12 +35,6 @@ async function serviceUnavailable(reply: FastifyReply): Promise<void> {
   });
 }
 
-function parseLimit(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : DEFAULT_AUDIT_LIMIT;
-  if (Number.isNaN(n) || n < 1) return DEFAULT_AUDIT_LIMIT;
-  return Math.min(n, MAX_AUDIT_LIMIT);
-}
-
 export async function activityRoutes(
   app: FastifyInstance,
   options: ActivityRouteOptions,
@@ -59,7 +54,7 @@ export async function activityRoutes(
         target,
         start,
         end,
-        limit: parseLimit(limitRaw),
+        limit: clampLimit(limitRaw, DEFAULT_AUDIT_LIMIT, MAX_AUDIT_LIMIT),
       });
       return reply.status(200).send(result);
     },

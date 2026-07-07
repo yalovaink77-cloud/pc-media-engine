@@ -34,6 +34,50 @@ export type MetricsRouteOptions = {
   queueMetricsProvider?: QueueMetricsProvider;
 };
 
+const METRICS_RESPONSE_SCHEMA = {
+  type: 'object',
+  properties: {
+    uploadsTotal: { type: 'number' },
+    processedTotal: { type: 'number' },
+    publishedTotal: { type: 'number' },
+    retriesTotal: { type: 'number' },
+    failuresTotal: { type: 'number' },
+    duplicateSkipsTotal: { type: 'number' },
+    schedulerJobsTotal: { type: 'number' },
+    queueWaiting: { type: 'number' },
+    queueActive: { type: 'number' },
+    queueCompleted: { type: 'number' },
+    queueFailed: { type: 'number' },
+    collectedAt: { type: 'string' },
+    apiResponseTimeMs: { type: 'number' },
+    workerProcessedPerMinute: { type: 'number' },
+    publishSuccessRate: { type: 'number' },
+    queueDepthTotal: { type: 'number' },
+  },
+} as const;
+
+function emptySnapshot(): MetricsSnapshot {
+  const now = new Date().toISOString();
+  return {
+    uploadsTotal: 0,
+    processedTotal: 0,
+    publishedTotal: 0,
+    retriesTotal: 0,
+    failuresTotal: 0,
+    duplicateSkipsTotal: 0,
+    schedulerJobsTotal: 0,
+    queueWaiting: 0,
+    queueActive: 0,
+    queueCompleted: 0,
+    queueFailed: 0,
+    collectedAt: now,
+    apiResponseTimeMs: 0,
+    workerProcessedPerMinute: 0,
+    publishSuccessRate: 100,
+    queueDepthTotal: 0,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Route plugin
 // ---------------------------------------------------------------------------
@@ -49,43 +93,12 @@ export async function metricsRoutes(
     {
       schema: {
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              uploadsTotal: { type: 'number' },
-              processedTotal: { type: 'number' },
-              publishedTotal: { type: 'number' },
-              retriesTotal: { type: 'number' },
-              failuresTotal: { type: 'number' },
-              duplicateSkipsTotal: { type: 'number' },
-              schedulerJobsTotal: { type: 'number' },
-              queueWaiting: { type: 'number' },
-              queueActive: { type: 'number' },
-              queueCompleted: { type: 'number' },
-              queueFailed: { type: 'number' },
-              collectedAt: { type: 'string' },
-            },
-          },
+          200: METRICS_RESPONSE_SCHEMA,
         },
       },
     },
     async (_request, reply) => {
-      const snap = metricsService?.snapshot() ?? {
-        uploadsTotal: 0,
-        processedTotal: 0,
-        publishedTotal: 0,
-        retriesTotal: 0,
-        failuresTotal: 0,
-        duplicateSkipsTotal: 0,
-        schedulerJobsTotal: 0,
-        queueWaiting: 0,
-        queueActive: 0,
-        queueCompleted: 0,
-        queueFailed: 0,
-        collectedAt: new Date().toISOString(),
-      };
-
-      // Overlay live queue gauges when available.
+      // Metrics route never touches the database — counters and optional queue introspection only.
       if (queueMetricsProvider && metricsService) {
         try {
           const q = await queueMetricsProvider.getQueueMetrics();
@@ -98,6 +111,7 @@ export async function metricsRoutes(
         }
       }
 
+      const snap = metricsService?.snapshot() ?? emptySnapshot();
       return reply.status(200).send(snap);
     },
   );

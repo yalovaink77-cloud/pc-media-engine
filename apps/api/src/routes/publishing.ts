@@ -2,6 +2,7 @@ import type { PublishedContent } from '@pcme/database';
 import type { FastifyInstance } from 'fastify';
 
 import type { Config } from '../config.js';
+import { parseStrictLimit } from '../pagination.js';
 
 // ---------------------------------------------------------------------------
 // Injection interface
@@ -111,18 +112,6 @@ function toHistoryItem(record: PublishedContent): HistoryItem {
   };
 }
 
-function parseLimit(raw: unknown): { value: number; error?: string } {
-  if (raw === undefined || raw === null) return { value: DEFAULT_LIMIT };
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n < 1) {
-    return { value: 0, error: 'limit must be a positive integer' };
-  }
-  if (n > MAX_LIMIT) {
-    return { value: 0, error: `limit must not exceed ${MAX_LIMIT}` };
-  }
-  return { value: n };
-}
-
 // ---------------------------------------------------------------------------
 // Route plugin
 // ---------------------------------------------------------------------------
@@ -219,7 +208,7 @@ export async function publishingRoutes(
 
       const { projectId, assetId, publisher, limit: rawLimit } = request.query;
 
-      const limitResult = parseLimit(rawLimit);
+      const limitResult = parseStrictLimit(rawLimit, MAX_LIMIT, DEFAULT_LIMIT);
       if (limitResult.error) {
         return reply.status(400).send({ statusCode: 400, error: limitResult.error });
       }

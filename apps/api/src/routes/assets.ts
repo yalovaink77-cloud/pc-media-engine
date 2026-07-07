@@ -16,6 +16,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { AssetLibraryService } from '../assets/types.js';
 import { DEFAULT_ASSET_LIMIT, isAssetStatus, MAX_ASSET_LIMIT } from '../assets/types.js';
 import type { AuthMiddleware } from '../auth/middleware.js';
+import { clampLimit, clampOffset } from '../pagination.js';
 
 export type AssetsRouteOptions = {
   assetLibrary?: AssetLibraryService;
@@ -42,18 +43,6 @@ async function serviceUnavailable(reply: FastifyReply): Promise<void> {
 
 async function notFound(reply: FastifyReply, message: string): Promise<void> {
   await reply.status(404).send({ error: 'Not Found', message, statusCode: 404 });
-}
-
-function parseLimit(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : DEFAULT_ASSET_LIMIT;
-  if (Number.isNaN(n) || n < 1) return DEFAULT_ASSET_LIMIT;
-  return Math.min(n, MAX_ASSET_LIMIT);
-}
-
-function parseOffset(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : 0;
-  if (Number.isNaN(n) || n < 0) return 0;
-  return n;
 }
 
 export async function assetsRoutes(
@@ -92,8 +81,8 @@ export async function assetsRoutes(
         projectId,
         status,
         mimeType,
-        limit: parseLimit(limit),
-        offset: parseOffset(offset),
+        limit: clampLimit(limit, DEFAULT_ASSET_LIMIT, MAX_ASSET_LIMIT),
+        offset: clampOffset(offset),
       });
 
       return reply.status(200).send(result);

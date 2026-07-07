@@ -13,6 +13,7 @@ import type { AuthMiddleware } from '../auth/middleware.js';
 import type { NotificationSeverity } from '../notifications/types.js';
 import type { NotificationService } from '../notifications/types.js';
 import { DEFAULT_NOTIFICATION_LIMIT, MAX_NOTIFICATION_LIMIT } from '../notifications/types.js';
+import { clampLimit } from '../pagination.js';
 
 export type NotificationsRouteOptions = {
   notificationService?: NotificationService;
@@ -31,12 +32,6 @@ async function serviceUnavailable(reply: FastifyReply): Promise<void> {
     message: 'Notification center is not available',
     statusCode: 503,
   });
-}
-
-function parseLimit(raw?: string): number {
-  const n = raw ? parseInt(raw, 10) : DEFAULT_NOTIFICATION_LIMIT;
-  if (Number.isNaN(n) || n < 1) return DEFAULT_NOTIFICATION_LIMIT;
-  return Math.min(n, MAX_NOTIFICATION_LIMIT);
 }
 
 function parseUnread(raw?: string): boolean | undefined {
@@ -65,7 +60,7 @@ export async function notificationsRoutes(
       const result = await notificationService.list({
         unread: parseUnread(unreadRaw),
         severity: isSeverity(severity) ? severity : undefined,
-        limit: parseLimit(limitRaw),
+        limit: clampLimit(limitRaw, DEFAULT_NOTIFICATION_LIMIT, MAX_NOTIFICATION_LIMIT),
       });
       return reply.status(200).send(result);
     },

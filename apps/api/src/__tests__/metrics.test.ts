@@ -59,6 +59,9 @@ describe('MetricsService', () => {
     expect(snap.queueActive).toBe(0);
     expect(snap.queueCompleted).toBe(0);
     expect(snap.queueFailed).toBe(0);
+    expect(snap.apiResponseTimeMs).toBe(0);
+    expect(snap.queueDepthTotal).toBe(0);
+    expect(snap.publishSuccessRate).toBe(100);
   });
 
   it('increments a counter by 1', () => {
@@ -106,10 +109,25 @@ describe('MetricsService', () => {
     const svc = new MetricsService();
     svc.inc('uploadsTotal', 10);
     svc.inc('publishedTotal', 5);
+    svc.recordResponseTime(99);
     svc.reset();
     const snap = svc.snapshot();
     expect(snap.uploadsTotal).toBe(0);
     expect(snap.publishedTotal).toBe(0);
+    expect(snap.apiResponseTimeMs).toBe(0);
+  });
+
+  it('computes derived performance fields', () => {
+    const svc = new MetricsService(new Date(Date.now() - 60_000).toISOString());
+    svc.inc('publishedTotal', 8);
+    svc.inc('failuresTotal', 2);
+    svc.set('queueWaiting', 4);
+    svc.set('queueActive', 1);
+    svc.recordResponseTime(15);
+    const snap = svc.snapshot();
+    expect(snap.publishSuccessRate).toBe(80);
+    expect(snap.queueDepthTotal).toBe(5);
+    expect(snap.apiResponseTimeMs).toBe(15);
   });
 });
 
