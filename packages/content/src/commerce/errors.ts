@@ -13,3 +13,23 @@ export class CommerceKnowledgeError extends Error {
     this.issues = options?.issues ?? [];
   }
 }
+
+/** Format loader errors for logs without exposing parser internals or raw documents. */
+export function formatCommerceKnowledgeError(error: unknown): string {
+  if (error instanceof CommerceKnowledgeError) {
+    const parts = [error.message];
+    if (error.filePath) {
+      parts.push(`file=${error.filePath}`);
+    }
+    if (error.issues.length > 0) {
+      parts.push(error.issues.join('; '));
+    }
+    return parts.join(' — ');
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}

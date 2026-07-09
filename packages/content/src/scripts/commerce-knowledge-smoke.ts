@@ -7,6 +7,7 @@
  * Run: pnpm commerce:smoke
  */
 
+import { formatCommerceKnowledgeError } from '../commerce/errors.js';
 import { loadCommerceKnowledge } from '../commerce/loader.js';
 
 async function main(): Promise<void> {
@@ -34,6 +35,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  console.error('Commerce knowledge smoke failed:', error);
+  console.error(`Commerce knowledge smoke failed: ${formatCommerceKnowledgeError(error)}`);
   process.exit(1);
 });

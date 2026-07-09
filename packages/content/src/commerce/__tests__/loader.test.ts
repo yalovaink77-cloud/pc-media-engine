@@ -1,9 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { DEFAULT_MAX_YAML_FILE_BYTES } from '../constants.js';
 import { CommerceKnowledgeError } from '../errors.js';
 import { loadCommerceBrands, loadCommerceKnowledge, loadCommerceProducts } from '../loader.js';
 import { resolveCommerceRepositoryPath } from '../paths.js';
@@ -30,7 +31,7 @@ async function createFixtureRepo(options?: {
     await writeFile(join(productsDir, `product-${index}.yaml`), yaml, 'utf8');
   }
 
-  return root;
+  return realpath(root);
 }
 
 afterEach(async () => {
@@ -40,7 +41,7 @@ afterEach(async () => {
 describe('resolveCommerceRepositoryPath', () => {
   it('uses an explicit repo path when provided', async () => {
     const repoPath = await createFixtureRepo();
-    expect(resolveCommerceRepositoryPath({ repoPath })).toBe(repoPath);
+    await expect(resolveCommerceRepositoryPath({ repoPath })).resolves.toBe(repoPath);
   });
 });
 
@@ -79,5 +80,45 @@ describe('loadCommerceKnowledge', () => {
     });
 
     await expect(loadCommerceProducts({ repoPath })).rejects.toBeInstanceOf(CommerceKnowledgeError);
+  });
+
+  it('rejects symlink escapes in brand files', async () => {
+    const repoPath = await createFixtureRepo({
+      brands: ['id: safe\nslug: safe\nname: Safe\n'],
+    });
+    const outsideDir = await mkdtemp(join(tmpdir(), 'pcme-commerce-outside-'));
+    tempDirs.push(outsideDir);
+    const outsideFile = join(outsideDir, 'outside.yaml');
+    await writeFile(outsideFile, 'id: escaped\nslug: escaped\nname: Escaped\n', 'utf8');
+
+    await symlink(outsideFile, join(repoPath, 'data', 'brands', 'escape.yaml'));
+
+    await expect(loadCommerceBrands({ repoPath })).rejects.toMatchObject({
+      name: 'CommerceKnowledgeError',
+      issues: expect.arrayContaining(['Symlinks are not permitted']),
+    } satisfies Partial<CommerceKnowledgeError>);
+  });
+
+  it('rejects oversized YAML files', async () => {
+    const repoPath = await createFixtureRepo({
+      brands: [`id: big\nslug: big\nname: Big\npayload: ${'x'.repeat(2048)}\n`],
+    });
+
+    await expect(loadCommerceBrands({ repoPath, maxYamlFileBytes: 128 })).rejects.toMatchObject({
+      name: 'CommerceKnowledgeError',
+      issues: expect.arrayContaining(['Maximum allowed size is 128 bytes']),
+    } satisfies Partial<CommerceKnowledgeError>);
+  });
+
+  it('accepts files within the default size limit', async () => {
+    const repoPath = await createFixtureRepo({
+      brands: ['id: ok\nslug: ok\nname: OK\n'],
+    });
+
+    await expect(
+      loadCommerceBrands({ repoPath, maxYamlFileBytes: DEFAULT_MAX_YAML_FILE_BYTES }),
+    ).resolves.toMatchObject({
+      brands: [{ id: 'ok' }],
+    });
   });
 });

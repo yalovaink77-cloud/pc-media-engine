@@ -23,7 +23,7 @@ export interface CommerceKnowledgeSnapshot {
   products: CommerceProduct[];
 }
 
-/** Options for locating the commerce knowledge repository. */
+/** Options for locating and loading commerce knowledge. */
 export interface CommerceKnowledgeLoaderOptions {
   /**
    * Absolute path to the piercingconnect-commerce repository root.
@@ -35,4 +35,8 @@ export interface CommerceKnowledgeLoaderOptions {
    * Defaults to three levels above this module file at runtime.
    */
   mediaEngineRoot?: string;
+  /** Maximum allowed YAML file size in bytes. Defaults to 1 MB. */
+  maxYamlFileBytes?: number;
+  /** Maximum YAML alias expansions during parsing. Defaults to 100. */
+  maxAliasCount?: number;
 }
