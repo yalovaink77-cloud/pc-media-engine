@@ -8,6 +8,7 @@ export type {
   PublishingHandoffStatus,
   PublishingHandoffWarning,
   PublishingMetadata,
+  PublishingMetadataPublishStatus,
   PublishingReviewSummary,
   PublishingTarget,
   PublishingTargetAdapter,

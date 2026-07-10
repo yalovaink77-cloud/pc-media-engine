@@ -323,6 +323,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/publishing
     devDependencies:
+      '@pcme/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0

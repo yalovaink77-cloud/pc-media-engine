@@ -38,6 +38,7 @@
     "auth:smoke": "pnpm --filter @pcme/api auth:smoke",
     "queue:smoke": "pnpm --filter @pcme/api queue:smoke",
     "wordpress:smoke": "pnpm --filter @pcme/plugin-wordpress smoke:s33",
+    "wordpress-publish:smoke": "pnpm --filter @pcme/plugin-wordpress wordpress-publish:smoke",
     "publisher-sdk:smoke": "pnpm --filter @pcme/publisher-sdk smoke",
     "commerce:smoke": "pnpm --filter @pcme/content commerce:smoke",
     "knowledge:smoke": "pnpm --filter @pcme/content knowledge:smoke",

@@ -18,7 +18,8 @@ export interface PublishingTarget {
 }
 
 /** Generic publish-status values for destination metadata. */
-export type PublishingMetadataPublishStatus = 'draft' | 'publish' | 'scheduled';
+export type PublishingMetadataPublishStatus =
+  'draft' | 'pending' | 'private' | 'publish' | 'scheduled';
 
 /** Platform-neutral publishing metadata for a handoff package. */
 export interface PublishingMetadata {

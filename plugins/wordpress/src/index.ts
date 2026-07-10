@@ -19,6 +19,23 @@ export {
 export type { WordPressLogMeta, WordPressPublisherLogger } from './logger.js';
 export { createConsoleLogger, noopLogger } from './logger.js';
 // Sprint 34: provider registration
+export type {
+  WordPressHandoffAdapterConfig,
+  WordPressHandoffPostStatus,
+} from './handoff-config.js';
+export {
+  hasWordPressHandoffCredentials,
+  loadWordPressHandoffAdapterConfig,
+} from './handoff-config.js';
+export type { WordPressHandoffErrorCode } from './handoff-errors.js';
+export { redactWordPressSecrets } from './handoff-errors.js';
+export { InMemoryWordPressHandoffIdempotencyStore } from './handoff-idempotency.js';
+export {
+  convertHandoffContent,
+  convertMarkdownToHtml,
+  mapHandoffToWordPressPost,
+  mapPublishStatus,
+} from './handoff-mapper.js';
 export {
   WORDPRESS_CAPABILITIES,
   WORDPRESS_METADATA,
@@ -33,3 +50,8 @@ export {
 } from './validator.js';
 export type { FetchFunction, WordPressMediaPublisherOptions } from './wordpress-media.publisher.js';
 export { WordPressMediaPublisher } from './wordpress-media.publisher.js';
+export type { WordPressPublishingTargetAdapterOptions } from './wordpress-publishing-target.adapter.js';
+export {
+  createWordPressPublishingTargetAdapter,
+  WordPressPublishingTargetAdapter,
+} from './wordpress-publishing-target.adapter.js';
