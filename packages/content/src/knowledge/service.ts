@@ -1,8 +1,14 @@
 import { CommerceKnowledgeSourceAdapter } from './adapters/commerce-adapter.js';
+import { buildKnowledgeContext } from './context/build.js';
+import { getContextRecipe, isContextKnowledgeSourceAdapter } from './context/index.js';
+import type { KnowledgeContextRequest, KnowledgeContextResult } from './context/types.js';
 import {
+  KnowledgeContextMissingRequiredError,
+  KnowledgeContextRootTypeError,
   KnowledgeEntityNotFoundError,
   KnowledgeServiceError,
   KnowledgeUnsupportedCollectionError,
+  KnowledgeUnsupportedContextRecipeError,
 } from './errors.js';
 import { buildRelationshipManifestIndex } from './graph/manifest.js';
 import { traverseKnowledgeGraph } from './graph/traverse.js';
@@ -127,6 +133,57 @@ export class KnowledgeServiceImpl implements KnowledgeService {
       request,
       strict,
     );
+  }
+
+  async buildContext(request: KnowledgeContextRequest): Promise<KnowledgeContextResult> {
+    if (!isContextKnowledgeSourceAdapter(this.adapter)) {
+      throw new KnowledgeServiceError('Adapter does not support context building');
+    }
+
+    const recipe = getContextRecipe(this.adapter.getContextRecipes(), request.recipe);
+    if (!recipe) {
+      throw new KnowledgeUnsupportedContextRecipeError(request.recipe);
+    }
+
+    if (request.root.type !== recipe.rootEntityType) {
+      throw new KnowledgeContextRootTypeError({
+        recipeId: recipe.id,
+        expectedType: recipe.rootEntityType,
+        actualType: request.root.type,
+      });
+    }
+
+    const projection = request.projection ?? recipe.defaultProjection;
+    const strict = request.strict ?? this.strict;
+
+    const snapshot = await this.toPublicSnapshot(
+      await this.ensureEntityTypeAvailable(request.root.type),
+    );
+    const traversal = await this.traverse({
+      start: request.root,
+      follow: recipe.follow,
+      maxDepth: recipe.maxDepth,
+      maxNodes: recipe.maxNodes,
+      strict,
+    });
+
+    const context = buildKnowledgeContext({
+      recipe,
+      request,
+      projection,
+      traversal,
+      snapshot,
+      policy: this.adapter.getProjectionPolicy?.(),
+    });
+
+    if (strict && context.missingRequired.length > 0) {
+      throw new KnowledgeContextMissingRequiredError({
+        recipeId: recipe.id,
+        missingRequired: context.missingRequired,
+      });
+    }
+
+    return context;
   }
 
   private assertSupportedEntityType(type: EntityType): void {

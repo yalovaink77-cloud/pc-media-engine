@@ -7,12 +7,16 @@ export {
   getCommerceTier0EntityTypes,
   isCommerceSupportedEntityType,
 } from './adapters/commerce-adapter.js';
+export * from './context/index.js';
 export {
   formatKnowledgeServiceError,
+  KnowledgeContextMissingRequiredError,
+  KnowledgeContextRootTypeError,
   KnowledgeEntityNotFoundError,
   KnowledgeServiceError,
   KnowledgeSnapshotError,
   KnowledgeUnsupportedCollectionError,
+  KnowledgeUnsupportedContextRecipeError,
   KnowledgeUnsupportedRelationshipError,
 } from './errors.js';
 export * from './graph/index.js';

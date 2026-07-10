@@ -1,4 +1,4 @@
-import type { EntityReference } from './types.js';
+import type { EntityReference, EntityType } from './types.js';
 
 /** Base error for knowledge service failures. */
 export class KnowledgeServiceError extends Error {
@@ -46,6 +46,49 @@ export class KnowledgeUnsupportedRelationshipError extends KnowledgeServiceError
     super(`Unsupported knowledge relationship: ${relationship}`);
     this.name = 'KnowledgeUnsupportedRelationshipError';
     this.relationship = relationship;
+  }
+}
+
+/** Thrown when a context recipe is not declared by the active adapter. */
+export class KnowledgeUnsupportedContextRecipeError extends KnowledgeServiceError {
+  readonly recipeId: string;
+
+  constructor(recipeId: string) {
+    super(`Unsupported knowledge context recipe: ${recipeId}`);
+    this.name = 'KnowledgeUnsupportedContextRecipeError';
+    this.recipeId = recipeId;
+  }
+}
+
+/** Thrown when a context request root type does not match the recipe. */
+export class KnowledgeContextRootTypeError extends KnowledgeServiceError {
+  readonly recipeId: string;
+  readonly expectedType: EntityType;
+  readonly actualType: EntityType;
+
+  constructor(options: { recipeId: string; expectedType: EntityType; actualType: EntityType }) {
+    super(
+      `Context recipe ${options.recipeId} requires root type ${options.expectedType}, received ${options.actualType}`,
+    );
+    this.name = 'KnowledgeContextRootTypeError';
+    this.recipeId = options.recipeId;
+    this.expectedType = options.expectedType;
+    this.actualType = options.actualType;
+  }
+}
+
+/** Thrown when required entity types are missing from context in strict mode. */
+export class KnowledgeContextMissingRequiredError extends KnowledgeServiceError {
+  readonly recipeId: string;
+  readonly missingRequired: readonly EntityType[];
+
+  constructor(options: { recipeId: string; missingRequired: readonly EntityType[] }) {
+    super(
+      `Context recipe ${options.recipeId} missing required entity types: ${options.missingRequired.join(', ')}`,
+    );
+    this.name = 'KnowledgeContextMissingRequiredError';
+    this.recipeId = options.recipeId;
+    this.missingRequired = options.missingRequired;
   }
 }
 

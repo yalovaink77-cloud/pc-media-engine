@@ -4,8 +4,8 @@ import {
 } from '../../commerce/collection-loader.js';
 import { resolveCommerceRepositoryPath } from '../../commerce/paths.js';
 import type { CommerceKnowledgeLoaderOptions } from '../../commerce/types.js';
+import type { ContextKnowledgeSourceAdapter } from '../context/index.js';
 import { KnowledgeUnsupportedCollectionError } from '../errors.js';
-import type { GraphKnowledgeSourceAdapter } from '../graph/types.js';
 import type {
   CommerceKnowledgeAccessors,
   CommerceKnowledgeAdapterOptions,
@@ -21,6 +21,10 @@ import {
   isCommerceSupportedEntityType,
 } from './commerce/collection-registry.js';
 import {
+  getCommerceContextRecipes,
+  getCommerceProjectionPolicy,
+} from './commerce/context-recipes.js';
+import {
   mapCommerceCollectionRecord,
   sortKnowledgeSourceEntities,
 } from './commerce/entity-mapper.js';
@@ -30,7 +34,7 @@ const COMMERCE_SOURCE_ID = 'piercingconnect-commerce';
 const COMMERCE_SOURCE_TYPE = 'yaml-repository';
 
 /** Read-only adapter for the PiercingConnect commerce YAML repository. */
-export class CommerceKnowledgeSourceAdapter implements GraphKnowledgeSourceAdapter {
+export class CommerceKnowledgeSourceAdapter implements ContextKnowledgeSourceAdapter {
   readonly sourceId = COMMERCE_SOURCE_ID;
   readonly sourceType = COMMERCE_SOURCE_TYPE;
 
@@ -55,6 +59,14 @@ export class CommerceKnowledgeSourceAdapter implements GraphKnowledgeSourceAdapt
 
   getRelationshipManifest() {
     return getCommerceRelationshipManifest();
+  }
+
+  getContextRecipes() {
+    return getCommerceContextRecipes();
+  }
+
+  getProjectionPolicy() {
+    return getCommerceProjectionPolicy();
   }
 
   async load(): Promise<KnowledgeSourceResult> {
@@ -145,6 +157,12 @@ export {
   getCommerceTier0EntityTypes,
   isCommerceSupportedEntityType,
 } from './commerce/collection-registry.js';
+export {
+  COMMERCE_CONTEXT_RECIPES,
+  getCommerceContextRecipe,
+  getCommerceContextRecipes,
+  getCommerceProjectionPolicy,
+} from './commerce/context-recipes.js';
 export {
   COMMERCE_RELATIONSHIP_MANIFEST,
   getCommerceRelationshipDefinition,

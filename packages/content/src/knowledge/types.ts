@@ -1,6 +1,7 @@
 /** Supported entity types for the current knowledge source increment. */
 export type EntityType = 'brand' | 'product' | (string & {});
 
+import type { KnowledgeContextRequest, KnowledgeContextResult } from './context/types.js';
 import type { KnowledgeTraversalRequest, KnowledgeTraversalResult } from './graph/types.js';
 
 /** Stable reference to a knowledge entity. */
@@ -107,6 +108,7 @@ export interface KnowledgeService {
     relation: string,
   ): Promise<readonly KnowledgeEntity[]>;
   traverse(request: KnowledgeTraversalRequest): Promise<KnowledgeTraversalResult>;
+  buildContext(request: KnowledgeContextRequest): Promise<KnowledgeContextResult>;
 }
 
 /** Commerce-specific lookup helpers (adapter layer, not generic service API). */

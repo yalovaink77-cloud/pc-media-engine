@@ -54,6 +54,26 @@ async function main(): Promise<void> {
   console.log(`  Total nodes: ${traversal.nodes.length}`);
   console.log(`  Total edges: ${traversal.edges.length}`);
   console.log(`  Truncated: ${traversal.truncated}`);
+
+  const productReviewContext = await service.buildContext({
+    root: { type: 'product', id: 'neilmed-piercing-aftercare-fine-mist' },
+    recipe: 'product-review',
+  });
+
+  const contextEntityCounts = Object.fromEntries(
+    Object.entries(productReviewContext.entitiesByType).map(([type, nodes]) => [
+      type,
+      nodes?.length ?? 0,
+    ]),
+  );
+
+  console.log('Product-review context (neilmed-piercing-aftercare-fine-mist):');
+  console.log(`  Recipe ID: ${productReviewContext.recipeId}`);
+  console.log(`  Root ID: ${productReviewContext.root.id}`);
+  console.log(`  Entity count by type: ${JSON.stringify(contextEntityCounts)}`);
+  console.log(`  Warning count: ${productReviewContext.warnings.length}`);
+  console.log(`  Missing required count: ${productReviewContext.missingRequired.length}`);
+  console.log(`  Truncated: ${productReviewContext.truncated}`);
 }
 
 main().catch((error: unknown) => {
