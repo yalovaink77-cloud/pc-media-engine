@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "commerce:smoke": "tsx src/scripts/commerce-knowledge-smoke.ts"
+    "commerce:smoke": "tsx src/scripts/commerce-knowledge-smoke.ts",
+    "knowledge:smoke": "tsx src/scripts/knowledge-service-smoke.ts"
   },
   "dependencies": {
     "yaml": "^2.8.0"

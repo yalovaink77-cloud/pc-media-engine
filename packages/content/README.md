@@ -14,3 +14,15 @@ Override the repository path with `COMMERCE_KNOWLEDGE_PATH` or pass `repoPath` t
 
 Loader hardening includes realpath containment checks, symlink rejection, a 1 MB default YAML
 size limit (`maxYamlFileBytes` option), and explicit YAML alias limits (`maxAliasCount` option).
+
+## Knowledge service
+
+Generic read-only knowledge indexing and lookup backed by pluggable source adapters.
+
+```bash
+pnpm knowledge:smoke
+```
+
+The default adapter loads brand and product entities from the commerce repository. Use
+`createKnowledgeService()` for the generic API and `createCommerceKnowledgeAccessors()` for
+commerce-specific lookup helpers.
