@@ -170,6 +170,9 @@ importers:
       '@pcme/seo':
         specifier: workspace:*
         version: link:../seo
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@types/node':
         specifier: ^22.10.7
@@ -256,10 +259,13 @@ importers:
 
   packages/publishing:
     dependencies:
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
       '@pcme/ai':
         specifier: workspace:*
         version: link:../ai
-    devDependencies:
       '@pcme/content':
         specifier: workspace:*
         version: link:../content

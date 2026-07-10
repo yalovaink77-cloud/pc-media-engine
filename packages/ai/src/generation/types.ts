@@ -1,19 +1,11 @@
 import type { PromptPayloadResult } from '@pcme/content';
+import type { GenerationPolicySnapshot, GenerationUsage } from '@pcme/shared';
+
+export type { GenerationPolicySnapshot, GenerationUsage } from '@pcme/shared';
 
 /** Lifecycle status for a generation job. */
 export type GenerationJobStatus =
   'prepared' | 'running' | 'succeeded' | 'failed' | 'blocked' | 'cancelled';
-
-/** Policy snapshot captured when a job is created from a content plan. */
-export interface GenerationPolicySnapshot {
-  readonly safetyConstraints: readonly string[];
-  readonly affiliateConstraints: readonly string[];
-  readonly citationRequirements: readonly string[];
-  readonly blockedFields: readonly string[];
-  readonly strictMode: boolean;
-  readonly contextComplete: boolean;
-  readonly warningCount: number;
-}
 
 /** Metadata describing a prepared generation job. */
 export interface GenerationJobMetadata {
@@ -55,14 +47,6 @@ export type GenerationProviderErrorCode =
   | 'provider-unavailable'
   | 'malformed-response'
   | 'cancelled';
-
-/** Token/character usage reported by a provider response. */
-export interface GenerationUsage {
-  readonly inputCharacters?: number;
-  readonly outputCharacters?: number;
-  readonly inputTokens?: number;
-  readonly outputTokens?: number;
-}
 
 /** Structured provider failure information. */
 export interface GenerationError {

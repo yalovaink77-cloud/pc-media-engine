@@ -22,9 +22,10 @@
     "publishing-handoff:smoke": "tsx src/scripts/publishing-handoff-smoke.ts"
   },
   "dependencies": {
-    "@pcme/ai": "workspace:*"
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
+    "@pcme/ai": "workspace:*",
     "@pcme/content": "workspace:*",
     "@types/node": "^22.10.7",
     "tsx": "^4.19.2",

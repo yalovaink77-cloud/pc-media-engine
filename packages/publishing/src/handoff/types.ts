@@ -4,7 +4,7 @@ import type {
   ContentReviewStatus,
   GeneratedContentArtifact,
   GenerationPolicySnapshot,
-} from '@pcme/ai';
+} from '@pcme/shared';
 
 /** Lifecycle status for a publishing handoff package. */
 export type PublishingHandoffStatus =
@@ -139,4 +139,5 @@ export interface PublishingTargetAdapter {
   publish(pkg: PublishingHandoffPackage): Promise<PublishingHandoffPublishResult>;
 }
 
-export type { ContentReviewResult, GeneratedContentArtifact };
+/** @deprecated Import from @pcme/shared instead */
+export type { ContentReviewResult, GeneratedContentArtifact } from '@pcme/shared';

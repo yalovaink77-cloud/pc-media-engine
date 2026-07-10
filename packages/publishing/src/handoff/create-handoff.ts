@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { GenerationPolicySnapshot } from '@pcme/ai';
+import type { GenerationPolicySnapshot } from '@pcme/shared';
 
 import type {
   CreatePublishingHandoffOptions,

@@ -1,4 +1,3 @@
-/** @pcme/shared — cross-package utilities and neutral domain contracts. */
 export type {
   ContentReviewCheckId,
   ContentReviewDecision,
@@ -10,11 +9,12 @@ export type {
   ContentReviewResult,
   ContentReviewSeverity,
   ContentReviewStatus,
+} from './content-review.js';
+export type {
   GeneratedContentArtifact,
   GeneratedContentFormat,
   GeneratedContentMetadata,
   GeneratedContentStatus,
   GeneratedContentWarning,
-  GenerationPolicySnapshot,
-  GenerationUsage,
-} from './publish/index.js';
+} from './generated-content.js';
+export type { GenerationPolicySnapshot, GenerationUsage } from './generation-policy.js';

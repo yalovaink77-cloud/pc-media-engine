@@ -1,4 +1,4 @@
-import type { GeneratedContentArtifact } from '@pcme/ai';
+import type { GeneratedContentArtifact } from '@pcme/shared';
 
 import type {
   PublishingHandoffRequest,

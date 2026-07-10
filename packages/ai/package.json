@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@pcme/content": "workspace:*",
-    "@pcme/seo": "workspace:*"
+    "@pcme/seo": "workspace:*",
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
