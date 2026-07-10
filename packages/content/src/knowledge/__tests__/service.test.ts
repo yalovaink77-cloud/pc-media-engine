@@ -57,6 +57,8 @@ describe('KnowledgeService', () => {
     expect(snapshot.totalEntityCount).toBe(2);
     expect(snapshot.entityCounts.brand).toBe(1);
     expect(snapshot.entityCounts.product).toBe(1);
+    expect(snapshot.loadedCollectionCount).toBe(2);
+    expect(snapshot.supportedCollectionCount).toBe(18);
     expect(snapshot.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(Object.isFrozen(snapshot)).toBe(true);
     expect(Object.isFrozen(snapshot.warnings)).toBe(true);

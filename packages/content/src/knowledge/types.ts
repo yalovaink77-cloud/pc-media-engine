@@ -31,6 +31,8 @@ export interface KnowledgeSnapshotMetadata {
 /** Immutable in-memory view of loaded knowledge entities. */
 export interface KnowledgeSnapshot extends KnowledgeSnapshotMetadata {
   readonly totalEntityCount: number;
+  readonly loadedCollectionCount: number;
+  readonly supportedCollectionCount: number;
 }
 
 /** Flat entity record produced by a knowledge source adapter. */
@@ -55,6 +57,8 @@ export interface KnowledgeSourceResult {
   sourcePath: string;
   entities: readonly KnowledgeSourceEntity[];
   warnings?: readonly string[];
+  loadedCollectionCount?: number;
+  supportedCollectionCount?: number;
 }
 
 /** Contract for read-only external knowledge sources. */
@@ -62,6 +66,14 @@ export interface KnowledgeSourceAdapter {
   readonly sourceId: string;
   readonly sourceType: string;
   load(): Promise<KnowledgeSourceResult>;
+}
+
+/** Optional incremental loading contract for source adapters with lazy collections. */
+export interface IncrementalKnowledgeSourceAdapter extends KnowledgeSourceAdapter {
+  getSupportedEntityTypes(): readonly EntityType[];
+  getLoadedEntityTypes(): readonly EntityType[];
+  isSupportedEntityType(entityType: EntityType): boolean;
+  ensureEntityTypes(types: readonly EntityType[]): Promise<KnowledgeSourceResult>;
 }
 
 /** Options for creating a knowledge service instance. */

@@ -1,109 +1,123 @@
-import { loadCommerceKnowledge } from '../../commerce/loader.js';
+import {
+  type CommerceCollectionRecord,
+  loadCommerceCollection,
+} from '../../commerce/collection-loader.js';
+import { resolveCommerceRepositoryPath } from '../../commerce/paths.js';
 import type { CommerceKnowledgeLoaderOptions } from '../../commerce/types.js';
+import { KnowledgeUnsupportedCollectionError } from '../errors.js';
 import type {
   CommerceKnowledgeAccessors,
   CommerceKnowledgeAdapterOptions,
+  EntityType,
+  IncrementalKnowledgeSourceAdapter,
   KnowledgeService,
-  KnowledgeSourceAdapter,
   KnowledgeSourceEntity,
-  KnowledgeSourceRelation,
   KnowledgeSourceResult,
 } from '../types.js';
+import {
+  COMMERCE_COLLECTION_REGISTRY,
+  getCommerceCollectionDefinition,
+  getCommerceSupportedEntityTypes,
+  getCommerceTier0EntityTypes,
+  isCommerceSupportedEntityType,
+} from './commerce/collection-registry.js';
+import {
+  mapCommerceCollectionRecord,
+  sortKnowledgeSourceEntities,
+} from './commerce/entity-mapper.js';
 
 const COMMERCE_SOURCE_ID = 'piercingconnect-commerce';
 const COMMERCE_SOURCE_TYPE = 'yaml-repository';
 
-function omitIdentityFields(raw: Record<string, unknown>): Record<string, unknown> {
-  const fields: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(raw)) {
-    if (key === 'id' || key === 'slug' || key === 'name') {
-      continue;
-    }
-    fields[key] = value;
-  }
-  return fields;
-}
-
-function mapBrandEntity(brand: {
-  id: string;
-  slug: string;
-  name: string;
-  raw: Record<string, unknown>;
-}): KnowledgeSourceEntity {
-  const relations: KnowledgeSourceRelation[] = [];
-  const products = brand.raw.products;
-  if (Array.isArray(products)) {
-    for (const productId of products) {
-      if (typeof productId === 'string' && productId.trim().length > 0) {
-        relations.push({ name: 'products', targetType: 'product', targetId: productId });
-      }
-    }
-  }
-
-  return {
-    type: 'brand',
-    id: brand.id,
-    slug: brand.slug,
-    name: brand.name,
-    fields: omitIdentityFields(brand.raw),
-    relations,
-  };
-}
-
-function mapProductEntity(product: {
-  id: string;
-  slug: string;
-  name: string;
-  raw: Record<string, unknown>;
-}): KnowledgeSourceEntity {
-  const relations: KnowledgeSourceRelation[] = [];
-  const brandId = product.raw.brand;
-  if (typeof brandId === 'string' && brandId.trim().length > 0) {
-    relations.push({ name: 'brand', targetType: 'brand', targetId: brandId });
-  }
-
-  return {
-    type: 'product',
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
-    fields: omitIdentityFields(product.raw),
-    relations,
-  };
-}
-
 /** Read-only adapter for the PiercingConnect commerce YAML repository. */
-export class CommerceKnowledgeSourceAdapter implements KnowledgeSourceAdapter {
+export class CommerceKnowledgeSourceAdapter implements IncrementalKnowledgeSourceAdapter {
   readonly sourceId = COMMERCE_SOURCE_ID;
   readonly sourceType = COMMERCE_SOURCE_TYPE;
 
+  private repoPath?: string;
+  private readonly loadedTypes = new Set<EntityType>();
+  private entities: KnowledgeSourceEntity[] = [];
+  private warnings: string[] = [];
+
   constructor(private readonly options?: CommerceKnowledgeAdapterOptions) {}
 
+  getSupportedEntityTypes(): readonly EntityType[] {
+    return getCommerceSupportedEntityTypes();
+  }
+
+  getLoadedEntityTypes(): readonly EntityType[] {
+    return Object.freeze([...this.loadedTypes].sort((a, b) => a.localeCompare(b)));
+  }
+
+  isSupportedEntityType(entityType: EntityType): boolean {
+    return isCommerceSupportedEntityType(entityType);
+  }
+
   async load(): Promise<KnowledgeSourceResult> {
-    const loaderOptions: CommerceKnowledgeLoaderOptions = {
+    return this.ensureEntityTypes(getCommerceTier0EntityTypes());
+  }
+
+  async ensureEntityTypes(types: readonly EntityType[]): Promise<KnowledgeSourceResult> {
+    const repoPath = await this.resolveRepoPath();
+    const loaderOptions = this.toLoaderOptions();
+
+    for (const entityType of types) {
+      const definition = getCommerceCollectionDefinition(entityType);
+      if (!definition) {
+        throw new KnowledgeUnsupportedCollectionError(entityType);
+      }
+
+      if (this.loadedTypes.has(entityType)) {
+        continue;
+      }
+
+      const records = await loadCommerceCollection(
+        repoPath,
+        definition.dataSegments,
+        definition.entityLabel,
+        {
+          ...loaderOptions,
+          displayNameFields: definition.displayNameFields,
+        },
+      );
+
+      const mapped = records.map((record: CommerceCollectionRecord) =>
+        mapCommerceCollectionRecord(definition, record),
+      );
+      this.entities.push(...mapped);
+      this.loadedTypes.add(entityType);
+    }
+
+    return this.buildResult(repoPath);
+  }
+
+  async loadAllCollections(): Promise<KnowledgeSourceResult> {
+    return this.ensureEntityTypes(getCommerceSupportedEntityTypes());
+  }
+
+  private async resolveRepoPath(): Promise<string> {
+    if (this.repoPath === undefined) {
+      this.repoPath = await resolveCommerceRepositoryPath(this.toLoaderOptions());
+    }
+    return this.repoPath;
+  }
+
+  private toLoaderOptions(): CommerceKnowledgeLoaderOptions {
+    return {
       repoPath: this.options?.repoPath,
       mediaEngineRoot: this.options?.mediaEngineRoot,
       maxYamlFileBytes: this.options?.maxYamlFileBytes,
       maxAliasCount: this.options?.maxAliasCount,
     };
+  }
 
-    const { repoPath, brands, products } = await loadCommerceKnowledge(loaderOptions);
-    const entities: KnowledgeSourceEntity[] = [
-      ...brands.map(mapBrandEntity),
-      ...products.map(mapProductEntity),
-    ];
-
-    entities.sort((a, b) => {
-      const typeOrder = a.type.localeCompare(b.type);
-      if (typeOrder !== 0) {
-        return typeOrder;
-      }
-      return a.id.localeCompare(b.id);
-    });
-
+  private buildResult(repoPath: string): KnowledgeSourceResult {
     return {
       sourcePath: repoPath,
-      entities,
+      entities: Object.freeze(sortKnowledgeSourceEntities(this.entities)),
+      warnings: Object.freeze([...this.warnings]),
+      loadedCollectionCount: this.loadedTypes.size,
+      supportedCollectionCount: getCommerceSupportedEntityTypes().length,
     };
   }
 }
@@ -119,3 +133,11 @@ export function createCommerceKnowledgeAccessors(
       service.getRelatedEntities({ type: 'brand', id: brandId }, 'products'),
   };
 }
+
+export {
+  COMMERCE_COLLECTION_REGISTRY,
+  getCommerceCollectionDefinition,
+  getCommerceSupportedEntityTypes,
+  getCommerceTier0EntityTypes,
+  isCommerceSupportedEntityType,
+};

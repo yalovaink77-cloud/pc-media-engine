@@ -1,5 +1,5 @@
 import { CommerceKnowledgeSourceAdapter } from './adapters/commerce-adapter.js';
-import { KnowledgeEntityNotFoundError } from './errors.js';
+import { KnowledgeEntityNotFoundError, KnowledgeUnsupportedCollectionError } from './errors.js';
 import {
   type KnowledgeIndexes,
   lookupEntity,
@@ -10,15 +10,27 @@ import { buildKnowledgeSnapshot } from './snapshot.js';
 import type {
   EntityReference,
   EntityType,
+  IncrementalKnowledgeSourceAdapter,
   KnowledgeEntity,
   KnowledgeService,
   KnowledgeServiceOptions,
   KnowledgeSnapshot,
   KnowledgeSourceAdapter,
+  KnowledgeSourceResult,
 } from './types.js';
 
 interface SnapshotState extends KnowledgeSnapshot {
   readonly indexes: KnowledgeIndexes;
+}
+
+function isIncrementalAdapter(
+  adapter: KnowledgeSourceAdapter,
+): adapter is IncrementalKnowledgeSourceAdapter {
+  return (
+    'ensureEntityTypes' in adapter &&
+    typeof adapter.ensureEntityTypes === 'function' &&
+    'isSupportedEntityType' in adapter
+  );
 }
 
 export class KnowledgeServiceImpl implements KnowledgeService {
@@ -37,7 +49,8 @@ export class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   async getEntity(type: EntityType, id: string): Promise<KnowledgeEntity | undefined> {
-    const snapshot = await this.loadSnapshot();
+    this.assertSupportedEntityType(type);
+    const snapshot = await this.ensureEntityTypeAvailable(type);
     const entity = lookupEntity(snapshot.indexes, type, id);
     if (!entity && this.strict) {
       throw new KnowledgeEntityNotFoundError({ type, id });
@@ -46,7 +59,8 @@ export class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   async getEntityBySlug(type: EntityType, slug: string): Promise<KnowledgeEntity | undefined> {
-    const snapshot = await this.loadSnapshot();
+    this.assertSupportedEntityType(type);
+    const snapshot = await this.ensureEntityTypeAvailable(type);
     const entity = lookupEntityBySlug(snapshot.indexes, type, slug);
     if (!entity && this.strict) {
       throw new KnowledgeEntityNotFoundError({ type, id: slug });
@@ -55,7 +69,8 @@ export class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   async getEntitiesByType(type: EntityType): Promise<readonly KnowledgeEntity[]> {
-    const snapshot = await this.loadSnapshot();
+    this.assertSupportedEntityType(type);
+    const snapshot = await this.ensureEntityTypeAvailable(type);
     return snapshot.indexes.byType.get(type) ?? Object.freeze([]);
   }
 
@@ -63,11 +78,39 @@ export class KnowledgeServiceImpl implements KnowledgeService {
     reference: EntityReference,
     relation: string,
   ): Promise<readonly KnowledgeEntity[]> {
-    const snapshot = await this.loadSnapshot();
+    this.assertSupportedEntityType(reference.type);
+    const snapshot = await this.ensureEntityTypeAvailable(reference.type);
     if (this.strict && !lookupEntity(snapshot.indexes, reference.type, reference.id)) {
       throw new KnowledgeEntityNotFoundError(reference);
     }
     return lookupRelatedEntities(snapshot.indexes, reference, relation);
+  }
+
+  private assertSupportedEntityType(type: EntityType): void {
+    if (isIncrementalAdapter(this.adapter) && !this.adapter.isSupportedEntityType(type)) {
+      throw new KnowledgeUnsupportedCollectionError(type);
+    }
+  }
+
+  private async ensureEntityTypeAvailable(type: EntityType): Promise<SnapshotState> {
+    const snapshot = await this.loadSnapshot();
+
+    if (!isIncrementalAdapter(this.adapter)) {
+      return snapshot;
+    }
+
+    if (this.adapter.getLoadedEntityTypes().includes(type)) {
+      return snapshot;
+    }
+
+    const result = await this.adapter.ensureEntityTypes([type]);
+    return this.refreshSnapshot(result);
+  }
+
+  private async refreshSnapshot(result: KnowledgeSourceResult): Promise<SnapshotState> {
+    const snapshot = await buildKnowledgeSnapshot(this.adapter, result);
+    this.snapshotPromise = Promise.resolve(snapshot);
+    return snapshot;
   }
 
   private async loadSnapshot(): Promise<SnapshotState> {
@@ -87,6 +130,8 @@ export class KnowledgeServiceImpl implements KnowledgeService {
       entityCounts: snapshot.entityCounts,
       warnings: snapshot.warnings,
       totalEntityCount: snapshot.totalEntityCount,
+      loadedCollectionCount: snapshot.loadedCollectionCount,
+      supportedCollectionCount: snapshot.supportedCollectionCount,
     });
   }
 }

@@ -81,3 +81,11 @@ export async function getBrandsDirectory(repoPath: string): Promise<string> {
 export async function getProductsDirectory(repoPath: string): Promise<string> {
   return resolveContainedDirectory(repoPath, ['data', 'products'], 'products');
 }
+
+export async function getCommerceDataDirectory(
+  repoPath: string,
+  dataSegments: readonly string[],
+  label: string,
+): Promise<string> {
+  return resolveContainedDirectory(repoPath, ['data', ...dataSegments], label);
+}

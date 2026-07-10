@@ -1,12 +1,18 @@
 export {
+  COMMERCE_COLLECTION_REGISTRY,
   CommerceKnowledgeSourceAdapter,
   createCommerceKnowledgeAccessors,
+  getCommerceCollectionDefinition,
+  getCommerceSupportedEntityTypes,
+  getCommerceTier0EntityTypes,
+  isCommerceSupportedEntityType,
 } from './adapters/commerce-adapter.js';
 export {
   formatKnowledgeServiceError,
   KnowledgeEntityNotFoundError,
   KnowledgeServiceError,
   KnowledgeSnapshotError,
+  KnowledgeUnsupportedCollectionError,
 } from './errors.js';
 export { createKnowledgeService, KnowledgeServiceImpl } from './service.js';
 export type {
@@ -14,6 +20,7 @@ export type {
   CommerceKnowledgeAdapterOptions,
   EntityReference,
   EntityType,
+  IncrementalKnowledgeSourceAdapter,
   KnowledgeEntity,
   KnowledgeService,
   KnowledgeServiceOptions,

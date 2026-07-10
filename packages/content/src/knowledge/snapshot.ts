@@ -40,6 +40,9 @@ export async function buildKnowledgeSnapshot(
     entityCounts,
     warnings: Object.freeze([...(sourceResult.warnings ?? [])]),
     totalEntityCount,
+    loadedCollectionCount: sourceResult.loadedCollectionCount ?? Object.keys(entityCounts).length,
+    supportedCollectionCount:
+      sourceResult.supportedCollectionCount ?? Object.keys(entityCounts).length,
     indexes,
   });
 

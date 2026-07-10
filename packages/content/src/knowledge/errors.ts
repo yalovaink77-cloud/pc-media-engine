@@ -27,6 +27,17 @@ export class KnowledgeEntityNotFoundError extends KnowledgeServiceError {
   }
 }
 
+/** Thrown when an entity type is not supported by the active source adapter. */
+export class KnowledgeUnsupportedCollectionError extends KnowledgeServiceError {
+  readonly entityType: EntityReference['type'];
+
+  constructor(entityType: EntityReference['type']) {
+    super(`Unsupported knowledge collection: ${entityType}`);
+    this.name = 'KnowledgeUnsupportedCollectionError';
+    this.entityType = entityType;
+  }
+}
+
 /** Format knowledge errors for logs without exposing parser internals. */
 export function formatKnowledgeServiceError(error: unknown): string {
   if (error instanceof KnowledgeEntityNotFoundError) {

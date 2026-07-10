@@ -23,6 +23,6 @@ Generic read-only knowledge indexing and lookup backed by pluggable source adapt
 pnpm knowledge:smoke
 ```
 
-The default adapter loads brand and product entities from the commerce repository. Use
-`createKnowledgeService()` for the generic API and `createCommerceKnowledgeAccessors()` for
-commerce-specific lookup helpers.
+The default adapter loads brand and product entities eagerly and lazy-loads additional
+collections on first access. Use `createKnowledgeService()` for the generic API and
+`createCommerceKnowledgeAccessors()` for commerce-specific lookup helpers.
