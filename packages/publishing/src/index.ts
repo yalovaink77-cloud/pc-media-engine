@@ -35,3 +35,22 @@ export type {
 export { PublishingValidationError } from './publisher.js';
 export type { PublishingFlowResult, PublishingFlowStep } from './publishing-flow-result.js';
 export { PublishingOrchestrator } from './publishing-orchestrator.js';
+export type {
+  PublishingTargetAdapterRegistry,
+  PublishingWorker,
+  PublishingWorkerExecutionStatus,
+  PublishingWorkerOptions,
+  PublishingWorkerResult,
+  PublishingWorkerWarning,
+} from './worker/index.js';
+export {
+  buildDeterministicOutboxId,
+  buildPublishingWorkerRequestHash,
+  createPublishingTargetAdapterRegistry,
+  createPublishingWorker,
+  InMemoryPublishingIdempotencyRepository,
+  InMemoryPublishingOutboxRepository,
+  isRetryablePublishErrorCode,
+  sanitizeWorkerErrorMessage,
+  toPublishingHandoffPackage,
+} from './worker/index.js';
