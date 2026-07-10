@@ -41,6 +41,7 @@
     "publisher-sdk:smoke": "pnpm --filter @pcme/publisher-sdk smoke",
     "commerce:smoke": "pnpm --filter @pcme/content commerce:smoke",
     "knowledge:smoke": "pnpm --filter @pcme/content knowledge:smoke",
+    "prompt:smoke": "pnpm --filter @pcme/content prompt:smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",
     "publisher-management:smoke": "pnpm --filter @pcme/api publisher-management:smoke && pnpm --filter @pcme/dashboard smoke:publishers",
