@@ -8,6 +8,10 @@ export {
 } from './audit-log.repository.js';
 export { ContentItemRepository } from './content.repository.js';
 export {
+  PrismaContentReviewRepository,
+  PrismaGeneratedContentArtifactRepository,
+} from './content-workflow.repository.js';
+export {
   type CreateIngestionJobInput,
   type CreateIngestionSourceInput,
   IngestionJobRepository,

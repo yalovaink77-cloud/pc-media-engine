@@ -46,6 +46,8 @@ model Project {
   ingestionJobs        IngestionJob[]
   processingJobs       ProcessingJob[]
   publishedContent     PublishedContent[]
+  generatedContentArtifacts GeneratedContentArtifactRecord[]
+  contentReviews           ContentReviewRecord[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -602,4 +604,124 @@ model AnalyticsSnapshot {
 
   @@index([projectId, capturedAt])
   @@map("analytics_snapshots")
+}
+
+// ---------------------------------------------------------------------------
+// Content workflow — generated artifacts and human review (Sprint 36)
+// ---------------------------------------------------------------------------
+
+enum GeneratedContentArtifactStatus {
+  generated
+  generated_with_warnings
+  invalid
+  rejected
+  approved
+}
+
+enum ContentReviewWorkflowStatus {
+  pending_review
+  approved
+  approved_with_notes
+  changes_requested
+  rejected
+  expired
+}
+
+enum ContentReviewEventType {
+  created
+  decision_submitted
+  reopened
+}
+
+enum ContentReviewDecisionValue {
+  approve
+  approve_with_notes
+  request_changes
+  reject
+}
+
+model GeneratedContentArtifactRecord {
+  id             String                         @id @default(cuid())
+  organizationId String                         @map("organization_id")
+  projectId      String                         @map("project_id")
+  artifactId     String                         @map("artifact_id")
+  jobId          String                         @map("job_id")
+  requestId      String                         @map("request_id")
+  sourceId       String                         @map("source_id")
+  snapshotId     String                         @map("snapshot_id")
+  providerId     String                         @map("provider_id")
+  model          String?
+  contentType    String                         @map("content_type")
+  locale         String
+  tone           String
+  format         String
+  content        String                         @db.Text
+  status         GeneratedContentArtifactStatus
+  usage          Json?
+  finishReason   String?                        @map("finish_reason")
+  warnings       Json                           @default("[]")
+  policySnapshot Json                           @map("policy_snapshot")
+  createdAt      DateTime                       @map("created_at")
+  updatedAt      DateTime                       @updatedAt @map("updated_at")
+
+  project Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviews ContentReviewRecord[]
+
+  @@unique([projectId, artifactId])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([projectId, jobId])
+  @@map("generated_content_artifacts")
+}
+
+model ContentReviewRecord {
+  id             String                      @id @default(cuid())
+  organizationId String                      @map("organization_id")
+  projectId      String                      @map("project_id")
+  reviewId       String                      @map("review_id")
+  artifactId     String                      @map("artifact_id")
+  jobId          String                      @map("job_id")
+  contentType    String                      @map("content_type")
+  locale         String
+  status         ContentReviewWorkflowStatus
+  artifactStatus GeneratedContentArtifactStatus @map("artifact_status")
+  policySnapshot Json                        @map("policy_snapshot")
+  warnings       Json                        @default("[]")
+  requiredChecks Json                        @default("[]") @map("required_checks")
+  version        Int                         @default(1)
+  expiresAt      DateTime                    @map("expires_at")
+  createdAt      DateTime                    @default(now()) @map("created_at")
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+
+  project  Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  artifact GeneratedContentArtifactRecord @relation(fields: [projectId, artifactId], references: [projectId, artifactId], onDelete: Restrict)
+  events   ContentReviewEvent[]
+
+  @@unique([projectId, reviewId])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([projectId, artifactId])
+  @@map("content_reviews")
+}
+
+model ContentReviewEvent {
+  id             String                     @id @default(cuid())
+  organizationId String                     @map("organization_id")
+  projectId      String                     @map("project_id")
+  eventId        String                     @map("event_id")
+  reviewId       String                     @map("review_id")
+  eventType      ContentReviewEventType     @map("event_type")
+  previousStatus ContentReviewWorkflowStatus? @map("previous_status")
+  nextStatus     ContentReviewWorkflowStatus  @map("next_status")
+  decision       ContentReviewDecisionValue?
+  reviewer       Json?
+  notes          String?
+  findings       Json?
+  createdAt      DateTime                   @default(now()) @map("created_at")
+
+  review ContentReviewRecord @relation(fields: [projectId, reviewId], references: [projectId, reviewId], onDelete: Restrict)
+
+  @@unique([projectId, eventId])
+  @@index([projectId, reviewId, createdAt])
+  @@map("content_review_events")
 }

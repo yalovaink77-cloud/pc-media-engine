@@ -13,6 +13,11 @@ export {
   loadDatabaseEnv,
 } from './config.js';
 export {
+  assertPersistableArtifactContent,
+  assertPersistableJsonValue,
+  ContentWorkflowValidationError,
+} from './domain/content-workflow-validation.js';
+export {
   IngestionValidationError,
   validateIngestionCounts,
   validateIngestionSourceUri,
@@ -71,6 +76,8 @@ export {
   MediaSourceRepository,
   MetadataRecordRepository,
   OrganizationRepository,
+  PrismaContentReviewRepository,
+  PrismaGeneratedContentArtifactRepository,
   ProcessingArtifactRepository,
   ProcessingJobAttemptRepository,
   ProcessingJobRepository,
@@ -95,9 +102,12 @@ export type {
   Asset,
   AssetStatus,
   ContentItem,
+  ContentReviewEvent,
+  ContentReviewRecord,
   ContentState,
   ContentType,
   ContentVersion,
+  GeneratedContentArtifactRecord,
   IngestionJob,
   IngestionSource,
   IngestionSourceType,
