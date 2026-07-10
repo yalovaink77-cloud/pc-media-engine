@@ -18,9 +18,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/ai-metadata-smoke.ts"
+    "smoke": "tsx src/scripts/ai-metadata-smoke.ts",
+    "generation-job:smoke": "tsx src/scripts/generation-job-smoke.ts"
   },
   "dependencies": {
+    "@pcme/content": "workspace:*",
     "@pcme/seo": "workspace:*"
   },
   "devDependencies": {

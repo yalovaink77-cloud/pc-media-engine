@@ -164,6 +164,9 @@ importers:
 
   packages/ai:
     dependencies:
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../content
       '@pcme/seo':
         specifier: workspace:*
         version: link:../seo
