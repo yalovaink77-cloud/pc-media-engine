@@ -1,3 +1,25 @@
+export type {
+  CreateGeneratedContentArtifactOptions,
+  CreateGeneratedContentArtifactResult,
+  GeneratedContentArtifact,
+  GeneratedContentFormat,
+  GeneratedContentMetadata,
+  GeneratedContentStatus,
+  GeneratedContentValidationOptions,
+  GeneratedContentValidationResult,
+  GeneratedContentWarning,
+} from './artifact/index.js';
+export {
+  buildDeterministicArtifactId,
+  createGeneratedContentArtifact,
+  detectGeneratedContentSafetyWarnings,
+  GeneratedContentArtifactError,
+  GeneratedContentArtifactImmutableError,
+  GeneratedContentArtifactNotFoundError,
+  GeneratedContentArtifactTransitionError,
+  InMemoryGeneratedContentArtifactStore,
+  validateGeneratedContent,
+} from './artifact/index.js';
 export {
   buildDeterministicJobId,
   createGenerationJob,
