@@ -40,6 +40,38 @@ export {
 } from './policy-snapshot.js';
 export type { FakeGenerationProviderOptions } from './providers/fake.provider.js';
 export { FakeGenerationProvider } from './providers/fake.provider.js';
+export type {
+  ContentReviewCheckId,
+  ContentReviewDecision,
+  ContentReviewerIdentity,
+  ContentReviewFinding,
+  ContentReviewHistoryEvent,
+  ContentReviewPolicy,
+  ContentReviewRequest,
+  ContentReviewResult,
+  ContentReviewService,
+  ContentReviewSeverity,
+  ContentReviewStatus,
+  CreateContentReviewRequestOptions,
+  SubmitContentReviewDecisionInput,
+} from './review/index.js';
+export {
+  buildDeterministicReviewId,
+  ContentReviewDecisionError,
+  ContentReviewError,
+  ContentReviewExpiredError,
+  ContentReviewMissingReviewerError,
+  ContentReviewNotFoundError,
+  ContentReviewTerminalStateError,
+  ContentReviewTransitionError,
+  createContentReviewRequest,
+  createContentReviewService,
+  DEFAULT_CONTENT_REVIEW_POLICY,
+  DEFAULT_REQUIRED_CHECKS,
+  InMemoryContentReviewStore,
+  isTerminalReviewStatus,
+  validateReviewDecision,
+} from './review/index.js';
 export { buildProviderUsage, runGenerationJob, toProviderExecutionError } from './run.js';
 export type {
   CreateGenerationJobOptions,

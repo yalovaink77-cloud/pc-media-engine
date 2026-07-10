@@ -45,6 +45,7 @@
     "orchestrator:smoke": "pnpm --filter @pcme/content orchestrator:smoke",
     "generation-job:smoke": "pnpm --filter @pcme/ai generation-job:smoke",
     "generation-artifact:smoke": "pnpm --filter @pcme/provider-ai-openrouter generation-artifact:smoke",
+    "content-review:smoke": "pnpm --filter @pcme/provider-ai-openrouter content-review:smoke",
     "generation-provider:smoke": "pnpm --filter @pcme/provider-ai-openrouter generation-provider:smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",
