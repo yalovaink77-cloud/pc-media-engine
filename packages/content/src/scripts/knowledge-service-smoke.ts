@@ -24,13 +24,16 @@ async function main(): Promise<void> {
   }
 
   const snapshot = await service.getSnapshot();
-
   const neilmed = await commerce.getBrand('neilmed');
-  const neilmedProducts = await commerce.getProductsByBrand('neilmed');
-  const sterileWater = await service.getEntity('ingredient', 'sterile-water');
-  const swelling = await service.getEntity('problem', 'swelling');
-  const helix = await service.getEntity('piercing-type', 'helix');
-  const keyword = await service.getEntity('keyword-cluster', 'best-saline-spray-for-piercings');
+
+  const traversal = await service.traverse({
+    start: { type: 'brand', id: 'neilmed' },
+    follow: ['brand.products', 'product.ingredients'],
+    maxDepth: 2,
+  });
+
+  const productCount = traversal.nodes.filter((node) => node.type === 'product').length;
+  const ingredientCount = traversal.nodes.filter((node) => node.type === 'ingredient').length;
 
   console.log(`Snapshot ID: ${snapshot.snapshotId}`);
   console.log(`Source: ${snapshot.sourceType} (${snapshot.sourcePath})`);
@@ -45,13 +48,12 @@ async function main(): Promise<void> {
   }
 
   console.log(`Brand (neilmed): ${neilmed?.name ?? '(not found)'}`);
-  console.log(`Product count for neilmed: ${neilmedProducts.length}`);
-  console.log(`Ingredient (sterile-water): ${sterileWater?.name ?? '(not found)'}`);
-  console.log(`Problem (swelling): ${swelling?.name ?? '(not found)'}`);
-  console.log(`Piercing type (helix): ${helix?.name ?? '(not found)'}`);
-  console.log(
-    `Keyword cluster (best-saline-spray-for-piercings): ${keyword?.name ?? '(not found)'}`,
-  );
+  console.log('Traversal from neilmed:');
+  console.log(`  Products: ${productCount}`);
+  console.log(`  Ingredients: ${ingredientCount}`);
+  console.log(`  Total nodes: ${traversal.nodes.length}`);
+  console.log(`  Total edges: ${traversal.edges.length}`);
+  console.log(`  Truncated: ${traversal.truncated}`);
 }
 
 main().catch((error: unknown) => {

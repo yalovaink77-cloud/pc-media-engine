@@ -1,10 +1,11 @@
 import { KnowledgeSnapshotError } from './errors.js';
+import { resolveRelationshipTargets } from './graph/manifest.js';
+import type { KnowledgeRelationshipDefinition } from './graph/types.js';
 import type {
   EntityReference,
   EntityType,
   KnowledgeEntity,
   KnowledgeSourceEntity,
-  KnowledgeSourceRelation,
 } from './types.js';
 
 export interface KnowledgeIndexes {
@@ -18,12 +19,16 @@ function entityKey(type: EntityType, id: string): string {
   return `${type}:${id}`;
 }
 
-function relationKey(source: EntityReference, relation: string): string {
+export function relationKey(source: EntityReference, relation: string): string {
   return `${source.type}:${source.id}:${relation}`;
 }
 
 function sortEntities(entities: KnowledgeEntity[]): readonly KnowledgeEntity[] {
   return Object.freeze([...entities].sort((a, b) => a.id.localeCompare(b.id)));
+}
+
+function sortReferences(references: readonly EntityReference[]): readonly EntityReference[] {
+  return Object.freeze([...references].sort((a, b) => a.id.localeCompare(b.id)));
 }
 
 function toKnowledgeEntity(sourceEntity: KnowledgeSourceEntity): KnowledgeEntity {
@@ -39,15 +44,103 @@ function toKnowledgeEntity(sourceEntity: KnowledgeSourceEntity): KnowledgeEntity
 function appendRelation(
   map: Map<string, EntityReference[]>,
   source: EntityReference,
-  relation: KnowledgeSourceRelation,
+  relation: string,
+  target: EntityReference,
 ): void {
-  const key = relationKey(source, relation.name);
+  const key = relationKey(source, relation);
   const existing = map.get(key) ?? [];
-  existing.push({ type: relation.targetType, id: relation.targetId });
+  if (!existing.some((entry) => entry.type === target.type && entry.id === target.id)) {
+    existing.push(target);
+  }
   map.set(key, existing);
 }
 
-function buildInverseRelations(
+function appendLegacyRelations(
+  map: Map<string, EntityReference[]>,
+  sourceEntity: KnowledgeSourceEntity,
+): void {
+  const sourceRef: EntityReference = { type: sourceEntity.type, id: sourceEntity.id };
+  for (const relation of sourceEntity.relations ?? []) {
+    appendRelation(map, sourceRef, relation.name, {
+      type: relation.targetType,
+      id: relation.targetId,
+    });
+  }
+}
+
+function appendManifestRelations(
+  map: Map<string, EntityReference[]>,
+  entity: KnowledgeEntity,
+  manifest: readonly KnowledgeRelationshipDefinition[],
+): void {
+  const sourceRef: EntityReference = { type: entity.type, id: entity.id };
+  for (const definition of manifest) {
+    if (definition.sourceType !== entity.type) {
+      continue;
+    }
+
+    for (const target of resolveRelationshipTargets(entity, definition)) {
+      appendRelation(map, sourceRef, definition.relation, target);
+    }
+  }
+}
+
+function findInverseRelationshipDefinition(
+  definition: KnowledgeRelationshipDefinition,
+  manifest: readonly KnowledgeRelationshipDefinition[],
+): KnowledgeRelationshipDefinition | undefined {
+  return manifest.find(
+    (candidate) =>
+      candidate.sourceType === definition.targetType &&
+      candidate.targetType === definition.sourceType,
+  );
+}
+
+function isForeignKeyRelationship(definition: KnowledgeRelationshipDefinition): boolean {
+  const normalizedTarget = definition.targetType.replace(/-/g, '_');
+  return definition.field === definition.targetType || definition.field === normalizedTarget;
+}
+
+/** Populate forward relations from inverse foreign-key fields declared in the manifest. */
+function appendInverseManifestRelations(
+  map: Map<string, EntityReference[]>,
+  entities: Iterable<KnowledgeEntity>,
+  manifest: readonly KnowledgeRelationshipDefinition[],
+): void {
+  const processedPairs = new Set<string>();
+
+  for (const inverseDefinition of manifest) {
+    if (!isForeignKeyRelationship(inverseDefinition)) {
+      continue;
+    }
+
+    const forwardDefinition = findInverseRelationshipDefinition(inverseDefinition, manifest);
+    if (!forwardDefinition) {
+      continue;
+    }
+
+    const pairKey = [forwardDefinition.name, inverseDefinition.name].sort().join('|');
+    if (processedPairs.has(pairKey)) {
+      continue;
+    }
+    processedPairs.add(pairKey);
+
+    for (const entity of entities) {
+      if (entity.type !== inverseDefinition.sourceType) {
+        continue;
+      }
+
+      for (const target of resolveRelationshipTargets(entity, inverseDefinition)) {
+        appendRelation(map, target, forwardDefinition.relation, {
+          type: entity.type,
+          id: entity.id,
+        });
+      }
+    }
+  }
+}
+
+function buildLegacyInverseRelations(
   entities: readonly KnowledgeSourceEntity[],
 ): Map<string, EntityReference[]> {
   const inverse = new Map<string, EntityReference[]>();
@@ -68,16 +161,12 @@ function buildInverseRelations(
     inverse.set(key, existing);
   }
 
-  for (const [key, refs] of inverse.entries()) {
-    refs.sort((a, b) => a.id.localeCompare(b.id));
-    inverse.set(key, refs);
-  }
-
   return inverse;
 }
 
 export function buildKnowledgeIndexes(
   sourceEntities: readonly KnowledgeSourceEntity[],
+  manifest: readonly KnowledgeRelationshipDefinition[] = [],
 ): KnowledgeIndexes {
   const byId = new Map<string, KnowledgeEntity>();
   const slugToId = new Map<string, string>();
@@ -106,16 +195,25 @@ export function buildKnowledgeIndexes(
     const typeEntities = byType.get(sourceEntity.type) ?? [];
     typeEntities.push(entity);
     byType.set(sourceEntity.type, typeEntities);
+  }
 
-    const sourceRef: EntityReference = { type: sourceEntity.type, id: sourceEntity.id };
-    for (const relation of sourceEntity.relations ?? []) {
-      appendRelation(relatedBySource, sourceRef, relation);
+  if (manifest.length > 0) {
+    for (const entity of byId.values()) {
+      appendManifestRelations(relatedBySource, entity, manifest);
+    }
+    appendInverseManifestRelations(relatedBySource, byId.values(), manifest);
+  } else {
+    for (const sourceEntity of sourceEntities) {
+      appendLegacyRelations(relatedBySource, sourceEntity);
+    }
+
+    for (const [key, refs] of buildLegacyInverseRelations(sourceEntities).entries()) {
+      relatedBySource.set(key, refs);
     }
   }
 
-  const inverseRelations = buildInverseRelations(sourceEntities);
-  for (const [key, refs] of inverseRelations.entries()) {
-    relatedBySource.set(key, refs);
+  for (const [key, refs] of relatedBySource.entries()) {
+    relatedBySource.set(key, [...sortReferences(refs)]);
   }
 
   const frozenByType = new Map<EntityType, readonly KnowledgeEntity[]>();
@@ -151,12 +249,20 @@ export function lookupEntityBySlug(
   return lookupEntity(indexes, type, id);
 }
 
+export function lookupRelationshipTargets(
+  indexes: KnowledgeIndexes,
+  reference: EntityReference,
+  relation: string,
+): readonly EntityReference[] {
+  return indexes.relatedBySource.get(relationKey(reference, relation)) ?? Object.freeze([]);
+}
+
 export function lookupRelatedEntities(
   indexes: KnowledgeIndexes,
   reference: EntityReference,
   relation: string,
 ): readonly KnowledgeEntity[] {
-  const refs = indexes.relatedBySource.get(relationKey(reference, relation)) ?? [];
+  const refs = lookupRelationshipTargets(indexes, reference, relation);
   const entities: KnowledgeEntity[] = [];
 
   for (const ref of refs) {

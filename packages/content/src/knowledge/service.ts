@@ -1,5 +1,16 @@
 import { CommerceKnowledgeSourceAdapter } from './adapters/commerce-adapter.js';
-import { KnowledgeEntityNotFoundError, KnowledgeUnsupportedCollectionError } from './errors.js';
+import {
+  KnowledgeEntityNotFoundError,
+  KnowledgeServiceError,
+  KnowledgeUnsupportedCollectionError,
+} from './errors.js';
+import { buildRelationshipManifestIndex } from './graph/manifest.js';
+import { traverseKnowledgeGraph } from './graph/traverse.js';
+import type {
+  GraphKnowledgeSourceAdapter,
+  KnowledgeTraversalRequest,
+  KnowledgeTraversalResult,
+} from './graph/types.js';
 import {
   type KnowledgeIndexes,
   lookupEntity,
@@ -21,6 +32,12 @@ import type {
 
 interface SnapshotState extends KnowledgeSnapshot {
   readonly indexes: KnowledgeIndexes;
+}
+
+function isGraphAdapter(adapter: KnowledgeSourceAdapter): adapter is GraphKnowledgeSourceAdapter {
+  return (
+    'getRelationshipManifest' in adapter && typeof adapter.getRelationshipManifest === 'function'
+  );
 }
 
 function isIncrementalAdapter(
@@ -84,6 +101,32 @@ export class KnowledgeServiceImpl implements KnowledgeService {
       throw new KnowledgeEntityNotFoundError(reference);
     }
     return lookupRelatedEntities(snapshot.indexes, reference, relation);
+  }
+
+  async traverse(request: KnowledgeTraversalRequest): Promise<KnowledgeTraversalResult> {
+    if (!isGraphAdapter(this.adapter)) {
+      throw new KnowledgeServiceError('Adapter does not support graph traversal');
+    }
+
+    const manifest = this.adapter.getRelationshipManifest();
+    const manifestIndex = buildRelationshipManifestIndex(manifest);
+    const strict = request.strict ?? this.strict;
+
+    let snapshot = await this.loadSnapshot();
+
+    return traverseKnowledgeGraph(
+      {
+        snapshotId: snapshot.snapshotId,
+        getIndexes: () => snapshot.indexes,
+        lookupEntity: (type, id) => lookupEntity(snapshot.indexes, type, id),
+        ensureEntityType: async (type) => {
+          snapshot = await this.ensureEntityTypeAvailable(type);
+        },
+      },
+      manifestIndex,
+      request,
+      strict,
+    );
   }
 
   private assertSupportedEntityType(type: EntityType): void {

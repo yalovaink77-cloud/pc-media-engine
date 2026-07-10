@@ -13,7 +13,9 @@ export {
   KnowledgeServiceError,
   KnowledgeSnapshotError,
   KnowledgeUnsupportedCollectionError,
+  KnowledgeUnsupportedRelationshipError,
 } from './errors.js';
+export * from './graph/index.js';
 export { createKnowledgeService, KnowledgeServiceImpl } from './service.js';
 export type {
   CommerceKnowledgeAccessors,

@@ -5,17 +5,16 @@ import {
 import { resolveCommerceRepositoryPath } from '../../commerce/paths.js';
 import type { CommerceKnowledgeLoaderOptions } from '../../commerce/types.js';
 import { KnowledgeUnsupportedCollectionError } from '../errors.js';
+import type { GraphKnowledgeSourceAdapter } from '../graph/types.js';
 import type {
   CommerceKnowledgeAccessors,
   CommerceKnowledgeAdapterOptions,
   EntityType,
-  IncrementalKnowledgeSourceAdapter,
   KnowledgeService,
   KnowledgeSourceEntity,
   KnowledgeSourceResult,
 } from '../types.js';
 import {
-  COMMERCE_COLLECTION_REGISTRY,
   getCommerceCollectionDefinition,
   getCommerceSupportedEntityTypes,
   getCommerceTier0EntityTypes,
@@ -25,12 +24,13 @@ import {
   mapCommerceCollectionRecord,
   sortKnowledgeSourceEntities,
 } from './commerce/entity-mapper.js';
+import { getCommerceRelationshipManifest } from './commerce/relationship-manifest.js';
 
 const COMMERCE_SOURCE_ID = 'piercingconnect-commerce';
 const COMMERCE_SOURCE_TYPE = 'yaml-repository';
 
 /** Read-only adapter for the PiercingConnect commerce YAML repository. */
-export class CommerceKnowledgeSourceAdapter implements IncrementalKnowledgeSourceAdapter {
+export class CommerceKnowledgeSourceAdapter implements GraphKnowledgeSourceAdapter {
   readonly sourceId = COMMERCE_SOURCE_ID;
   readonly sourceType = COMMERCE_SOURCE_TYPE;
 
@@ -51,6 +51,10 @@ export class CommerceKnowledgeSourceAdapter implements IncrementalKnowledgeSourc
 
   isSupportedEntityType(entityType: EntityType): boolean {
     return isCommerceSupportedEntityType(entityType);
+  }
+
+  getRelationshipManifest() {
+    return getCommerceRelationshipManifest();
   }
 
   async load(): Promise<KnowledgeSourceResult> {
@@ -140,4 +144,9 @@ export {
   getCommerceSupportedEntityTypes,
   getCommerceTier0EntityTypes,
   isCommerceSupportedEntityType,
-};
+} from './commerce/collection-registry.js';
+export {
+  COMMERCE_RELATIONSHIP_MANIFEST,
+  getCommerceRelationshipDefinition,
+  getCommerceRelationshipManifest,
+} from './commerce/relationship-manifest.js';

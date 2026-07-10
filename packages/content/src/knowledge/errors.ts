@@ -38,6 +38,17 @@ export class KnowledgeUnsupportedCollectionError extends KnowledgeServiceError {
   }
 }
 
+/** Thrown when a named relationship is not declared in the active manifest. */
+export class KnowledgeUnsupportedRelationshipError extends KnowledgeServiceError {
+  readonly relationship: string;
+
+  constructor(relationship: string) {
+    super(`Unsupported knowledge relationship: ${relationship}`);
+    this.name = 'KnowledgeUnsupportedRelationshipError';
+    this.relationship = relationship;
+  }
+}
+
 /** Format knowledge errors for logs without exposing parser internals. */
 export function formatKnowledgeServiceError(error: unknown): string {
   if (error instanceof KnowledgeEntityNotFoundError) {

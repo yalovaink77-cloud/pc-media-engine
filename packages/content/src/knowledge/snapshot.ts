@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import type { GraphKnowledgeSourceAdapter } from './graph/types.js';
 import { buildKnowledgeIndexes, type KnowledgeIndexes } from './indexes.js';
 import type {
   EntityType,
@@ -27,7 +28,11 @@ export async function buildKnowledgeSnapshot(
   loaded?: KnowledgeSourceResult,
 ): Promise<SnapshotState> {
   const sourceResult = loaded ?? (await adapter.load());
-  const indexes = buildKnowledgeIndexes(sourceResult.entities);
+  const manifest =
+    'getRelationshipManifest' in adapter && typeof adapter.getRelationshipManifest === 'function'
+      ? (adapter as GraphKnowledgeSourceAdapter).getRelationshipManifest()
+      : [];
+  const indexes = buildKnowledgeIndexes(sourceResult.entities, manifest);
   const entityCounts = countEntitiesByType(indexes);
   const totalEntityCount = sourceResult.entities.length;
 
