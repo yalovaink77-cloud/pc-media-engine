@@ -255,7 +255,14 @@ importers:
         version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
   packages/publishing:
+    dependencies:
+      '@pcme/ai':
+        specifier: workspace:*
+        version: link:../ai
     devDependencies:
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../content
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0

@@ -18,9 +18,14 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/publishing-smoke.ts"
+    "smoke": "tsx src/scripts/publishing-smoke.ts",
+    "publishing-handoff:smoke": "tsx src/scripts/publishing-handoff-smoke.ts"
+  },
+  "dependencies": {
+    "@pcme/ai": "workspace:*"
   },
   "devDependencies": {
+    "@pcme/content": "workspace:*",
     "@types/node": "^22.10.7",
     "tsx": "^4.19.2",
     "vitest": "^3.0.5"
