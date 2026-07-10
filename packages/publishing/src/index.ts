@@ -1,4 +1,18 @@
 export type {
+  PublishingEnqueueOptions,
+  PublishingEnqueueResult,
+  PublishingEnqueueService,
+  PublishingEnqueueServiceOptions,
+  PublishingEnqueueStatus,
+  PublishingEnqueueWarning,
+} from './enqueue/index.js';
+export {
+  createPublishingEnqueueService,
+  PublishingEnqueueNotReadyError,
+  PublishingEnqueuePayloadConflictError,
+  toPublishingHandoffPackagePayload,
+} from './enqueue/index.js';
+export type {
   CreatePublishingHandoffOptions,
   CreatePublishingHandoffResult,
   FakePublishingTargetAdapterOptions,
@@ -25,6 +39,7 @@ export {
 } from './handoff/index.js';
 export type { MockPublisherOptions } from './mock.publisher.js';
 export { MockPublisher } from './mock.publisher.js';
+export { executeDurablePublishingHandoffCycle } from './orchestration/durable-handoff-publishing.js';
 export type {
   HealthResult,
   HealthStatus,

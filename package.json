@@ -49,6 +49,8 @@
     "content-review:smoke": "pnpm --filter @pcme/provider-ai-openrouter content-review:smoke",
     "publishing-handoff:smoke": "pnpm --filter @pcme/publishing publishing-handoff:smoke",
     "publishing-worker:smoke": "pnpm --filter @pcme/publishing publishing-worker:smoke",
+    "publishing-enqueue:smoke": "pnpm --filter @pcme/publishing publishing-enqueue:smoke",
+    "publishing-worker:run-once": "pnpm --filter @pcme/worker publishing-worker:run-once",
     "generation-provider:smoke": "pnpm --filter @pcme/provider-ai-openrouter generation-provider:smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",

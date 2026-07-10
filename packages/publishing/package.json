@@ -20,7 +20,8 @@
     "test": "vitest run",
     "smoke": "tsx src/scripts/publishing-smoke.ts",
     "publishing-handoff:smoke": "tsx src/scripts/publishing-handoff-smoke.ts",
-    "publishing-worker:smoke": "tsx src/scripts/publishing-worker-smoke.ts"
+    "publishing-worker:smoke": "tsx src/scripts/publishing-worker-smoke.ts",
+    "publishing-enqueue:smoke": "tsx src/scripts/publishing-enqueue-smoke.ts"
   },
   "dependencies": {
     "@pcme/shared": "workspace:*"
