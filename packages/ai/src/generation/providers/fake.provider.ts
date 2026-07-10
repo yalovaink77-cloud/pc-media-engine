@@ -45,11 +45,16 @@ export class FakeGenerationProvider implements GenerationProviderAdapter {
       Object.freeze({
         providerId: this.providerId,
         status: 'succeeded',
+        jobId: request.job.jobId,
+        requestId: request.job.requestId,
+        model: 'fake-model',
+        finishReason: 'stop',
         content: this.options.generatedContent ?? '[fake-generated-content]',
         usage: Object.freeze({
           inputCharacters: usage.inputCharacters,
           outputCharacters: (this.options.generatedContent ?? '[fake-generated-content]').length,
         }),
+        warnings: Object.freeze([]),
       }),
     );
   }

@@ -46,10 +46,22 @@ export interface GenerationProviderRequest {
   readonly job: GenerationJobRequest;
 }
 
+/** Typed error codes returned by generation provider adapters. */
+export type GenerationProviderErrorCode =
+  | 'authentication'
+  | 'rate-limit'
+  | 'timeout'
+  | 'invalid-request'
+  | 'provider-unavailable'
+  | 'malformed-response'
+  | 'cancelled';
+
 /** Token/character usage reported by a provider response. */
 export interface GenerationUsage {
-  readonly inputCharacters: number;
+  readonly inputCharacters?: number;
   readonly outputCharacters?: number;
+  readonly inputTokens?: number;
+  readonly outputTokens?: number;
 }
 
 /** Structured provider failure information. */
@@ -59,12 +71,29 @@ export interface GenerationError {
   readonly retryable?: boolean;
 }
 
+/** Redacted diagnostics safe for logs and error surfaces. */
+export interface GenerationProviderDiagnostics {
+  readonly httpStatus?: number;
+  readonly providerModel?: string;
+  readonly finishReason?: string;
+  readonly inputTokens?: number;
+  readonly outputTokens?: number;
+  readonly elapsedMs?: number;
+  readonly detail?: string;
+}
+
 /** Response returned by a generation provider adapter. */
 export interface GenerationProviderResponse {
   readonly providerId: string;
   readonly status: 'succeeded' | 'failed';
+  readonly jobId?: string;
+  readonly requestId?: string;
+  readonly model?: string;
+  readonly finishReason?: string;
   readonly content?: string;
   readonly usage?: GenerationUsage;
+  readonly warnings?: readonly string[];
+  readonly diagnostics?: GenerationProviderDiagnostics;
   readonly error?: GenerationError;
 }
 

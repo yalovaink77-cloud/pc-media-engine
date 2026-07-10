@@ -29,6 +29,8 @@ export type {
   GenerationPolicySnapshot,
   GenerationProviderAdapter,
   GenerationProviderCapabilities,
+  GenerationProviderDiagnostics,
+  GenerationProviderErrorCode,
   GenerationProviderRequest,
   GenerationProviderResponse,
   GenerationUsage,
