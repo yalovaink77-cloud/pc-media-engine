@@ -48,6 +48,8 @@ model Project {
   publishedContent     PublishedContent[]
   generatedContentArtifacts GeneratedContentArtifactRecord[]
   contentReviews           ContentReviewRecord[]
+  publishingOutboxRecords  PublishingHandoffOutboxRecord[]
+  publishingIdempotencyRecords PublishingIdempotencyRecord[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -724,4 +726,125 @@ model ContentReviewEvent {
   @@unique([projectId, eventId])
   @@index([projectId, reviewId, createdAt])
   @@map("content_review_events")
+}
+
+// ---------------------------------------------------------------------------
+// Publishing handoff outbox and idempotency (Sprint 37)
+// ---------------------------------------------------------------------------
+
+enum PublishingHandoffOutboxStatus {
+  pending
+  scheduled
+  processing
+  succeeded
+  failed
+  dead_letter
+  cancelled
+}
+
+enum PublishingHandoffAttemptStatus {
+  started
+  succeeded
+  failed
+}
+
+enum PublishingIdempotencyStatus {
+  reserved
+  completed
+  failed
+  expired
+}
+
+model PublishingHandoffOutboxRecord {
+  id             String                       @id @default(cuid())
+  organizationId String                       @map("organization_id")
+  projectId      String                       @map("project_id")
+  outboxId       String                       @map("outbox_id")
+  handoffId      String                       @map("handoff_id")
+  artifactId     String                       @map("artifact_id")
+  reviewId       String                       @map("review_id")
+  jobId          String                       @map("job_id")
+  requestId      String                       @map("request_id")
+  sourceId       String                       @map("source_id")
+  snapshotId     String                       @map("snapshot_id")
+  targetId       String                       @map("target_id")
+  contentType    String                       @map("content_type")
+  locale         String
+  format         String
+  packagePayload Json                         @map("package_payload")
+  status         PublishingHandoffOutboxStatus
+  priority       Int                          @default(0)
+  scheduledAt    DateTime?                    @map("scheduled_at")
+  availableAt    DateTime                     @map("available_at")
+  lockedAt       DateTime?                    @map("locked_at")
+  lockedBy       String?                      @map("locked_by")
+  attemptCount   Int                          @default(0) @map("attempt_count")
+  maxAttempts    Int                          @default(5) @map("max_attempts")
+  lastError      String?                      @map("last_error")
+  version        Int                          @default(1)
+  completedAt    DateTime?                    @map("completed_at")
+  createdAt      DateTime                     @default(now()) @map("created_at")
+  updatedAt      DateTime                     @updatedAt @map("updated_at")
+
+  project  Project                       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  attempts PublishingHandoffAttemptRecord[]
+
+  @@unique([projectId, outboxId])
+  @@unique([projectId, handoffId])
+  @@index([projectId, status, availableAt])
+  @@index([projectId, scheduledAt])
+  @@index([organizationId])
+  @@map("publishing_outbox_records")
+}
+
+model PublishingHandoffAttemptRecord {
+  id              String                       @id @default(cuid())
+  organizationId  String                       @map("organization_id")
+  projectId       String                       @map("project_id")
+  attemptId       String                       @map("attempt_id")
+  outboxId        String                       @map("outbox_id")
+  attemptNumber   Int                          @map("attempt_number")
+  providerId      String                       @map("provider_id")
+  status          PublishingHandoffAttemptStatus
+  errorCode       String?                      @map("error_code")
+  retryable       Boolean?
+  diagnostics     Json?
+  remoteContentId String?                      @map("remote_content_id")
+  remoteUrl       String?                      @map("remote_url")
+  startedAt       DateTime                     @map("started_at")
+  completedAt     DateTime?                    @map("completed_at")
+  createdAt       DateTime                     @default(now()) @map("created_at")
+
+  outbox PublishingHandoffOutboxRecord @relation(fields: [projectId, outboxId], references: [projectId, outboxId], onDelete: Restrict)
+
+  @@unique([projectId, attemptId])
+  @@unique([projectId, outboxId, attemptNumber])
+  @@index([projectId, outboxId, startedAt])
+  @@map("publishing_attempt_records")
+}
+
+model PublishingIdempotencyRecord {
+  id              String                    @id @default(cuid())
+  organizationId  String                    @map("organization_id")
+  projectId       String                    @map("project_id")
+  idempotencyKey  String                    @map("idempotency_key")
+  targetId        String                    @map("target_id")
+  handoffId       String                    @map("handoff_id")
+  requestHash     String                    @map("request_hash")
+  status          PublishingIdempotencyStatus
+  remoteContentId String?                   @map("remote_content_id")
+  remoteUrl       String?                   @map("remote_url")
+  firstSeenAt     DateTime                  @map("first_seen_at")
+  lastSeenAt      DateTime                  @map("last_seen_at")
+  completedAt     DateTime?                 @map("completed_at")
+  expiresAt       DateTime?                 @map("expires_at")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, idempotencyKey])
+  @@index([projectId, targetId, handoffId])
+  @@index([projectId, status, expiresAt])
+  @@map("publishing_idempotency_records")
 }

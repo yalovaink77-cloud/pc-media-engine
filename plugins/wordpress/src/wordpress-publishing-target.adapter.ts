@@ -22,6 +22,8 @@ import {
   convertHandoffContent,
   mapHandoffToWordPressPost,
 } from './handoff-mapper.js';
+import type { PersistentHandoffIdempotencyOptions } from './handoff-publish-idempotency.js';
+import { HandoffPublishIdempotencyGuard } from './handoff-publish-idempotency.js';
 import type { WordPressPublisherLogger } from './logger.js';
 import { noopLogger } from './logger.js';
 import type { FetchFunction } from './wordpress-media.publisher.js';
@@ -31,6 +33,7 @@ export interface WordPressPublishingTargetAdapterOptions {
   readonly logger?: WordPressPublisherLogger;
   readonly forceDraft?: boolean;
   readonly idempotencyStore?: InMemoryWordPressHandoffIdempotencyStore;
+  readonly persistentIdempotency?: PersistentHandoffIdempotencyOptions;
 }
 
 type WpPostResponse = {
@@ -61,7 +64,7 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
 
   private readonly fetchFn: FetchFunction;
   private readonly logger: WordPressPublisherLogger;
-  private readonly idempotencyStore: InMemoryWordPressHandoffIdempotencyStore;
+  private readonly idempotencyGuard: HandoffPublishIdempotencyGuard;
   private readonly forceDraft: boolean;
 
   constructor(
@@ -70,8 +73,10 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
   ) {
     this.fetchFn = options.fetchFn ?? globalThis.fetch;
     this.logger = options.logger ?? noopLogger;
-    this.idempotencyStore =
-      options.idempotencyStore ?? new InMemoryWordPressHandoffIdempotencyStore();
+    this.idempotencyGuard = new HandoffPublishIdempotencyGuard(
+      options.idempotencyStore ?? new InMemoryWordPressHandoffIdempotencyStore(),
+      options.persistentIdempotency,
+    );
     this.forceDraft = options.forceDraft ?? false;
   }
 
@@ -170,14 +175,24 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
   }
 
   async publish(pkg: PublishingHandoffPackage): Promise<PublishingHandoffPublishResult> {
-    const cached = this.idempotencyStore.get(pkg.handoffId);
+    const cached = await this.idempotencyGuard.getCachedResult(pkg.handoffId, this.targetId);
     if (cached) {
       return cached;
     }
 
+    const requestHash = this.idempotencyGuard.buildRequestHash(pkg);
+    const reservation = await this.idempotencyGuard.reserve(
+      pkg.handoffId,
+      this.targetId,
+      requestHash,
+    );
+    if (reservation !== 'proceed') {
+      return reservation;
+    }
+
     const validation = this.validate(pkg);
     if (!validation.valid) {
-      return Object.freeze({
+      const failure = Object.freeze({
         success: false,
         targetId: this.targetId,
         error: Object.freeze({
@@ -185,6 +200,8 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
           message: validation.errors[0]?.message ?? 'Handoff package failed validation',
         }),
       });
+      await this.idempotencyGuard.saveResult(pkg.handoffId, this.targetId, requestHash, failure);
+      return failure;
     }
 
     const payload = mapHandoffToWordPressPost(pkg, {
@@ -228,7 +245,7 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
             httpStatus: response.status,
           }),
         );
-        return Object.freeze({
+        const failure = Object.freeze({
           success: false,
           targetId: this.targetId,
           error: Object.freeze({
@@ -236,6 +253,8 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
             message: redactWordPressSecrets(mapped.message, [this.config.appPassword]),
           }),
         });
+        await this.idempotencyGuard.saveResult(pkg.handoffId, this.targetId, requestHash, failure);
+        return failure;
       }
 
       let data: WpPostResponse;
@@ -273,7 +292,7 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
         message: `WordPress post created (${payload.status})`,
       });
 
-      this.idempotencyStore.save(pkg.handoffId, result);
+      await this.idempotencyGuard.saveResult(pkg.handoffId, this.targetId, requestHash, result);
       this.logger.info(
         'wp.handoff.publish.success',
         buildSafeHandoffLogMeta({
@@ -295,15 +314,28 @@ export class WordPressPublishingTargetAdapter implements PublishingTargetAdapter
           contentLength: pkg.content.length,
         }),
       );
-      return Object.freeze({
-        success: false,
-        targetId: this.targetId,
-        error: Object.freeze({
-          code: mapped.code,
-          message: redactWordPressSecrets(mapped.message, [this.config.appPassword]),
+      return this.finalizeFailure(
+        pkg,
+        requestHash,
+        Object.freeze({
+          success: false,
+          targetId: this.targetId,
+          error: Object.freeze({
+            code: mapped.code,
+            message: redactWordPressSecrets(mapped.message, [this.config.appPassword]),
+          }),
         }),
-      });
+      );
     }
+  }
+
+  private async finalizeFailure(
+    pkg: PublishingHandoffPackage,
+    requestHash: string,
+    failure: PublishingHandoffPublishResult,
+  ): Promise<PublishingHandoffPublishResult> {
+    await this.idempotencyGuard.saveResult(pkg.handoffId, this.targetId, requestHash, failure);
+    return failure;
   }
 }
 

@@ -50,6 +50,11 @@ export {
   PublishedContentRepository,
   type PublishedContentSummaryStats,
 } from './published-content.repository.js';
+export { PrismaPublishingIdempotencyRepository } from './publishing-idempotency.repository.js';
+export {
+  buildDeterministicOutboxId,
+  PrismaPublishingOutboxRepository,
+} from './publishing-outbox.repository.js';
 export {
   activeRecordsFilter,
   ProjectScopeError,

@@ -49,6 +49,10 @@ export {
   validateRetryCount,
   validateStorageKeyPlaceholder,
 } from './domain/processing-validation.js';
+export {
+  assertPersistableHandoffPackagePayload,
+  sanitizePublishingAttemptDiagnostics,
+} from './domain/publishing-outbox-validation.js';
 export { checkDatabaseHealth, type DatabaseHealthResult } from './health.js';
 export {
   activeRecordsFilter,
@@ -59,6 +63,7 @@ export {
   type AuditAction,
   type AuditLogEntry,
   AuditLogRepository,
+  buildDeterministicOutboxId,
   ContentItemRepository,
   type CreateIngestionJobInput,
   type CreateIngestionSourceInput,
@@ -78,6 +83,8 @@ export {
   OrganizationRepository,
   PrismaContentReviewRepository,
   PrismaGeneratedContentArtifactRepository,
+  PrismaPublishingIdempotencyRepository,
+  PrismaPublishingOutboxRepository,
   ProcessingArtifactRepository,
   ProcessingJobAttemptRepository,
   ProcessingJobRepository,
@@ -126,6 +133,9 @@ export type {
   Project,
   PublishedContent,
   PublishedContentStatus,
+  PublishingHandoffAttemptRecord,
+  PublishingHandoffOutboxRecord,
+  PublishingIdempotencyRecord,
   PublishingOutboxEntry,
   PublishRecord,
   SeoProfile,

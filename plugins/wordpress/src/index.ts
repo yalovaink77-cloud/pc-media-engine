@@ -36,6 +36,11 @@ export {
   mapHandoffToWordPressPost,
   mapPublishStatus,
 } from './handoff-mapper.js';
+export type { PersistentHandoffIdempotencyOptions } from './handoff-publish-idempotency.js';
+export {
+  buildHandoffPublishRequestHash,
+  HandoffPublishIdempotencyGuard,
+} from './handoff-publish-idempotency.js';
 export {
   WORDPRESS_CAPABILITIES,
   WORDPRESS_METADATA,

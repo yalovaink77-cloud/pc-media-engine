@@ -331,6 +331,9 @@ importers:
       '@pcme/publishing':
         specifier: workspace:*
         version: link:../../packages/publishing
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
     devDependencies:
       '@pcme/ai':
         specifier: workspace:*

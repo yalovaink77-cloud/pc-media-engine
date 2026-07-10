@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@pcme/publisher-sdk": "workspace:*",
-    "@pcme/publishing": "workspace:*"
+    "@pcme/publishing": "workspace:*",
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
     "@pcme/ai": "workspace:*",
