@@ -44,6 +44,20 @@ export type {
   PublicationReadinessAssessment,
 } from './editorial-intelligence.js';
 export type {
+  EditorialRule,
+  EditorialRuleId,
+  EditorialRuleInput,
+  EditorialRuleMetadata,
+  RuleCode,
+  RuleGroup,
+} from './editorial-rule.js';
+export {
+  EDITORIAL_RULE_ID_PATTERN,
+  RULE_CODE_PATTERN,
+  RULE_GROUP_PATTERN,
+} from './editorial-rule.js';
+export { EditorialRuleError, EditorialRuleValidationError } from './editorial-rule-errors.js';
+export type {
   GeneratedContentArtifact,
   GeneratedContentFormat,
   GeneratedContentMetadata,

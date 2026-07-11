@@ -21,6 +21,16 @@ export {
 } from './orchestrator.js';
 export { createDefaultEditorialModuleRegistry, EditorialModuleRegistry } from './registry.js';
 export {
+  buildDeterministicEditorialRuleId,
+  EditorialRuleRegistry,
+  normalizeEditorialRuleInput,
+  parseEditorialRule,
+  parseEditorialRules,
+  serializeEditorialRule,
+  serializeEditorialRules,
+  validateEditorialRule,
+} from './rule/index.js';
+export {
   parseEditorialIntelligenceReport,
   serializeEditorialIntelligenceReport,
 } from './serialize.js';

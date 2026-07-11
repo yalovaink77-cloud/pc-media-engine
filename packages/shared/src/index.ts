@@ -22,6 +22,14 @@ export type {
   PublicationReadinessAssessment,
 } from './publish/index.js';
 export type {
+  EditorialRule,
+  EditorialRuleId,
+  EditorialRuleInput,
+  EditorialRuleMetadata,
+  RuleCode,
+  RuleGroup,
+} from './publish/index.js';
+export type {
   AppendContentReviewDecisionInput,
   AppendPublishingAttemptInput,
   ClaimNextPublishingOutboxInput,
@@ -67,12 +75,17 @@ export type {
 } from './publish/index.js';
 export {
   EDITORIAL_FINDING_ID_PATTERN,
+  EDITORIAL_RULE_ID_PATTERN,
   EditorialFindingError,
   EditorialFindingValidationError,
+  EditorialRuleError,
+  EditorialRuleValidationError,
   FINDING_CATEGORIES,
   FINDING_CODE_PATTERN,
   FINDING_CONFIDENCES,
   FINDING_SEVERITIES,
+  RULE_CODE_PATTERN,
+  RULE_GROUP_PATTERN,
 } from './publish/index.js';
 export {
   buildPublishingIdempotencyKey,
