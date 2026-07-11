@@ -11,6 +11,7 @@ export {
 } from './config.js';
 export { PiercingConnectPilotError } from './errors.js';
 export {
+  ABSOLUTE_PATH_PATTERN,
   assertDraftContainsRequiredSections,
   assertSafeOutputPayload,
   buildArtifactMetadata,

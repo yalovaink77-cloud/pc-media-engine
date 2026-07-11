@@ -6,8 +6,17 @@ import type { ContentReviewRequest, GeneratedContentArtifact } from '@pcme/ai';
 import type { PiercingConnectPilotConfig } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
 
-const ABSOLUTE_PATH_PATTERN = /(?:\/home\/|\/Users\/|[A-Za-z]:\\)/;
+/**
+ * Detect absolute filesystem paths and home-directory prefixes.
+ * Kept as a hard gate after sanitization — do not weaken.
+ */
+export const ABSOLUTE_PATH_PATTERN =
+  /(?:\/(?:home|Users|tmp|var|etc|root|opt|mnt|private)\/[^\s"'<>\\]*|[A-Za-z]:\\[^\s"'<>]*)/;
+
+const ABSOLUTE_PATH_PATTERN_GLOBAL = new RegExp(ABSOLUTE_PATH_PATTERN.source, 'g');
+
 const SECRET_PATTERN = /(?:OPENROUTER_API_KEY|Bearer\s+[A-Za-z0-9._-]+|sk-[A-Za-z0-9]+)/i;
+const SECRET_PATTERN_GLOBAL = new RegExp(SECRET_PATTERN.source, 'gi');
 
 export interface PilotArtifactMetadata {
   readonly artifactId: string;
@@ -55,11 +64,16 @@ export interface PilotOutputPaths {
   readonly reviewSummaryPath: string;
 }
 
+export interface ScrubSensitiveTextOptions {
+  readonly additionalRoots?: readonly string[];
+}
+
 /** Build safe artifact metadata without secrets, absolute paths, or raw provider payloads. */
 export function buildArtifactMetadata(input: {
   artifact: GeneratedContentArtifact;
   productId: string;
   mediaEngineRoot: string;
+  additionalRoots?: readonly string[];
 }): PilotArtifactMetadata {
   return Object.freeze({
     artifactId: input.artifact.artifactId,
@@ -78,7 +92,9 @@ export function buildArtifactMetadata(input: {
       input.artifact.warnings.map((warning) =>
         Object.freeze({
           code: warning.code,
-          message: scrubSensitiveText(warning.message, input.mediaEngineRoot),
+          message: scrubSensitiveText(warning.message, input.mediaEngineRoot, {
+            additionalRoots: input.additionalRoots,
+          }),
         }),
       ),
     ),
@@ -94,6 +110,7 @@ export function buildArtifactMetadata(input: {
 export function buildReviewSummary(input: {
   review: ContentReviewRequest;
   mediaEngineRoot: string;
+  additionalRoots?: readonly string[];
 }): PilotReviewSummary {
   return Object.freeze({
     reviewId: input.review.reviewId,
@@ -108,7 +125,9 @@ export function buildReviewSummary(input: {
       input.review.warnings.map((warning) =>
         Object.freeze({
           code: warning.code,
-          message: scrubSensitiveText(warning.message, input.mediaEngineRoot),
+          message: scrubSensitiveText(warning.message, input.mediaEngineRoot, {
+            additionalRoots: input.additionalRoots,
+          }),
         }),
       ),
     ),
@@ -121,13 +140,33 @@ export function buildReviewSummary(input: {
   });
 }
 
-export function scrubSensitiveText(value: string, mediaEngineRoot: string): string {
-  let next = value.replaceAll(mediaEngineRoot, '<monorepo-root>');
-  next = next.replace(SECRET_PATTERN, '[redacted]');
-  next = next.replace(ABSOLUTE_PATH_PATTERN, '[path]');
+/**
+ * Project absolute paths and secrets out of pilot-facing text.
+ * Known roots (monorepo / commerce) are replaced first, then remaining
+ * absolute path matches are redacted in full (global).
+ */
+export function scrubSensitiveText(
+  value: string,
+  mediaEngineRoot: string,
+  options: ScrubSensitiveTextOptions = {},
+): string {
+  let next = value;
+
+  const roots = [mediaEngineRoot, ...(options.additionalRoots ?? [])]
+    .map((root) => root.trim())
+    .filter((root) => root.length > 0)
+    .sort((left, right) => right.length - left.length);
+
+  for (const root of roots) {
+    next = next.replaceAll(root, root === mediaEngineRoot ? '<monorepo-root>' : '<commerce-root>');
+  }
+
+  next = next.replace(SECRET_PATTERN_GLOBAL, '[redacted]');
+  next = next.replace(ABSOLUTE_PATH_PATTERN_GLOBAL, '[path]');
   return next;
 }
 
+/** Hard gate: reject payloads that still contain absolute paths or secrets. */
 export function assertSafeOutputPayload(payload: unknown, mediaEngineRoot: string): void {
   const serialized = JSON.stringify(payload);
   if (serialized.includes(mediaEngineRoot) || ABSOLUTE_PATH_PATTERN.test(serialized)) {
@@ -165,10 +204,15 @@ export async function writePilotOutputs(input: {
   artifactMetadata: PilotArtifactMetadata;
   reviewSummary: PilotReviewSummary;
   mediaEngineRoot: string;
+  additionalRoots?: readonly string[];
 }): Promise<PilotOutputPaths> {
+  const safeMarkdown = scrubSensitiveText(input.markdown, input.mediaEngineRoot, {
+    additionalRoots: input.additionalRoots,
+  });
+
   assertSafeOutputPayload(input.artifactMetadata, input.mediaEngineRoot);
   assertSafeOutputPayload(input.reviewSummary, input.mediaEngineRoot);
-  assertSafeOutputPayload({ content: input.markdown }, input.mediaEngineRoot);
+  assertSafeOutputPayload({ content: safeMarkdown }, input.mediaEngineRoot);
 
   await mkdir(input.outputDir, { recursive: true });
 
@@ -176,7 +220,7 @@ export async function writePilotOutputs(input: {
   const artifactMetadataPath = join(input.outputDir, 'artifact-metadata.json');
   const reviewSummaryPath = join(input.outputDir, 'review-summary.json');
 
-  await writeFile(generatedReviewPath, `${input.markdown.trim()}\n`, 'utf8');
+  await writeFile(generatedReviewPath, `${safeMarkdown.trim()}\n`, 'utf8');
   await writeFile(
     artifactMetadataPath,
     `${JSON.stringify(input.artifactMetadata, null, 2)}\n`,
@@ -185,7 +229,7 @@ export async function writePilotOutputs(input: {
   await writeFile(reviewSummaryPath, `${JSON.stringify(input.reviewSummary, null, 2)}\n`, 'utf8');
 
   return Object.freeze({
-    outputDir: relative(input.mediaEngineRoot, input.outputDir) || input.outputDir,
+    outputDir: relative(input.mediaEngineRoot, input.outputDir),
     generatedReviewPath: relative(input.mediaEngineRoot, generatedReviewPath),
     artifactMetadataPath: relative(input.mediaEngineRoot, artifactMetadataPath),
     reviewSummaryPath: relative(input.mediaEngineRoot, reviewSummaryPath),

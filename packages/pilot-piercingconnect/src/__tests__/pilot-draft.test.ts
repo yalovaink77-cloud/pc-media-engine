@@ -3,10 +3,15 @@ import { mkdir, mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { FakeGenerationProvider } from '@pcme/ai';
+import {
+  FakeGenerationProvider,
+  type GenerationProviderAdapter,
+  type GenerationProviderRequest,
+} from '@pcme/ai';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_PILOT_OUTPUT_DIR, resolveMonorepoRoot } from '../config.js';
+import { assertSafeOutputPayload, scrubSensitiveText, writePilotOutputs } from '../outputs.js';
 import { runPiercingConnectPilotDraft } from '../run-pilot-draft.js';
 
 const tempDirs: string[] = [];
@@ -61,6 +66,34 @@ No. Availability checks must remain educational and non-urgent.
 [Source note placeholder: manufacturer product information]
 [Source note placeholder: aftercare guidance references pending editorial review]
 `;
+
+class AbsolutePathWarningProvider implements GenerationProviderAdapter {
+  readonly providerId = 'fake-path-warning';
+  readonly capabilities = Object.freeze({
+    supportedOutputFormats: Object.freeze(['markdown', 'plain-text']),
+  });
+
+  constructor(
+    private readonly roots: {
+      commerceRepoPath: string;
+      mediaEngineRoot: string;
+    },
+  ) {}
+
+  async generate(request: GenerationProviderRequest) {
+    // Keep markdown path-free so artifact validation stays valid; paths leak via
+    // provider warning strings (the pilot write-gate failure mode).
+    const inner = new FakeGenerationProvider({ generatedContent: SAMPLE_DRAFT });
+    const response = await inner.generate(request);
+    return Object.freeze({
+      ...response,
+      warnings: Object.freeze([
+        `sourcePath=${this.roots.commerceRepoPath}`,
+        `Also checked /Users/ci/runner/work/pcme/file.yaml and ${this.roots.mediaEngineRoot}/packages/content`,
+      ]),
+    });
+  }
+}
 
 async function createFixtureRepo(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'pcme-piercingconnect-pilot-'));
@@ -179,9 +212,130 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(JSON.parse(reviewSummary).status).toBe('pending-review');
   });
 
+  it('redacts absolute commerce/source paths and still reaches pending-review outputs', async () => {
+    const repoPath = await createFixtureRepo();
+    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-path-out-'));
+    tempDirs.push(outputDir);
+    const mediaEngineRoot = resolveMonorepoRoot();
+
+    const result = await runPiercingConnectPilotDraft({
+      repoPath,
+      outputDir,
+      mediaEngineRoot,
+      fixedCreatedAt: FIXED_CREATED_AT,
+      env: { OPENROUTER_API_KEY: 'test-openrouter-key-should-not-leak' },
+      generationProvider: new AbsolutePathWarningProvider({
+        commerceRepoPath: repoPath,
+        mediaEngineRoot,
+      }),
+    });
+
+    expect(result.status).toBe('succeeded-pending-review');
+    expect(result.jobId).toBeTruthy();
+    expect(result.artifactId).toBeTruthy();
+    expect(result.reviewId).toBeTruthy();
+    expect(result.reviewStatus).toBe('pending-review');
+    expect(result.wordpressInvoked).toBe(false);
+
+    const reviewMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
+    const artifactMetadata = await readFile(join(outputDir, 'artifact-metadata.json'), 'utf8');
+    const reviewSummary = await readFile(join(outputDir, 'review-summary.json'), 'utf8');
+    const combined = `${reviewMarkdown}\n${artifactMetadata}\n${reviewSummary}`;
+
+    expect(combined).not.toContain(repoPath);
+    expect(combined).not.toContain(mediaEngineRoot);
+    expect(combined).not.toContain('/home/');
+    expect(combined).not.toContain('/Users/');
+    expect(combined).toContain('<commerce-root>');
+    expect(JSON.parse(reviewSummary).status).toBe('pending-review');
+  });
+
   it('keeps pilot outputs under a gitignored exports path', async () => {
     const gitignore = await readFile(join(resolveMonorepoRoot(), '.gitignore'), 'utf8');
     expect(gitignore).toContain('exports/');
     expect(DEFAULT_PILOT_OUTPUT_DIR.startsWith('exports/')).toBe(true);
+  });
+});
+
+describe('pilot output path sanitization', () => {
+  it('removes real-looking absolute paths from text', () => {
+    const mediaEngineRoot = '/home/murat/Projects/pc-media-engine';
+    const commerceRoot = '/home/murat/Projects/piercingconnect-commerce';
+    const scrubbed = scrubSensitiveText(
+      `sourcePath=${commerceRoot} monorepo=${mediaEngineRoot}/packages/content also /Users/ci/a.yaml and /tmp/cache/x`,
+      mediaEngineRoot,
+      { additionalRoots: [commerceRoot] },
+    );
+
+    expect(scrubbed).toContain('<commerce-root>');
+    expect(scrubbed).toContain('<monorepo-root>');
+    expect(scrubbed).toContain('[path]');
+    expect(scrubbed).not.toContain('/home/');
+    expect(scrubbed).not.toContain('/Users/');
+    expect(scrubbed).not.toContain('/tmp/');
+  });
+
+  it('still rejects unsanitized absolute paths at the hard gate', () => {
+    expect(() =>
+      assertSafeOutputPayload(
+        { message: 'Loaded from /home/murat/Projects/piercingconnect-commerce' },
+        '/home/murat/Projects/pc-media-engine',
+      ),
+    ).toThrow(/absolute paths/);
+  });
+
+  it('writes scrubbed markdown when draft text contains absolute paths', async () => {
+    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-scrub-write-'));
+    tempDirs.push(outputDir);
+    const mediaEngineRoot = resolveMonorepoRoot();
+    const commerceRoot = '/home/murat/Projects/piercingconnect-commerce';
+
+    const paths = await writePilotOutputs({
+      outputDir,
+      markdown: `${SAMPLE_DRAFT}\n\nInspected ${commerceRoot}\n`,
+      artifactMetadata: Object.freeze({
+        artifactId: 'artifact-1',
+        jobId: 'job-1',
+        requestId: 'request-1',
+        sourceId: 'piercingconnect-commerce',
+        snapshotId: 'snapshot-1',
+        contentType: 'product-review',
+        locale: 'en',
+        format: 'markdown',
+        status: 'generated-with-warnings',
+        providerId: 'fake',
+        warningCount: 0,
+        warnings: Object.freeze([]),
+        contentCharacterCount: 10,
+        createdAt: FIXED_CREATED_AT,
+        productId: PRODUCT_ID,
+        reviewStatus: 'pending-review',
+        published: false,
+      }),
+      reviewSummary: Object.freeze({
+        reviewId: 'review-1',
+        artifactId: 'artifact-1',
+        jobId: 'job-1',
+        status: 'pending-review',
+        contentType: 'product-review',
+        locale: 'en',
+        requiredChecks: Object.freeze([]),
+        warningCount: 0,
+        warnings: Object.freeze([]),
+        decision: null,
+        approved: false,
+        published: false,
+        createdAt: FIXED_CREATED_AT,
+        expiresAt: FIXED_CREATED_AT,
+        note: 'pending',
+      }),
+      mediaEngineRoot,
+      additionalRoots: [commerceRoot],
+    });
+
+    const markdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
+    expect(markdown).not.toContain('/home/');
+    expect(markdown).toContain('<commerce-root>');
+    expect(paths.generatedReviewPath).not.toContain('/home/');
   });
 });

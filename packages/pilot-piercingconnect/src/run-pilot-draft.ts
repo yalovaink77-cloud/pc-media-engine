@@ -222,14 +222,20 @@ export async function runPiercingConnectPilotDraft(
       artifact,
       productId: config.productId,
       mediaEngineRoot,
+      additionalRoots: [repoPath],
     });
-    const reviewSummary = buildReviewSummary({ review, mediaEngineRoot });
+    const reviewSummary = buildReviewSummary({
+      review,
+      mediaEngineRoot,
+      additionalRoots: [repoPath],
+    });
     const outputs = await writePilotOutputs({
       outputDir,
       markdown: artifact.content,
       artifactMetadata,
       reviewSummary,
       mediaEngineRoot,
+      additionalRoots: [repoPath],
     });
 
     let postFingerprint = commerceRepoFingerprint;
