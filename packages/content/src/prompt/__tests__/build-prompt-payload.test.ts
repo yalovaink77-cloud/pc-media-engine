@@ -362,8 +362,9 @@ describe('buildPromptPayload', () => {
     expect(payload.outputContract.format).toBe('markdown');
     expect(payload.outputContract.locale).toBe('en');
     expect(payload.outputContract.tone).toBe('educational');
-    expect(payload.outputContract.sections).toContain('introduction');
+    expect(payload.outputContract.sections).toContain('editorial-summary');
     expect(payload.outputContract.sections).toContain('product-overview');
+    expect(payload.outputContract.sections).toContain('source-notes');
   });
 
   it('includes token-budget metadata', async () => {

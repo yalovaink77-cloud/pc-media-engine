@@ -5,11 +5,18 @@ export {
   DEFAULT_PILOT_PRODUCT_ID,
   type PiercingConnectPilotConfig,
   PILOT_REQUIRED_SECTIONS,
+  PILOT_REQUIRED_SOURCE_PLACEHOLDERS,
+  type PilotRequiredSection,
   resolveMonorepoRoot,
   resolvePilotCommerceRepoPath,
   resolvePilotOutputDir,
 } from './config.js';
 export { PiercingConnectPilotError } from './errors.js';
+export {
+  assertSpacesPreserved,
+  detectFormattingCorruption,
+  normalizePreservingMarkdownWhitespace,
+} from './formatting.js';
 export {
   ABSOLUTE_PATH_PATTERN,
   assertDraftContainsRequiredSections,
@@ -25,9 +32,24 @@ export {
   writePilotOutputs,
 } from './outputs.js';
 export {
+  analyzePilotDraftQuality,
+  detectMissingCitationPlaceholders,
+  detectUnsupportedClaims,
+  type PilotQualityFinding,
+  type PilotQualityFindingCode,
+} from './quality.js';
+export {
   type PiercingConnectPilotResult,
   type PiercingConnectPilotStatus,
   runPiercingConnectPilotDraft,
   type RunPiercingConnectPilotDraftOptions,
 } from './run-pilot-draft.js';
-export { PilotStructuredGenerationProvider } from './structured-provider.js';
+export {
+  extractMarkdownHeadings,
+  findMissingRequiredSections,
+  type MarkdownHeading,
+} from './section-markers.js';
+export {
+  createPilotStructuredGenerationProvider,
+  PilotStructuredGenerationProvider,
+} from './structured-provider.js';

@@ -55,7 +55,11 @@ function resolveSectionContent(
   }
 
   if (sectionId === 'sources-and-citations') {
-    return 'Include citation placeholders for any evidence referenced in the supplied context. Do not invent sources.';
+    return [
+      'Include structured citation placeholders tied to the supplied knowledge context.',
+      'Preferred forms: [Source: product official record], [Source: ingredient evidence record], [Source: APP-aligned aftercare guidance].',
+      'Do not invent URLs, DOIs, or citations. If concrete references are unavailable, keep placeholders and note uncertainty for human review.',
+    ].join(' ');
   }
 
   if (binding?.includeRoot) {

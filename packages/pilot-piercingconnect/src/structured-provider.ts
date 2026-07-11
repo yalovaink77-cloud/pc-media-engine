@@ -6,6 +6,8 @@ import type {
   GenerationProviderResponse,
 } from '@pcme/ai';
 
+import type { PiercingConnectPilotConfig } from './config.js';
+
 /** Wrap a generation provider with PiercingConnect pilot structure instructions. */
 export class PilotStructuredGenerationProvider implements GenerationProviderAdapter {
   readonly providerId: string;
@@ -14,6 +16,7 @@ export class PilotStructuredGenerationProvider implements GenerationProviderAdap
   constructor(
     private readonly inner: GenerationProviderAdapter,
     private readonly structureInstruction: string,
+    private readonly requiredSectionIds: readonly string[],
   ) {
     this.providerId = inner.providerId;
     this.capabilities = inner.capabilities;
@@ -21,14 +24,30 @@ export class PilotStructuredGenerationProvider implements GenerationProviderAdap
 
   generate(request: GenerationProviderRequest): Promise<GenerationProviderResponse> {
     return this.inner.generate({
-      job: augmentJobWithPilotStructure(request.job, this.structureInstruction),
+      job: augmentJobWithPilotStructure(
+        request.job,
+        this.structureInstruction,
+        this.requiredSectionIds,
+      ),
     });
   }
+}
+
+export function createPilotStructuredGenerationProvider(
+  inner: GenerationProviderAdapter,
+  config: PiercingConnectPilotConfig,
+): PilotStructuredGenerationProvider {
+  return new PilotStructuredGenerationProvider(
+    inner,
+    config.structureInstruction,
+    config.requiredSections.map((section) => section.id),
+  );
 }
 
 function augmentJobWithPilotStructure(
   job: GenerationJobRequest,
   structureInstruction: string,
+  requiredSectionIds: readonly string[],
 ): GenerationJobRequest {
   const promptPayload = job.promptPayload;
   return Object.freeze({
@@ -46,21 +65,7 @@ function augmentJobWithPilotStructure(
       outputContract: Object.freeze({
         ...promptPayload.outputContract,
         sections: Object.freeze([
-          ...new Set([
-            ...promptPayload.outputContract.sections,
-            'title',
-            'introduction',
-            'product-overview',
-            'ingredients',
-            'safety-and-suitability',
-            'benefits',
-            'limitations',
-            'who-it-may-suit',
-            'alternatives',
-            'faq',
-            'disclosure',
-            'source-notes',
-          ]),
+          ...new Set([...promptPayload.outputContract.sections, ...requiredSectionIds]),
         ]),
       }),
     }),

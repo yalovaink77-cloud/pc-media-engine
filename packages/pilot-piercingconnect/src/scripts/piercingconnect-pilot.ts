@@ -40,6 +40,13 @@ async function main(): Promise<void> {
     console.log(`missing section markers: ${result.missingSections.join(', ')}`);
   }
 
+  if (result.findings && result.findings.length > 0) {
+    console.log('quality findings:');
+    for (const finding of result.findings) {
+      console.log(`- ${finding.code}: ${finding.detail}`);
+    }
+  }
+
   if (result.status === 'failed' || result.status === 'blocked') {
     console.error(`error: ${result.error?.code ?? 'unknown'} — ${result.error?.message ?? ''}`);
     process.exit(1);

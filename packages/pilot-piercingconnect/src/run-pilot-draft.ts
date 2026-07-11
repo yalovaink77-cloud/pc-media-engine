@@ -24,9 +24,9 @@ import {
   resolvePilotOutputDir,
 } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
+import { normalizePreservingMarkdownWhitespace } from './formatting.js';
 import {
   ABSOLUTE_PATH_PATTERN,
-  assertDraftContainsRequiredSections,
   buildArtifactMetadata,
   buildReviewSummary,
   type PilotArtifactMetadata,
@@ -35,7 +35,9 @@ import {
   scrubSensitiveText,
   writePilotOutputs,
 } from './outputs.js';
-import { PilotStructuredGenerationProvider } from './structured-provider.js';
+import { analyzePilotDraftQuality, type PilotQualityFinding } from './quality.js';
+import { findMissingRequiredSections } from './section-markers.js';
+import { createPilotStructuredGenerationProvider } from './structured-provider.js';
 
 export type PiercingConnectPilotStatus =
   'succeeded-pending-review' | 'skipped' | 'blocked' | 'failed';
@@ -56,6 +58,7 @@ export interface PiercingConnectPilotResult {
   readonly reviewId?: string;
   readonly warningCount?: number;
   readonly missingSections?: readonly string[];
+  readonly findings?: readonly PilotQualityFinding[];
   readonly outputs?: PilotOutputPaths;
   readonly artifactMetadata?: PilotArtifactMetadata;
   readonly reviewSummary?: PilotReviewSummary;
@@ -181,10 +184,7 @@ export async function runPiercingConnectPilotDraft(
       createOpenRouterGenerationProvider(buildOpenRouterEnv(env, config), {
         fetchFn: options.fetchFn,
       });
-    const provider = new PilotStructuredGenerationProvider(
-      innerProvider,
-      config.structureInstruction,
-    );
+    const provider = createPilotStructuredGenerationProvider(innerProvider, config);
 
     const generation = await runGenerationJob(job, provider);
     if (generation.status !== 'succeeded' || !generation.response) {
@@ -194,12 +194,14 @@ export async function runPiercingConnectPilotDraft(
       );
     }
 
-    // Project filesystem paths out of provider text before artifact validation/write.
-    // Pilot artifact checks use filesystem path patterns only (not URL false-positives).
+    // Preserve Markdown whitespace; project filesystem paths before artifact validation/write.
     const scrubOptions = { additionalRoots: [repoPath] as const };
+    const normalizedContent = normalizePreservingMarkdownWhitespace(
+      generation.response.content ?? '',
+    );
     const providerResponse = Object.freeze({
       ...generation.response,
-      content: scrubSensitiveText(generation.response.content ?? '', mediaEngineRoot, scrubOptions),
+      content: scrubSensitiveText(normalizedContent, mediaEngineRoot, scrubOptions),
       model: generation.response.model
         ? scrubSensitiveText(generation.response.model, mediaEngineRoot, scrubOptions)
         : generation.response.model,
@@ -224,7 +226,9 @@ export async function runPiercingConnectPilotDraft(
       );
     }
 
-    const missingSections = assertDraftContainsRequiredSections(artifact.content, config);
+    const missingSections = findMissingRequiredSections(artifact.content, config.requiredSections);
+    const findings = analyzePilotDraftQuality(artifact.content, config);
+
     const review = createContentReviewRequest(artifact, {
       createdAt: options.fixedCreatedAt,
     });
@@ -249,6 +253,7 @@ export async function runPiercingConnectPilotDraft(
       review,
       mediaEngineRoot,
       additionalRoots: [repoPath],
+      findings,
     });
     const outputs = await writePilotOutputs({
       outputDir,
@@ -285,8 +290,13 @@ export async function runPiercingConnectPilotDraft(
       jobId: job.jobId,
       artifactId: artifact.artifactId,
       reviewId: review.reviewId,
-      warningCount: artifact.warnings.length + validation.warnings.length + plan.warnings.length,
+      warningCount:
+        artifact.warnings.length +
+        validation.warnings.length +
+        plan.warnings.length +
+        findings.length,
       missingSections: Object.freeze(missingSections),
+      findings,
       outputs,
       artifactMetadata,
       reviewSummary,

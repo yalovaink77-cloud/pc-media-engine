@@ -24,7 +24,7 @@ export const UNIVERSAL_PROMPT_CONSTRAINTS: readonly PromptConstraint[] = Object.
   Object.freeze({
     id: 'no-unsupported-medical-claims',
     category: 'medical',
-    rule: 'Do not claim cures, guaranteed healing times, or medical outcomes not supported by the provided context.',
+    rule: 'Do not claim cures, guaranteed healing times, reduced bacterial risk, sensitive-skin suitability, fixed usage frequency, universal suitability for all piercing types, or other medical outcomes not supported by the provided context. Distinguish verified structured facts, manufacturer positioning, professional guidance, and uncertainty.',
     severity: 'required',
   }),
   Object.freeze({
@@ -42,7 +42,7 @@ export const UNIVERSAL_PROMPT_CONSTRAINTS: readonly PromptConstraint[] = Object.
   Object.freeze({
     id: 'citation-placeholders',
     category: 'evidence',
-    rule: 'When source notes or evidence references are available in context, include citation placeholders rather than fabricating sources.',
+    rule: 'When source notes or evidence references are available in context, include structured citation placeholders such as [Source: product official record], [Source: ingredient evidence record], and [Source: APP-aligned aftercare guidance]. Do not invent URLs or citations.',
     severity: 'required',
   }),
 ]);

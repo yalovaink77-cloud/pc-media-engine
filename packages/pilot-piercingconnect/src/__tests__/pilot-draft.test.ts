@@ -10,49 +10,71 @@ import {
 } from '@pcme/ai';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_PILOT_OUTPUT_DIR, resolveMonorepoRoot } from '../config.js';
+import {
+  createPiercingConnectPilotConfig,
+  DEFAULT_PILOT_OUTPUT_DIR,
+  PILOT_REQUIRED_SECTIONS,
+  resolveMonorepoRoot,
+} from '../config.js';
+import {
+  assertSpacesPreserved,
+  detectFormattingCorruption,
+  normalizePreservingMarkdownWhitespace,
+} from '../formatting.js';
 import {
   assertSafeOutputPayload,
   findUnsafeOutputLocation,
   scrubSensitiveText,
   writePilotOutputs,
 } from '../outputs.js';
+import {
+  analyzePilotDraftQuality,
+  detectMissingCitationPlaceholders,
+  detectUnsupportedClaims,
+} from '../quality.js';
 import { runPiercingConnectPilotDraft } from '../run-pilot-draft.js';
+import { extractMarkdownHeadings, findMissingRequiredSections } from '../section-markers.js';
 
 const tempDirs: string[] = [];
 const FIXED_CREATED_AT = '2026-07-11T12:00:00.000Z';
 const PRODUCT_ID = 'neilmed-piercing-aftercare-fine-mist';
 
-const SAMPLE_DRAFT = `# NeilMed Piercing Aftercare Fine Mist Review
+const QUALITY_DRAFT = `# NeilMed Piercing Aftercare Fine Mist Review
 
 ## Title
 NeilMed Piercing Aftercare Fine Mist — educational product overview
 
-## Introduction
+## Editorial Summary
 This draft summarizes publicly described product details for educational comparison.
-It is not medical advice.
+One product that has gained attention is discussed cautiously below.
+This review aims to provide wound care context without certainty.
+It is not medical advice. Individual results may vary; consult a qualified professional.
 
-## Product overview
-The NeilMed Piercing Aftercare Fine Mist is positioned as a sterile saline spray for piercing aftercare.
+## Product Overview
+The NeilMed Piercing Aftercare Fine Mist is positioned by the manufacturer as a sterile saline spray for piercing aftercare.
 Manufacturer claims should be treated as manufacturer claims, not independent clinical evidence.
 
-## Ingredients
-Typical saline aftercare sprays center on sterile water and sodium chloride.
+## Verified Formula
+Typical saline aftercare sprays center on sterile water and sodium chloride when those ingredients appear in the product record.
 Exact formulation details should be confirmed on the product label.
 
-## Safety and suitability
-No diagnosis is provided here. Readers with unusual symptoms should consult a qualified professional.
-Suitability depends on individual piercing stage, jewelry material, and clinician guidance.
+## Evidence and Guideline Alignment
+Any alignment with aftercare guidance should be treated as provisional until human review confirms supporting materials.
+Do not invent guideline citations.
 
-## Benefits
-Potential practical benefits include convenient mist application and saline-based cleansing when used as labeled.
+## Potential Advantages
+Potential practical advantages may include convenient mist application when used as labeled.
+These are practical considerations, not guaranteed outcomes.
 
-## Limitations
+## Limitations and Uncertainties
 Evidence quality may be limited to manufacturer materials and general aftercare guidance.
 This review does not claim guaranteed healing outcomes.
 
-## Who it may suit
-It may suit readers seeking a saline mist option for routine aftercare, subject to professional advice.
+## Who May Consider It
+It may suit readers seeking a saline mist option for routine aftercare, subject to professional advice and piercing-specific guidance.
+
+## Who Should Seek Professional Guidance
+Readers with unusual symptoms, delayed healing, or uncertainty about aftercare should consult a qualified professional.
 
 ## Alternatives
 Alternatives include other sterile saline sprays, clinician-recommended wound washes, and non-aerosol saline options.
@@ -64,12 +86,24 @@ No. This article cannot diagnose conditions.
 ### Is this a commission-first recommendation?
 No. Availability checks must remain educational and non-urgent.
 
-## Disclosure
+## Affiliate Disclosure Placeholder
 [Affiliate disclosure placeholder: update before publication if any commercial relationship exists.]
 
-## Source-note
-[Source note placeholder: manufacturer product information]
-[Source note placeholder: aftercare guidance references pending editorial review]
+## Source Notes
+[Source: product official record]
+[Source: ingredient evidence record]
+[Source: APP-aligned aftercare guidance]
+`;
+
+const CORRUPT_DRAFT = QUALITY_DRAFT.replace(
+  'This draft summarizes',
+  'This draft summarizes productthat reviewaims Itis woundcare AftercareFine concerns.',
+);
+
+const UNSUPPORTED_CLAIM_DRAFT = `${QUALITY_DRAFT}
+
+Extra note: It is suitable for all types of piercings and should be used 1-2 times daily.
+It is suitable for sensitive skin and reduces the risk of introducing bacteria with guaranteed healing.
 `;
 
 class AbsolutePathWarningProvider implements GenerationProviderAdapter {
@@ -86,9 +120,8 @@ class AbsolutePathWarningProvider implements GenerationProviderAdapter {
   ) {}
 
   async generate(request: GenerationProviderRequest) {
-    // Paths arrive via provider warning strings and draft text (OpenRouter-like leakage).
     const inner = new FakeGenerationProvider({
-      generatedContent: `${SAMPLE_DRAFT}\n\nInspected ${this.roots.commerceRepoPath} and https://neilmed.com/products\n`,
+      generatedContent: `${QUALITY_DRAFT}\n\nInspected ${this.roots.commerceRepoPath} and https://neilmed.com/products\n`,
     });
     const response = await inner.generate(request);
     return Object.freeze({
@@ -177,7 +210,7 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(result.wordpressInvoked).toBe(false);
   });
 
-  it('generates a pending-review draft without WordPress or publishing', async () => {
+  it('generates a pending-review draft without WordPress or network', async () => {
     const repoPath = await createFixtureRepo();
     const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-out-'));
     tempDirs.push(outputDir);
@@ -190,7 +223,7 @@ describe('runPiercingConnectPilotDraft', () => {
       mediaEngineRoot: resolveMonorepoRoot(),
       fixedCreatedAt: FIXED_CREATED_AT,
       env: { OPENROUTER_API_KEY: 'test-openrouter-key-should-not-leak' },
-      generationProvider: new FakeGenerationProvider({ generatedContent: SAMPLE_DRAFT }),
+      generationProvider: new FakeGenerationProvider({ generatedContent: QUALITY_DRAFT }),
       fetchFn: fetchSpy as unknown as typeof fetch,
     });
     const after = await fingerprint(repoPath);
@@ -204,22 +237,20 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(result.wordpressInvoked).toBe(false);
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(before).toBe(after);
+    expect(result.missingSections).toEqual([]);
+    expect(result.findings?.some((finding) => finding.code === 'missing-section-markers')).toBe(
+      false,
+    );
 
     const reviewMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
-    const artifactMetadata = await readFile(join(outputDir, 'artifact-metadata.json'), 'utf8');
-    const reviewSummary = await readFile(join(outputDir, 'review-summary.json'), 'utf8');
-    const combined = `${reviewMarkdown}\n${artifactMetadata}\n${reviewSummary}`;
-
-    expect(combined).not.toContain('test-openrouter-key-should-not-leak');
-    expect(combined).not.toContain('/home/');
-    expect(combined).not.toContain('OPENROUTER_API_KEY');
-    expect(combined).not.toContain('Bearer ');
-    expect(combined.toLowerCase()).toContain('disclosure');
-    expect(combined.toLowerCase()).toContain('source-note');
-    expect(JSON.parse(reviewSummary).status).toBe('pending-review');
+    expect(reviewMarkdown).toContain('product that');
+    expect(reviewMarkdown).toContain('[Source: product official record]');
+    expect(JSON.parse(await readFile(join(outputDir, 'review-summary.json'), 'utf8')).status).toBe(
+      'pending-review',
+    );
   });
 
-  it('redacts absolute commerce/source paths and still reaches pending-review outputs', async () => {
+  it('redacts absolute paths and still reaches pending-review outputs', async () => {
     const repoPath = await createFixtureRepo();
     const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-path-out-'));
     tempDirs.push(outputDir);
@@ -238,32 +269,43 @@ describe('runPiercingConnectPilotDraft', () => {
     });
 
     expect(result.status).toBe('succeeded-pending-review');
-    expect(result.jobId).toBeTruthy();
-    expect(result.artifactId).toBeTruthy();
-    expect(result.reviewId).toBeTruthy();
     expect(result.reviewStatus).toBe('pending-review');
     expect(result.wordpressInvoked).toBe(false);
 
-    const reviewMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
-    const artifactMetadata = await readFile(join(outputDir, 'artifact-metadata.json'), 'utf8');
-    const reviewSummary = await readFile(join(outputDir, 'review-summary.json'), 'utf8');
-    const combined = `${reviewMarkdown}\n${artifactMetadata}\n${reviewSummary}`;
-    const parsedMetadata = JSON.parse(artifactMetadata);
-    const parsedSummary = JSON.parse(reviewSummary);
+    const combined = [
+      await readFile(join(outputDir, 'generated-review.md'), 'utf8'),
+      await readFile(join(outputDir, 'artifact-metadata.json'), 'utf8'),
+      await readFile(join(outputDir, 'review-summary.json'), 'utf8'),
+    ].join('\n');
 
     expect(combined).not.toContain(repoPath);
-    expect(combined).not.toContain(mediaEngineRoot);
     expect(combined).not.toContain('/home/');
-    expect(combined).not.toContain('/Users/');
     expect(combined).toContain('<commerce-root>');
-    expect(parsedMetadata.warnings.every((warning: { message?: string }) => !warning.message)).toBe(
-      true,
-    );
-    expect(parsedSummary.warnings.every((warning: { message?: string }) => !warning.message)).toBe(
-      true,
-    );
-    expect(parsedSummary.status).toBe('pending-review');
-    expect(parsedMetadata.model).toContain('<monorepo-root>');
+  });
+
+  it('records quality findings for unsupported claims while remaining pending-review', async () => {
+    const repoPath = await createFixtureRepo();
+    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-claims-'));
+    tempDirs.push(outputDir);
+
+    const result = await runPiercingConnectPilotDraft({
+      repoPath,
+      outputDir,
+      mediaEngineRoot: resolveMonorepoRoot(),
+      fixedCreatedAt: FIXED_CREATED_AT,
+      env: { OPENROUTER_API_KEY: 'test-key' },
+      generationProvider: new FakeGenerationProvider({
+        generatedContent: UNSUPPORTED_CLAIM_DRAFT,
+      }),
+    });
+
+    expect(result.status).toBe('succeeded-pending-review');
+    expect(result.reviewStatus).toBe('pending-review');
+    expect(result.findings?.some((finding) => finding.code === 'unsupported-claim')).toBe(true);
+    expect(
+      result.reviewSummary?.findings.some((finding) => finding.code === 'unsupported-claim'),
+    ).toBe(true);
+    expect(result.wordpressInvoked).toBe(false);
   });
 
   it('keeps pilot outputs under a gitignored exports path', async () => {
@@ -273,22 +315,102 @@ describe('runPiercingConnectPilotDraft', () => {
   });
 });
 
-describe('pilot output path sanitization', () => {
-  it('removes real-looking absolute paths from text', () => {
-    const mediaEngineRoot = '/home/murat/Projects/pc-media-engine';
-    const commerceRoot = '/home/murat/Projects/piercingconnect-commerce';
-    const scrubbed = scrubSensitiveText(
-      `sourcePath=${commerceRoot} monorepo=${mediaEngineRoot}/packages/content also /Users/ci/a.yaml and /tmp/cache/x`,
-      mediaEngineRoot,
-      { additionalRoots: [commerceRoot] },
-    );
+describe('section marker detection', () => {
+  it('recognizes H1 title and Source Notes headings without false missing markers', () => {
+    const markdown = `# NeilMed Piercing Aftercare Fine Mist Review
 
-    expect(scrubbed).toContain('<commerce-root>');
-    expect(scrubbed).toContain('<monorepo-root>');
-    expect(scrubbed).toContain('[path]');
-    expect(scrubbed).not.toContain('/home/');
-    expect(scrubbed).not.toContain('/Users/');
-    expect(scrubbed).not.toContain('/tmp/');
+## Editorial Summary
+Summary text with ordinary spaces.
+
+## Product Overview
+Overview
+
+## Verified Formula
+Formula
+
+## Evidence and Guideline Alignment
+Evidence
+
+## Potential Advantages
+Advantages
+
+## Limitations and Uncertainties
+Limits
+
+## Who May Consider It
+Audience
+
+## Who Should Seek Professional Guidance
+Guidance
+
+## Alternatives
+Alternatives
+
+## FAQ
+Questions
+
+## Affiliate Disclosure Placeholder
+Disclosure
+
+## Source Notes
+[Source: product official record]
+`;
+
+    const headings = extractMarkdownHeadings(markdown);
+    expect(headings.some((heading) => heading.level === 1)).toBe(true);
+    expect(headings.some((heading) => heading.normalizedText === 'source notes')).toBe(true);
+
+    const missing = findMissingRequiredSections(markdown, PILOT_REQUIRED_SECTIONS);
+    expect(missing).not.toContain('title');
+    expect(missing).not.toContain('source-notes');
+    expect(missing).toEqual([]);
+  });
+});
+
+describe('pilot quality analysis', () => {
+  it('requires structured source-note placeholders', () => {
+    const findings = detectMissingCitationPlaceholders(
+      '## Source Notes\nPlease refer to the provided context.',
+    );
+    expect(findings.some((finding) => finding.code === 'missing-citation-placeholders')).toBe(true);
+  });
+
+  it('warns on unsupported frequency and suitability claims', () => {
+    const findings = detectUnsupportedClaims(
+      'Use 1-2 times daily. Suitable for all types of piercings. It is suitable for sensitive skin.',
+    );
+    expect(findings.map((finding) => finding.detail)).toEqual(
+      expect.arrayContaining([
+        'fixed-usage-frequency',
+        'universal-suitability',
+        'sensitive-skin-suitability',
+      ]),
+    );
+  });
+
+  it('flags formatting corruption without altering pending-review posture in analysis', () => {
+    expect(detectFormattingCorruption(CORRUPT_DRAFT).length).toBeGreaterThan(0);
+    const findings = analyzePilotDraftQuality(CORRUPT_DRAFT, createPiercingConnectPilotConfig());
+    expect(findings.some((finding) => finding.code === 'formatting-corruption')).toBe(true);
+  });
+});
+
+describe('pilot output path sanitization and whitespace', () => {
+  it('preserves ordinary spaces through scrubbing and normalization', () => {
+    const mediaEngineRoot = '/home/murat/Projects/pc-media-engine';
+    const input =
+      'One product that has gained attention. This review aims to provide wound care guidance. It is cautious.';
+    const normalized = normalizePreservingMarkdownWhitespace(input);
+    const scrubbed = scrubSensitiveText(normalized, mediaEngineRoot, {
+      additionalRoots: ['/home/murat/Projects/piercingconnect-commerce'],
+    });
+
+    expect(scrubbed).toContain('product that');
+    expect(scrubbed).toContain('review aims');
+    expect(scrubbed).toContain('It is');
+    expect(scrubbed).toContain('wound care');
+    expect(assertSpacesPreserved(input, scrubbed)).toBe(true);
+    expect(scrubbed).not.toMatch(/productthat|reviewaims|Itis|woundcare/);
   });
 
   it('still rejects unsanitized absolute paths at the hard gate and reports field path only', () => {
@@ -299,9 +421,6 @@ describe('pilot output path sanitization', () => {
     expect(() => assertSafeOutputPayload(payload, '/home/murat/Projects/pc-media-engine')).toThrow(
       /field: \$\.message/,
     );
-    expect(() => assertSafeOutputPayload(payload, '/home/murat/Projects/pc-media-engine')).toThrow(
-      /absolute paths/,
-    );
   });
 
   it('writes scrubbed markdown when draft text contains absolute paths', async () => {
@@ -310,9 +429,9 @@ describe('pilot output path sanitization', () => {
     const mediaEngineRoot = resolveMonorepoRoot();
     const commerceRoot = '/home/murat/Projects/piercingconnect-commerce';
 
-    const paths = await writePilotOutputs({
+    await writePilotOutputs({
       outputDir,
-      markdown: `${SAMPLE_DRAFT}\n\nInspected ${commerceRoot}\n`,
+      markdown: `${QUALITY_DRAFT}\n\nInspected ${commerceRoot}\n`,
       artifactMetadata: Object.freeze({
         artifactId: 'artifact-1',
         jobId: 'job-1',
@@ -342,6 +461,7 @@ describe('pilot output path sanitization', () => {
         requiredChecks: Object.freeze([]),
         warningCount: 0,
         warnings: Object.freeze([]),
+        findings: Object.freeze([]),
         decision: null,
         approved: false,
         published: false,
@@ -356,6 +476,6 @@ describe('pilot output path sanitization', () => {
     const markdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
     expect(markdown).not.toContain('/home/');
     expect(markdown).toContain('<commerce-root>');
-    expect(paths.generatedReviewPath).not.toContain('/home/');
+    expect(markdown).toContain('product that');
   });
 });

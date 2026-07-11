@@ -3,8 +3,10 @@ import { join, relative } from 'node:path';
 
 import type { ContentReviewRequest, GeneratedContentArtifact } from '@pcme/ai';
 
-import type { PiercingConnectPilotConfig } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
+import { normalizePreservingMarkdownWhitespace } from './formatting.js';
+import type { PilotQualityFinding } from './quality.js';
+import { findMissingRequiredSections } from './section-markers.js';
 
 /**
  * Detect absolute filesystem paths and home-directory prefixes.
@@ -46,6 +48,7 @@ export interface PilotReviewSummary {
   readonly requiredChecks: readonly string[];
   readonly warningCount: number;
   readonly warnings: readonly { readonly code: string }[];
+  readonly findings: readonly { readonly code: string; readonly detail: string }[];
   readonly decision: null;
   readonly approved: false;
   readonly published: false;
@@ -188,7 +191,9 @@ export function buildReviewSummary(input: {
   review: ContentReviewRequest;
   mediaEngineRoot: string;
   additionalRoots?: readonly string[];
+  findings?: readonly PilotQualityFinding[];
 }): PilotReviewSummary {
+  const findings = input.findings ?? [];
   return Object.freeze({
     reviewId: input.review.reviewId,
     artifactId: input.review.artifactId,
@@ -203,11 +208,23 @@ export function buildReviewSummary(input: {
         }),
       ),
     ),
-    warningCount: input.review.warnings.length,
+    warningCount: input.review.warnings.length + findings.length,
     warnings: Object.freeze(
       input.review.warnings.map((warning) =>
         Object.freeze({
           code: scrubSensitiveText(warning.code, input.mediaEngineRoot, {
+            additionalRoots: input.additionalRoots,
+          }),
+        }),
+      ),
+    ),
+    findings: Object.freeze(
+      findings.map((finding) =>
+        Object.freeze({
+          code: scrubSensitiveText(finding.code, input.mediaEngineRoot, {
+            additionalRoots: input.additionalRoots,
+          }),
+          detail: scrubSensitiveText(finding.detail, input.mediaEngineRoot, {
             additionalRoots: input.additionalRoots,
           }),
         }),
@@ -269,12 +286,12 @@ export function assertSafeOutputPayload(payload: unknown, mediaEngineRoot: strin
   );
 }
 
+/** @deprecated Use findMissingRequiredSections from section-markers.js */
 export function assertDraftContainsRequiredSections(
   markdown: string,
-  config: PiercingConnectPilotConfig,
+  requiredSections: Parameters<typeof findMissingRequiredSections>[1],
 ): readonly string[] {
-  const normalized = markdown.toLowerCase();
-  return config.requiredSections.filter((section) => !normalized.includes(section.toLowerCase()));
+  return findMissingRequiredSections(markdown, requiredSections);
 }
 
 /** Write pilot draft outputs under the configured gitignored directory. */
@@ -287,7 +304,12 @@ export async function writePilotOutputs(input: {
   additionalRoots?: readonly string[];
 }): Promise<PilotOutputPaths> {
   const scrubOptions = { additionalRoots: input.additionalRoots };
-  const safeMarkdown = scrubSensitiveText(input.markdown, input.mediaEngineRoot, scrubOptions);
+  // Normalize invisible characters first, then scrub secrets/paths — never collapse spaces.
+  const safeMarkdown = scrubSensitiveText(
+    normalizePreservingMarkdownWhitespace(input.markdown),
+    input.mediaEngineRoot,
+    scrubOptions,
+  );
   const safeArtifactMetadata = scrubPayloadStrings(
     input.artifactMetadata,
     input.mediaEngineRoot,
