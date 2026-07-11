@@ -98,7 +98,7 @@ const reviewRequest: ContentReviewRequest = Object.freeze({
   requiredChecks: Object.freeze(['safety']),
   status: 'pending-review',
   createdAt: '2026-07-10T12:00:00.000Z',
-  expiresAt: '2026-07-11T12:00:00.000Z',
+  expiresAt: '2099-12-31T12:00:00.000Z',
 });
 
 function makeReviewRecord(overrides?: Partial<ContentReviewRecord>): ContentReviewRecord {
@@ -117,7 +117,7 @@ function makeReviewRecord(overrides?: Partial<ContentReviewRecord>): ContentRevi
     warnings: [],
     requiredChecks: ['safety'],
     version: 1,
-    expiresAt: new Date('2026-07-11T12:00:00.000Z'),
+    expiresAt: new Date('2099-12-31T12:00:00.000Z'),
     createdAt: new Date('2026-07-10T12:00:00.000Z'),
     updatedAt: new Date('2026-07-10T12:00:00.000Z'),
     ...overrides,
