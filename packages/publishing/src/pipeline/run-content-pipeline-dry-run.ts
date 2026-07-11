@@ -33,6 +33,7 @@ import {
   InMemoryPublishingOutboxRepository,
 } from '../worker/index.js';
 import type { PublishingWorkerExecutionStatus } from '../worker/types.js';
+import { createDryRunCommerceFixture } from './dry-run-commerce-fixture.js';
 import { ContentPipelineDryRunError } from './errors.js';
 import { runTimedStage, sumStageDurations } from './timing.js';
 import type {
@@ -333,7 +334,12 @@ export async function runContentPipelineDryRun(
     const orchestratorTimed = await runTimedStage('orchestrator', stageClock, async () => {
       const orchestrator =
         options.orchestrator ??
-        (await createCommerceContentOrchestrator({ strict: options.strict }));
+        (await createCommerceContentOrchestrator({
+          strict: options.strict,
+          commerce: options.commerce ?? {
+            repoPath: await createDryRunCommerceFixture(options.root),
+          },
+        }));
       return orchestrator.prepare(buildGenerationRequest(options));
     });
     stages.push(orchestratorTimed.timing);

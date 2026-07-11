@@ -83,6 +83,7 @@ export interface ContentPipelineDryRunOptions {
   readonly fixedCreatedAt?: string;
   readonly now?: Date;
   readonly orchestrator?: import('@pcme/content').ContentOrchestrator;
+  readonly commerce?: import('@pcme/content').CommerceKnowledgeAdapterOptions;
   readonly generationProvider?: import('@pcme/ai').GenerationProviderAdapter;
   readonly publishingAdapter?: import('../handoff/types.js').PublishingTargetAdapter;
   readonly enqueueService?: import('../enqueue/types.js').PublishingEnqueueService;
