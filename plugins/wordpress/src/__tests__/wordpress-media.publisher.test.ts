@@ -613,38 +613,34 @@ const VALID_CONFIG_S33: WordPressConfig = {
 
 describe('Sprint 33 — publishMedia enhanced result', () => {
   it('result.wpMediaId equals WordPress id', async () => {
-    const mockFetch = vi
-      .fn<FetchFunction>()
-      .mockResolvedValue(
-        jsonResponse(
-          {
-            id: 77,
-            link: 'https://ex.com/?a=77',
-            source_url: 'https://ex.com/img.jpg',
-            date: '2024-01-01T00:00:00',
-          },
-          201,
-        ),
-      );
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(
+      jsonResponse(
+        {
+          id: 77,
+          link: 'https://ex.com/?a=77',
+          source_url: 'https://ex.com/img.jpg',
+          date: '2024-01-01T00:00:00',
+        },
+        201,
+      ),
+    );
     const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
     const result = await pub.publishMedia({ ...VALID_REQUEST });
     expect(result.wpMediaId).toBe(77);
   });
 
   it('result.permalink equals source_url', async () => {
-    const mockFetch = vi
-      .fn<FetchFunction>()
-      .mockResolvedValue(
-        jsonResponse(
-          {
-            id: 77,
-            link: 'https://ex.com/?a=77',
-            source_url: 'https://ex.com/img.jpg',
-            date: '2024-01-01T00:00:00',
-          },
-          201,
-        ),
-      );
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(
+      jsonResponse(
+        {
+          id: 77,
+          link: 'https://ex.com/?a=77',
+          source_url: 'https://ex.com/img.jpg',
+          date: '2024-01-01T00:00:00',
+        },
+        201,
+      ),
+    );
     const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch);
     const result = await pub.publishMedia({ ...VALID_REQUEST });
     expect(result.permalink).toBe('https://ex.com/img.jpg');
@@ -697,19 +693,17 @@ describe('Sprint 33 — publishPost enhanced result', () => {
 
 describe('Sprint 33 — logger injection', () => {
   it('calls logger.info on successful publishMedia', async () => {
-    const mockFetch = vi
-      .fn<FetchFunction>()
-      .mockResolvedValue(
-        jsonResponse(
-          {
-            id: 1,
-            link: 'https://ex.com/?a=1',
-            source_url: 'https://ex.com/img.jpg',
-            date: '2024-01-01T00:00:00',
-          },
-          201,
-        ),
-      );
+    const mockFetch = vi.fn<FetchFunction>().mockResolvedValue(
+      jsonResponse(
+        {
+          id: 1,
+          link: 'https://ex.com/?a=1',
+          source_url: 'https://ex.com/img.jpg',
+          date: '2024-01-01T00:00:00',
+        },
+        201,
+      ),
+    );
     const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     const pub = new WordPressMediaPublisher(VALID_CONFIG_S33, mockFetch, { logger });
     await pub.publishMedia({ ...VALID_REQUEST });

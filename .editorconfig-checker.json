@@ -1,3 +1,31 @@
 {
-  "exclude": ["node_modules", "dist", ".turbo", "pnpm-lock.yaml"]
+  "legacyBaselineNote": "Temporary EditorConfig allowlist for 22 pre-existing Markdown files on main with invalid nested-list indentation. This is not a blanket docs exclusion; new and modified documentation remains checked until a dedicated cleanup removes these entries.",
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".turbo",
+    "pnpm-lock.yaml",
+    "docs/deployment/deployment-guide.md",
+    "docs/deployment/disaster-recovery-guide.md",
+    "docs/deployment/upgrade-guide.md",
+    "docs/milestones/alpha-v0.24.md",
+    "docs/milestones/beta-preview-v0.30.md",
+    "docs/milestones/beta-rc-v0.50.md",
+    "docs/releases/beta-release-candidate.md",
+    "docs/sprints/sprint-10-processing-orchestration.md",
+    "docs/sprints/sprint-12-thumbnail-generation.md",
+    "docs/sprints/sprint-13-publishing-foundation.md",
+    "docs/sprints/sprint-16-publishing-orchestrator.md",
+    "docs/sprints/sprint-17-publishing-worker.md",
+    "docs/sprints/sprint-20-ai-metadata-enrichment.md",
+    "docs/sprints/sprint-23-duplicate-detection.md",
+    "docs/sprints/sprint-25-publishing-scheduler.md",
+    "docs/sprints/sprint-26-publishing-api.md",
+    "docs/sprints/sprint-33-production-wordpress.md",
+    "docs/sprints/sprint-40-content-composer.md",
+    "docs/sprints/sprint-41-publish-workflow.md",
+    "docs/sprints/sprint-42-bulk-publishing.md",
+    "docs/sprints/sprint-48-deployment-toolkit.md",
+    "docs/sprints/sprint-49-performance-scalability.md"
+  ]
 }

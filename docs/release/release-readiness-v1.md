@@ -170,10 +170,10 @@ All wired production call sites of `createWordPressPublishingTargetAdapter` pass
 1. Open PR from `feature/commerce-knowledge-loader` → `main`.
 2. Confirm CI green: `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test`, `pnpm format:check`.
 3. Run manual pre-merge smoke battery on the PR branch:
-   - `pnpm pipeline:dry-run`
-   - `pnpm commerce:smoke`, `pnpm knowledge:smoke`, `pnpm orchestrator:smoke`
-   - `pnpm publishing-handoff:smoke`, `pnpm publishing-enqueue:smoke`, `pnpm publishing-worker:smoke`
-   - `pnpm beta-rc:smoke` (aggregates 28 offline suites per `release/metadata.json`)
+    - `pnpm pipeline:dry-run`
+    - `pnpm commerce:smoke`, `pnpm knowledge:smoke`, `pnpm orchestrator:smoke`
+    - `pnpm publishing-handoff:smoke`, `pnpm publishing-enqueue:smoke`, `pnpm publishing-worker:smoke`
+    - `pnpm beta-rc:smoke` (aggregates 28 offline suites per `release/metadata.json`)
 4. Merge with squash or merge commit per team policy; tag **not** required at merge time.
 5. Update `docs/architecture/architecture-review-v1.md` or add addendum noting Sprints 037–040 outbox/worker/dry-run delivery (post-merge doc task).
 
@@ -229,6 +229,7 @@ Pull-request validation blockers addressed on this branch:
 | Content collection test depended on local sibling `piercingconnect-commerce` | `collection.test.ts` now builds an isolated temp fixture covering every registry collection; no fallback to `resolveCommerceRepositoryPath` |
 | WordPress idempotency unit test timed out under load | Removed dynamic adapter import; use static import, explicit in-memory idempotency store, and mocked repository only (no network/DB) |
 | Full `pnpm test` segfault/bus error on modest hardware | Added root `pnpm test:ci` → `turbo test --concurrency=2`; CI uses bounded parallelism while package-level `test` scripts stay unchanged |
+| `pnpm format:check` failed on EditorConfig Markdown indent | Fixed branch-owned `release-readiness-v1.md` nested-list indent; Prettier-fixed WordPress publisher test; `.editorconfig-checker.json` allowlists only the 22 unchanged baseline docs from `main` (temporary — not a blanket `docs/` exclusion) |
 
 ---
 
