@@ -41,6 +41,23 @@ export type { MockPublisherOptions } from './mock.publisher.js';
 export { MockPublisher } from './mock.publisher.js';
 export { executeDurablePublishingHandoffCycle } from './orchestration/durable-handoff-publishing.js';
 export type {
+  ContentPipelineDryRunModeOptions,
+  ContentPipelineDryRunOptions,
+  ContentPipelineDryRunResult,
+  ContentPipelineDryRunStatus,
+  ContentPipelineErrorCode,
+  ContentPipelineGenerationMode,
+  ContentPipelinePublishingMode,
+  ContentPipelineStageTiming,
+  ContentPipelineStorageMode,
+  ContentPipelineWarningCounts,
+} from './pipeline/index.js';
+export {
+  ContentPipelineDryRunError,
+  isContentPipelineDryRunError,
+  runContentPipelineDryRun,
+} from './pipeline/index.js';
+export type {
   HealthResult,
   HealthStatus,
   Publisher,

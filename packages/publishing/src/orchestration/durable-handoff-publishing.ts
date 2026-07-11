@@ -20,7 +20,10 @@ export async function executeDurablePublishingHandoffCycle(input: {
   readonly enqueue: PublishingEnqueueResult;
   readonly worker: PublishingWorkerResult;
 }> {
-  const enqueue = await input.enqueueService.enqueue(input.handoff, input.enqueueOptions);
+  const enqueue = await input.enqueueService.enqueue(input.handoff, {
+    ...input.enqueueOptions,
+    now: input.now ?? input.enqueueOptions?.now,
+  });
   if (enqueue.status === 'rejected') {
     return Object.freeze({
       enqueue,

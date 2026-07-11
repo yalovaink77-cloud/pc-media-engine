@@ -62,10 +62,11 @@ async function enqueueHandoff(
 
   const payload = toPublishingHandoffPackagePayload(handoff);
   const requestHash = buildPublishingWorkerRequestHash(payload);
+  const clock = enqueueOptions.now ?? new Date();
   const priority = enqueueOptions.priority ?? 0;
   const maxAttempts = enqueueOptions.maxAttempts ?? serviceOptions.defaultMaxAttempts ?? 5;
   const scheduledAt = enqueueOptions.scheduledAt ?? handoff.publishingMetadata.scheduledAt;
-  const availableAt = enqueueOptions.availableAt;
+  const availableAt = enqueueOptions.availableAt ?? scheduledAt ?? clock.toISOString();
   const warnings = Object.freeze(
     handoff.warnings.map((warning) =>
       Object.freeze({ code: warning.code, message: warning.message }),

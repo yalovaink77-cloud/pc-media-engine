@@ -262,16 +262,22 @@ importers:
 
   packages/publishing:
     dependencies:
-      '@pcme/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
       '@pcme/ai':
         specifier: workspace:*
         version: link:../ai
       '@pcme/content':
         specifier: workspace:*
         version: link:../content
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@pcme/database':
+        specifier: workspace:*
+        version: link:../database
+      '@pcme/provider-ai-openrouter':
+        specifier: workspace:*
+        version: link:../../providers/ai/openrouter
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0

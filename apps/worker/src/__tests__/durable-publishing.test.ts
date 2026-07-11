@@ -151,6 +151,7 @@ describe('durable publishing orchestration', () => {
   });
 
   it('fails safely when no adapter is registered for the target', async () => {
+    const now = new Date('2026-07-11T00:00:00.000Z');
     const outboxRepository = new InMemoryPublishingOutboxRepository();
     const enqueueService = createPublishingEnqueueService({ context: CONTEXT, outboxRepository });
     const worker = createPublishingWorker({
@@ -204,9 +205,10 @@ describe('durable publishing orchestration', () => {
         status: 'ready' as const,
         createdAt: '2026-07-11T00:00:00.000Z',
       }),
+      { now },
     );
 
-    const result = await worker.runOnce({ now: new Date('2026-07-11T00:00:00.000Z') });
+    const result = await worker.runOnce({ now });
     expect(result.executionStatus).toBe('failed-terminal');
   });
 
