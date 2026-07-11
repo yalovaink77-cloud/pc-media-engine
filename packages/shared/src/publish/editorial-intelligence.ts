@@ -1,3 +1,4 @@
+import type { EditorialAnalyzerProfile } from './editorial-analyzer.js';
 import type { EditorialFinding } from './editorial-finding.js';
 import type { FindingConfidence } from './editorial-finding.js';
 
@@ -55,4 +56,5 @@ export interface EditorialIntelligenceProfile {
   readonly contentType: string;
   readonly locale: string;
   readonly enabledModules: readonly EditorialModuleId[];
+  readonly editorialAnalyzer?: EditorialAnalyzerProfile;
 }

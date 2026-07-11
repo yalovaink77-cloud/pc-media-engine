@@ -11,6 +11,13 @@ export type {
   ContentReviewStatus,
 } from './content-review.js';
 export type {
+  EditorialAnalyzerProfile,
+  EditorialAnalyzerThresholds,
+  EditorialRequiredSection,
+  EditorialTonePattern,
+} from './editorial-analyzer.js';
+export { DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS } from './editorial-analyzer.js';
+export type {
   AcceptanceCriteria,
   EditorialFinding,
   EditorialFindingId,

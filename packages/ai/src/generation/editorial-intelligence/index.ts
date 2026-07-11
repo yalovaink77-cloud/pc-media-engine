@@ -1,5 +1,16 @@
 export { aggregateEditorialIntelligenceReport } from './aggregate.js';
 export {
+  createDefaultEditorialRuleRegistry,
+  createEditorialAnalyzerModule,
+  dedupeAndSortEditorialFindings,
+  type EditorialAnalysisInput,
+  type EditorialAnalysisResult,
+  EditorialAnalyzer,
+  type EditorialAnalyzerModuleOptions,
+  type EditorialAnalyzerOptions,
+  extractMarkdownHeadings,
+} from './editorial/index.js';
+export {
   buildDeterministicEditorialFindingId,
   isBlockingEditorialFinding,
   normalizeEditorialFindingInput,

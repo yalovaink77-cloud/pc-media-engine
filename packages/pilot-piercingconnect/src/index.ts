@@ -11,6 +11,10 @@ export {
   resolvePilotCommerceRepoPath,
   resolvePilotOutputDir,
 } from './config.js';
+export {
+  createPiercingConnectEditorialAnalyzerProfile,
+  withPiercingConnectEditorialAnalyzer,
+} from './editorial-profile.js';
 export { PiercingConnectPilotError } from './errors.js';
 export {
   assertMergedTokensUnchanged,

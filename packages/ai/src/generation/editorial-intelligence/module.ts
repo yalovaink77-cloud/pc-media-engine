@@ -1,5 +1,5 @@
 import type {
-  EditorialFinding,
+  EditorialFindingInput,
   EditorialIntelligenceProfile,
   EditorialModuleId,
 } from '@pcme/shared';
@@ -17,5 +17,5 @@ export interface EditorialModuleAnalysisInput {
 /** Contract for a single editorial intelligence module analyzer. */
 export interface EditorialModule {
   readonly moduleId: EditorialModuleId;
-  analyze(input: EditorialModuleAnalysisInput): readonly EditorialFinding[];
+  analyze(input: EditorialModuleAnalysisInput): readonly EditorialFindingInput[];
 }

@@ -1,5 +1,6 @@
 import type {
   EditorialFinding,
+  EditorialFindingInput,
   EditorialIntelligenceProfile,
   EditorialIntelligenceReport,
   FindingCategory,
@@ -36,7 +37,7 @@ export interface EditorialIntelligenceOrchestratorOptions {
 }
 
 function assignFindingIds(
-  findings: readonly EditorialFinding[],
+  findings: readonly EditorialFindingInput[],
   reportId: string,
   findingIdGenerator: EditorialIntelligenceOrchestratorOptions['findingIdGenerator'],
 ): readonly EditorialFinding[] {
@@ -44,6 +45,7 @@ function assignFindingIds(
 
   return Object.freeze(
     findings.map((finding) => {
+      const identityKey = finding.id ?? finding.code;
       const normalized = normalizeEditorialFindingInput(finding);
       return Object.freeze({
         ...normalized,
@@ -52,7 +54,7 @@ function assignFindingIds(
           category: normalized.category,
           analyzerId: normalized.analyzerId,
           code: normalized.code,
-          identityKey: finding.id || normalized.code,
+          identityKey,
         }),
       });
     }),

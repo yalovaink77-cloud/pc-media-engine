@@ -255,6 +255,9 @@ importers:
       '@pcme/provider-ai-openrouter':
         specifier: workspace:*
         version: link:../../providers/ai/openrouter
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@types/node':
         specifier: ^22.10.7

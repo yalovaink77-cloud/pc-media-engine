@@ -231,11 +231,14 @@ describe('serializeEditorialIntelligenceReport', () => {
 });
 
 describe('EditorialIntelligenceOrchestrator', () => {
-  it('returns empty findings for all default stub modules', async () => {
+  it('returns no blocking findings for clean editorial input and empty evidence modules', async () => {
     const artifact = await createValidArtifact();
     const orchestrator = createEditorialIntelligenceOrchestrator();
     const report = orchestrator.analyze({
-      artifact,
+      artifact: Object.freeze({
+        ...artifact,
+        content: `# Product Review\n\n${'word '.repeat(25).trim()}`,
+      }),
       profile: testProfile,
       analyzedAt: FIXED_ANALYZED_AT,
     });

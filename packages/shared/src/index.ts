@@ -12,6 +12,12 @@ export type {
   FindingSeverity,
 } from './publish/index.js';
 export type {
+  EditorialAnalyzerProfile,
+  EditorialAnalyzerThresholds,
+  EditorialRequiredSection,
+  EditorialTonePattern,
+} from './publish/index.js';
+export type {
   EditorialIntelligenceConfidence,
   EditorialIntelligenceFinding,
   EditorialIntelligenceProfile,
@@ -74,6 +80,7 @@ export type {
   ReservePublishingIdempotencyInput,
 } from './publish/index.js';
 export {
+  DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
   EDITORIAL_FINDING_ID_PATTERN,
   EDITORIAL_RULE_ID_PATTERN,
   EditorialFindingError,

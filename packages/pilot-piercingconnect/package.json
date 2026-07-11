@@ -23,7 +23,8 @@
   "dependencies": {
     "@pcme/ai": "workspace:*",
     "@pcme/content": "workspace:*",
-    "@pcme/provider-ai-openrouter": "workspace:*"
+    "@pcme/provider-ai-openrouter": "workspace:*",
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
