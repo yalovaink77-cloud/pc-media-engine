@@ -18,10 +18,14 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/openrouter-smoke.ts"
+    "smoke": "tsx src/scripts/openrouter-smoke.ts",
+    "generation-provider:smoke": "tsx src/scripts/generation-provider-smoke.ts",
+    "generation-artifact:smoke": "tsx src/scripts/generation-artifact-smoke.ts",
+    "content-review:smoke": "tsx src/scripts/content-review-smoke.ts"
   },
   "dependencies": {
     "@pcme/ai": "workspace:*",
+    "@pcme/content": "workspace:*",
     "@pcme/seo": "workspace:*"
   },
   "devDependencies": {

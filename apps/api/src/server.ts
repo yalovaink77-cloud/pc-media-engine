@@ -84,15 +84,18 @@ export async function startServer(config: Config): Promise<void> {
   const processingEnqueuer = buildProcessingEnqueuer(config.redisUrl, config.autoEnqueueProcessing);
 
   const authConfig = loadAuthConfig();
-  const authDiag = validateAuthConfig(authConfig);
-  // Auth warnings are informational — never fatal at API startup.
+  const isProduction = config.env === 'production';
+  const authDiag = validateAuthConfig(authConfig, { production: isProduction });
   for (const w of authDiag.warnings) console.warn(`[api/auth] ⚠  ${w}`);
-  for (const e of authDiag.errors) console.error(`[api/auth] ✗  ${e}`);
-  // Fatal auth errors do not abort startup — auth simply stays disabled.
-  if (authDiag.errors.length > 0) {
-    console.error(
-      '[api/auth] Auth errors detected — authentication layer may not function correctly',
-    );
+  if (isProduction) {
+    assertNoFatalErrors({ errors: authDiag.errors, warnings: [] }, '[api/auth]');
+  } else {
+    for (const e of authDiag.errors) console.error(`[api/auth] ✗  ${e}`);
+    if (authDiag.errors.length > 0) {
+      console.error(
+        '[api/auth] Auth errors detected — authentication layer may not function correctly',
+      );
+    }
   }
   console.log(
     `[api/auth] enabled=${authConfig.enabled} jwt=${authConfig.jwtEnabled} apiKey=${authConfig.apiKeyEnabled}`,

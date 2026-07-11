@@ -21,6 +21,7 @@
     "duplicate:smoke": "tsx scripts/duplicate-smoke.ts",
     "retry:smoke": "tsx scripts/retry-smoke.ts",
     "scheduler:smoke": "tsx scripts/scheduler-smoke.ts",
+    "publishing-worker:run-once": "dotenv -e ../../.env -- tsx scripts/publishing-worker-run-once.ts",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {

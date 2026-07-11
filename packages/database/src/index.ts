@@ -13,6 +13,11 @@ export {
   loadDatabaseEnv,
 } from './config.js';
 export {
+  assertPersistableArtifactContent,
+  assertPersistableJsonValue,
+  ContentWorkflowValidationError,
+} from './domain/content-workflow-validation.js';
+export {
   IngestionValidationError,
   validateIngestionCounts,
   validateIngestionSourceUri,
@@ -44,6 +49,10 @@ export {
   validateRetryCount,
   validateStorageKeyPlaceholder,
 } from './domain/processing-validation.js';
+export {
+  assertPersistableHandoffPackagePayload,
+  sanitizePublishingAttemptDiagnostics,
+} from './domain/publishing-outbox-validation.js';
 export { checkDatabaseHealth, type DatabaseHealthResult } from './health.js';
 export {
   activeRecordsFilter,
@@ -54,6 +63,7 @@ export {
   type AuditAction,
   type AuditLogEntry,
   AuditLogRepository,
+  buildDeterministicOutboxId,
   ContentItemRepository,
   type CreateIngestionJobInput,
   type CreateIngestionSourceInput,
@@ -71,6 +81,10 @@ export {
   MediaSourceRepository,
   MetadataRecordRepository,
   OrganizationRepository,
+  PrismaContentReviewRepository,
+  PrismaGeneratedContentArtifactRepository,
+  PrismaPublishingIdempotencyRepository,
+  PrismaPublishingOutboxRepository,
   ProcessingArtifactRepository,
   ProcessingJobAttemptRepository,
   ProcessingJobRepository,
@@ -95,9 +109,12 @@ export type {
   Asset,
   AssetStatus,
   ContentItem,
+  ContentReviewEvent,
+  ContentReviewRecord,
   ContentState,
   ContentType,
   ContentVersion,
+  GeneratedContentArtifactRecord,
   IngestionJob,
   IngestionSource,
   IngestionSourceType,
@@ -116,6 +133,9 @@ export type {
   Project,
   PublishedContent,
   PublishedContentStatus,
+  PublishingHandoffAttemptRecord,
+  PublishingHandoffOutboxRecord,
+  PublishingIdempotencyRecord,
   PublishingOutboxEntry,
   PublishRecord,
   SeoProfile,

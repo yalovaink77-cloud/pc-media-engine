@@ -1,5 +1,10 @@
 /**
- * Worker entry point.
+ * Worker entry point — BullMQ processing and legacy publishing queues only.
+ *
+ * This process does NOT poll or execute the durable handoff publishing outbox.
+ * For a single explicit durable publishing cycle, run:
+ *   pnpm publishing-worker:run-once
+ * See docs/deployment/durable-publishing-worker.md.
  *
  * Loads environment variables from the monorepo root .env file (if present),
  * then starts the BullMQ processing worker.

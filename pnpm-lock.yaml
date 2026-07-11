@@ -164,9 +164,15 @@ importers:
 
   packages/ai:
     dependencies:
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../content
       '@pcme/seo':
         specifier: workspace:*
         version: link:../seo
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@types/node':
         specifier: ^22.10.7
@@ -180,12 +186,29 @@ importers:
 
   packages/analytics: {}
 
-  packages/content: {}
+  packages/content:
+    dependencies:
+      yaml:
+        specifier: ^2.8.0
+        version: 2.9.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.20.0
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.5
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
   packages/core: {}
 
   packages/database:
     dependencies:
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@prisma/client':
         specifier: ^6.3.1
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -238,7 +261,23 @@ importers:
         version: 3.2.6(@types/node@22.20.0)(jiti@2.6.1)(tsx@4.22.5)(yaml@2.9.0)
 
   packages/publishing:
+    dependencies:
+      '@pcme/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../content
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
+      '@pcme/database':
+        specifier: workspace:*
+        version: link:../database
+      '@pcme/provider-ai-openrouter':
+        specifier: workspace:*
+        version: link:../../providers/ai/openrouter
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0
@@ -298,7 +337,16 @@ importers:
       '@pcme/publishing':
         specifier: workspace:*
         version: link:../../packages/publishing
+      '@pcme/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
     devDependencies:
+      '@pcme/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@types/node':
         specifier: ^22.10.7
         version: 22.20.0
@@ -324,6 +372,9 @@ importers:
       '@pcme/ai':
         specifier: workspace:*
         version: link:../../../packages/ai
+      '@pcme/content':
+        specifier: workspace:*
+        version: link:../../../packages/content
       '@pcme/seo':
         specifier: workspace:*
         version: link:../../../packages/seo

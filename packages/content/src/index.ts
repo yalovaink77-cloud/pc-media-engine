@@ -1,2 +1,5 @@
-/** Workspace scaffold entry point for @pcme/content. */
-export {};
+/** @pcme/content — content lifecycle and external knowledge loaders. */
+export * from './commerce/index.js';
+export * from './knowledge/index.js';
+export * from './orchestrator/index.js';
+export * from './prompt/index.js';

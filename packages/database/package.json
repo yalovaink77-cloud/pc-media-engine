@@ -26,6 +26,7 @@
     "db:smoke": "dotenv -e ../../.env -- tsx src/scripts/smoke.ts"
   },
   "dependencies": {
+    "@pcme/shared": "workspace:*",
     "@prisma/client": "^6.3.1",
     "zod": "^3.24.1"
   },

@@ -54,11 +54,13 @@
 
 ### WordPress Publisher (when `PUBLISHER_DRIVER=wordpress`)
 
-| Variable | Required | Default |
-|---|---|---|
-| `WORDPRESS_API_URL` | Yes | — |
-| `WORDPRESS_USERNAME` | Yes | — |
-| `WORDPRESS_PASSWORD` | Yes | — |
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| `WORDPRESS_URL` | Yes | — | Site URL (preferred); `WORDPRESS_BASE_URL` accepted as legacy alias |
+| `WORDPRESS_USERNAME` | Yes | — | WordPress username |
+| `WORDPRESS_APP_PASSWORD` | Yes | — | Application Password (not login password) |
+| `WORDPRESS_REQUEST_TIMEOUT_MS` | No | `30000` | Request timeout in ms |
+| `WORDPRESS_DEFAULT_STATUS` | No | `draft` | Handoff adapter default; worker bootstrap uses `forceDraft: true` |
 
 ### Dashboard (`apps/dashboard`)
 
@@ -120,9 +122,9 @@ The worker uses these BullMQ queues:
 
 ## 6. WordPress (if `PUBLISHER_DRIVER=wordpress`)
 
-- [ ] WordPress site URL configured in `WORDPRESS_API_URL`
-- [ ] Application password created for the API user
-- [ ] Test connection: `GET $WORDPRESS_API_URL/wp-json/wp/v2/users/me`
+- [ ] WordPress site URL configured in `WORDPRESS_URL` (or `WORDPRESS_BASE_URL`)
+- [ ] Application password created for the API user (`WORDPRESS_APP_PASSWORD`)
+- [ ] Test connection: `GET $WORDPRESS_URL/wp-json/wp/v2/users/me` (Basic auth with username + app password)
 - [ ] Media upload permission verified: `POST /wp-json/wp/v2/media`
 
 ---
@@ -232,7 +234,7 @@ If jobs in the queue need to survive a restart, configure Redis persistence (AOF
 
 1. Check `GET /metrics` for `failuresTotal` and `retriesTotal`
 2. Check `GET /publishing/history?limit=20` for recent failed records
-3. If WordPress: verify `WORDPRESS_API_URL` and credentials
+3. If WordPress: verify `WORDPRESS_URL` (or `WORDPRESS_BASE_URL`), `WORDPRESS_USERNAME`, and `WORDPRESS_APP_PASSWORD`
 4. Jobs with exhausted retries can be requeued manually if needed
 
 ### Database unavailable

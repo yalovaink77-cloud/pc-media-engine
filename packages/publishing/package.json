@@ -18,9 +18,20 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "smoke": "tsx src/scripts/publishing-smoke.ts"
+    "smoke": "tsx src/scripts/publishing-smoke.ts",
+    "publishing-handoff:smoke": "tsx src/scripts/publishing-handoff-smoke.ts",
+    "publishing-worker:smoke": "tsx src/scripts/publishing-worker-smoke.ts",
+    "publishing-enqueue:smoke": "tsx src/scripts/publishing-enqueue-smoke.ts",
+    "pipeline:dry-run": "tsx src/scripts/pipeline-dry-run-smoke.ts"
+  },
+  "dependencies": {
+    "@pcme/ai": "workspace:*",
+    "@pcme/content": "workspace:*",
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
+    "@pcme/database": "workspace:*",
+    "@pcme/provider-ai-openrouter": "workspace:*",
     "@types/node": "^22.10.7",
     "tsx": "^4.19.2",
     "vitest": "^3.0.5"

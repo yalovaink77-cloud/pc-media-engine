@@ -231,9 +231,27 @@ describe('validateAuthConfig', () => {
     expect(d.warnings.some((w) => w.includes('disabled'))).toBe(true);
   });
 
+  it('errors when auth is disabled in production', () => {
+    const d = validateAuthConfig(disabledAuth, { production: true });
+    expect(d.errors.some((e) => e.includes('must be enabled in production'))).toBe(true);
+    expect(d.warnings).toHaveLength(0);
+  });
+
+  it('warns when auth is disabled in non-production', () => {
+    const d = validateAuthConfig(disabledAuth, { production: false });
+    expect(d.errors).toHaveLength(0);
+    expect(d.warnings.some((w) => w.includes('disabled'))).toBe(true);
+  });
+
   it('errors when auth is enabled but no methods configured', () => {
     const cfg: AuthConfig = { ...disabledAuth, enabled: true };
     const d = validateAuthConfig(cfg);
+    expect(d.errors.some((e) => e.includes('no auth method'))).toBe(true);
+  });
+
+  it('errors when production auth is enabled but no methods configured', () => {
+    const cfg: AuthConfig = { ...disabledAuth, enabled: true };
+    const d = validateAuthConfig(cfg, { production: true });
     expect(d.errors.some((e) => e.includes('no auth method'))).toBe(true);
   });
 

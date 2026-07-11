@@ -19,13 +19,17 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "smoke": "tsx src/scripts/wordpress-smoke.ts",
-    "smoke:s33": "tsx src/scripts/wordpress-smoke-sprint33.ts"
+    "smoke:s33": "tsx src/scripts/wordpress-smoke-sprint33.ts",
+    "wordpress-publish:smoke": "tsx src/scripts/wordpress-publish-smoke.ts"
   },
   "dependencies": {
     "@pcme/publisher-sdk": "workspace:*",
-    "@pcme/publishing": "workspace:*"
+    "@pcme/publishing": "workspace:*",
+    "@pcme/shared": "workspace:*"
   },
   "devDependencies": {
+    "@pcme/ai": "workspace:*",
+    "@pcme/content": "workspace:*",
     "@types/node": "^22.10.7",
     "tsx": "^4.19.2",
     "vitest": "^3.0.5"

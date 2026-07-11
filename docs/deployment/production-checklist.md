@@ -12,6 +12,7 @@ Use this checklist before every production deployment.
 - [ ] `DASHBOARD_API_KEY` matches an entry in `PCME_API_KEYS`
 - [ ] `PCME_DEFAULT_ORG_ID` and `PCME_DEFAULT_PROJECT_ID` set (run seed or use known UUIDs)
 - [ ] Publisher credentials configured (`WORDPRESS_*` or `GHOST_*`)
+- [ ] Durable handoff publishing understood — default worker does **not** run outbox polling ([Durable Publishing Worker](./durable-publishing-worker.md))
 - [ ] TLS termination planned (reverse proxy in front of ports 3001/3002)
 - [ ] Firewall allows only required ports (3001, 3002, or proxy 443)
 
