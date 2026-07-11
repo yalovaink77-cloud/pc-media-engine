@@ -8,6 +8,8 @@ import type {
   CreateContentReviewRequestOptions,
 } from './types.js';
 
+export type { EditorialIntelligenceReport } from '@pcme/shared';
+
 export function buildDeterministicReviewId(input: {
   artifactId: string;
   createdAt: string;
@@ -54,6 +56,15 @@ export function createContentReviewRequest(
     status: 'pending-review',
     createdAt,
     expiresAt,
+    ...(options?.editorialReport
+      ? {
+          editorialReportId: options.editorialReport.reportId,
+          preReviewFindings: Object.freeze(
+            options.editorialReport.findings.map((finding) => Object.freeze({ ...finding })),
+          ),
+          publicationReadiness: Object.freeze({ ...options.editorialReport.publicationReadiness }),
+        }
+      : {}),
   });
 }
 

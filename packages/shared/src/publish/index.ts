@@ -11,6 +11,17 @@ export type {
   ContentReviewStatus,
 } from './content-review.js';
 export type {
+  EditorialFindingLocation,
+  EditorialIntelligenceConfidence,
+  EditorialIntelligenceFinding,
+  EditorialIntelligenceProfile,
+  EditorialIntelligenceReport,
+  EditorialIntelligenceScores,
+  EditorialModuleId,
+  EditorialModuleSummary,
+  PublicationReadinessAssessment,
+} from './editorial-intelligence.js';
+export type {
   GeneratedContentArtifact,
   GeneratedContentFormat,
   GeneratedContentMetadata,

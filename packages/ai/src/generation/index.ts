@@ -25,6 +25,24 @@ export {
   createGenerationJob,
   DEFAULT_SUPPORTED_OUTPUT_FORMATS,
 } from './create-job.js';
+export type {
+  EditorialIntelligenceAnalysisInput,
+  EditorialIntelligenceOrchestratorOptions,
+  EditorialModule,
+  EditorialModuleAnalysisInput,
+} from './editorial-intelligence/index.js';
+export {
+  aggregateEditorialIntelligenceReport,
+  buildDeterministicEditorialFindingId,
+  buildDeterministicEditorialReportId,
+  createDefaultEditorialModuleRegistry,
+  createEditorialIntelligenceOrchestrator,
+  createEmptyEditorialModule,
+  EditorialIntelligenceOrchestrator,
+  EditorialModuleRegistry,
+  parseEditorialIntelligenceReport,
+  serializeEditorialIntelligenceReport,
+} from './editorial-intelligence/index.js';
 export {
   GenerationBlockedMetadataError,
   GenerationJobBlockedError,

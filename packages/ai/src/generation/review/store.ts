@@ -30,6 +30,20 @@ function cloneReviewRequest(review: ContentReviewRequest): ContentReviewRequest 
       citationRequirements: Object.freeze([...review.policySnapshot.citationRequirements]),
       blockedFields: Object.freeze([...review.policySnapshot.blockedFields]),
     }),
+    preReviewFindings: review.preReviewFindings
+      ? Object.freeze(
+          review.preReviewFindings.map((finding) =>
+            Object.freeze({
+              ...finding,
+              location: finding.location ? Object.freeze({ ...finding.location }) : undefined,
+              metadata: finding.metadata ? Object.freeze({ ...finding.metadata }) : undefined,
+            }),
+          ),
+        )
+      : undefined,
+    publicationReadiness: review.publicationReadiness
+      ? Object.freeze({ ...review.publicationReadiness })
+      : undefined,
   });
 }
 

@@ -1,5 +1,16 @@
 /** @pcme/shared — cross-package utilities and neutral domain contracts. */
 export type {
+  EditorialFindingLocation,
+  EditorialIntelligenceConfidence,
+  EditorialIntelligenceFinding,
+  EditorialIntelligenceProfile,
+  EditorialIntelligenceReport,
+  EditorialIntelligenceScores,
+  EditorialModuleId,
+  EditorialModuleSummary,
+  PublicationReadinessAssessment,
+} from './publish/index.js';
+export type {
   AppendContentReviewDecisionInput,
   AppendPublishingAttemptInput,
   ClaimNextPublishingOutboxInput,
