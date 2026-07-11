@@ -1,8 +1,15 @@
 export { aggregateEditorialIntelligenceReport } from './aggregate.js';
 export {
   buildDeterministicEditorialFindingId,
-  buildDeterministicEditorialReportId,
-} from './ids.js';
+  isBlockingEditorialFinding,
+  normalizeEditorialFindingInput,
+  parseEditorialFinding,
+  parseEditorialFindings,
+  serializeEditorialFinding,
+  serializeEditorialFindings,
+  validateEditorialFinding,
+} from './finding/index.js';
+export { buildDeterministicEditorialReportId } from './ids.js';
 export type { EditorialModule, EditorialModuleAnalysisInput } from './module.js';
 export type {
   EditorialIntelligenceAnalysisInput,

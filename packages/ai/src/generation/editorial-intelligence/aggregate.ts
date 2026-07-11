@@ -1,5 +1,5 @@
 import type {
-  EditorialIntelligenceFinding,
+  EditorialFinding,
   EditorialIntelligenceReport,
   EditorialIntelligenceScores,
   EditorialModuleId,
@@ -7,32 +7,28 @@ import type {
   PublicationReadinessAssessment,
 } from '@pcme/shared';
 
+import { isBlockingEditorialFinding } from './finding/validate.js';
+
 const HUMAN_APPROVAL_NOTE = 'Human approval required before publication.';
 
-function isBlockingFinding(finding: EditorialIntelligenceFinding): boolean {
-  return finding.severity === 'high' && finding.confidence === 'high';
-}
-
 function buildModuleSummaries(
-  findings: readonly EditorialIntelligenceFinding[],
+  findings: readonly EditorialFinding[],
   enabledModules: readonly EditorialModuleId[],
 ): readonly EditorialModuleSummary[] {
   return Object.freeze(
     enabledModules.map((module) => {
-      const moduleFindings = findings.filter((finding) => finding.module === module);
+      const moduleFindings = findings.filter((finding) => finding.category === module);
       return Object.freeze({
         module,
         findingCount: moduleFindings.length,
-        blockingFindingCount: moduleFindings.filter(isBlockingFinding).length,
+        blockingFindingCount: moduleFindings.filter(isBlockingEditorialFinding).length,
       });
     }),
   );
 }
 
-function buildScores(
-  findings: readonly EditorialIntelligenceFinding[],
-): EditorialIntelligenceScores {
-  const blockingFindings = findings.filter(isBlockingFinding).length;
+function buildScores(findings: readonly EditorialFinding[]): EditorialIntelligenceScores {
+  const blockingFindings = findings.filter(isBlockingEditorialFinding).length;
   return Object.freeze({
     totalFindings: findings.length,
     blockingFindings,
@@ -41,9 +37,9 @@ function buildScores(
 }
 
 function buildPublicationReadiness(
-  findings: readonly EditorialIntelligenceFinding[],
+  findings: readonly EditorialFinding[],
 ): PublicationReadinessAssessment {
-  const blockingFindingCount = findings.filter(isBlockingFinding).length;
+  const blockingFindingCount = findings.filter(isBlockingEditorialFinding).length;
   const advisoryFindingCount = findings.length - blockingFindingCount;
 
   let status: PublicationReadinessAssessment['status'];
@@ -63,6 +59,16 @@ function buildPublicationReadiness(
   });
 }
 
+function cloneFinding(finding: EditorialFinding): EditorialFinding {
+  return Object.freeze({
+    ...finding,
+    recommendation: Object.freeze({ ...finding.recommendation }),
+    acceptanceCriteria: Object.freeze({ ...finding.acceptanceCriteria }),
+    location: finding.location ? Object.freeze({ ...finding.location }) : undefined,
+    metadata: finding.metadata ? Object.freeze({ ...finding.metadata }) : undefined,
+  });
+}
+
 /** Aggregate module findings into a complete editorial intelligence report. */
 export function aggregateEditorialIntelligenceReport(input: {
   readonly reportId: string;
@@ -72,7 +78,7 @@ export function aggregateEditorialIntelligenceReport(input: {
   readonly locale: string;
   readonly analyzedAt: string;
   readonly enabledModules: readonly EditorialModuleId[];
-  readonly findings: readonly EditorialIntelligenceFinding[];
+  readonly findings: readonly EditorialFinding[];
 }): EditorialIntelligenceReport {
   const scores = buildScores(input.findings);
   const publicationReadiness = buildPublicationReadiness(input.findings);
@@ -85,7 +91,7 @@ export function aggregateEditorialIntelligenceReport(input: {
     locale: input.locale,
     analyzedAt: input.analyzedAt,
     moduleSummaries: buildModuleSummaries(input.findings, input.enabledModules),
-    findings: Object.freeze(input.findings.map((finding) => Object.freeze({ ...finding }))),
+    findings: Object.freeze(input.findings.map((finding) => cloneFinding(finding))),
     scores,
     publicationReadiness,
   });

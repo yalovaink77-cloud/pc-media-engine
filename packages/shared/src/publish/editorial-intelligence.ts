@@ -1,34 +1,17 @@
-import type { ContentReviewCheckId, ContentReviewSeverity } from './content-review.js';
+import type { EditorialFinding } from './editorial-finding.js';
+import type { FindingConfidence } from './editorial-finding.js';
 
-/** Intelligence module identifiers for editorial analysis. */
+/** Intelligence module identifiers for editorial analysis profiles. */
 export type EditorialModuleId = 'editorial' | 'evidence' | 'seo' | 'ai-seo' | 'affiliate';
 
-/** Confidence assigned to a deterministic or heuristic editorial finding. */
-export type EditorialIntelligenceConfidence = 'low' | 'medium' | 'high';
+/** @deprecated Use FindingConfidence from editorial-finding.js */
+export type EditorialIntelligenceConfidence = FindingConfidence;
 
-/** Location anchor for an editorial intelligence finding. */
-export interface EditorialFindingLocation {
-  readonly sectionId?: string;
-  readonly headingText?: string;
-  readonly excerpt?: string;
-  readonly lineRange?: { readonly start: number; readonly end: number };
-}
+/** @deprecated Use EditorialFinding from editorial-finding.js */
+export type EditorialIntelligenceFinding = EditorialFinding;
 
-/** Structured finding raised by an editorial intelligence module. */
-export interface EditorialIntelligenceFinding {
-  readonly findingId: string;
-  readonly module: EditorialModuleId;
-  readonly analyzerId: string;
-  readonly code: string;
-  readonly checkId: ContentReviewCheckId;
-  readonly severity: ContentReviewSeverity;
-  readonly confidence: EditorialIntelligenceConfidence;
-  readonly reason: string;
-  readonly recommendation: string;
-  readonly acceptanceCriteria: string;
-  readonly location?: EditorialFindingLocation;
-  readonly metadata?: Readonly<Record<string, string | number | boolean>>;
-}
+/** @deprecated Use EditorialFindingLocation from editorial-finding.js */
+export type { EditorialFindingLocation } from './editorial-finding.js';
 
 /** Per-module summary within an editorial intelligence report. */
 export interface EditorialModuleSummary {
@@ -61,7 +44,7 @@ export interface EditorialIntelligenceReport {
   readonly locale: string;
   readonly analyzedAt: string;
   readonly moduleSummaries: readonly EditorialModuleSummary[];
-  readonly findings: readonly EditorialIntelligenceFinding[];
+  readonly findings: readonly EditorialFinding[];
   readonly scores: EditorialIntelligenceScores;
   readonly publicationReadiness: PublicationReadinessAssessment;
 }

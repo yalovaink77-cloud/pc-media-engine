@@ -40,8 +40,15 @@ export {
   createEmptyEditorialModule,
   EditorialIntelligenceOrchestrator,
   EditorialModuleRegistry,
+  isBlockingEditorialFinding,
+  normalizeEditorialFindingInput,
+  parseEditorialFinding,
+  parseEditorialFindings,
   parseEditorialIntelligenceReport,
+  serializeEditorialFinding,
+  serializeEditorialFindings,
   serializeEditorialIntelligenceReport,
+  validateEditorialFinding,
 } from './editorial-intelligence/index.js';
 export {
   GenerationBlockedMetadataError,

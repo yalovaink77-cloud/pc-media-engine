@@ -158,7 +158,7 @@ describe('buildDeterministicEditorialFindingId', () => {
   it('returns a stable 32-character identifier', () => {
     const input = Object.freeze({
       reportId: 'report-001',
-      module: 'editorial' as const,
+      category: 'editorial' as const,
       analyzerId: 'readability',
       code: 'long-sentence',
       identityKey: 'section-1',
@@ -260,16 +260,16 @@ describe('EditorialIntelligenceOrchestrator', () => {
       analyze: () =>
         Object.freeze([
           Object.freeze({
-            findingId: 'identity-key-1',
-            module: 'editorial',
+            id: 'identity-key-1',
+            category: 'editorial',
             analyzerId: 'readability',
             code: 'long-sentence',
             checkId: 'formatting',
             severity: 'medium',
             confidence: 'medium',
             reason: 'Sentence is long.',
-            recommendation: 'Split the sentence.',
-            acceptanceCriteria: 'Average sentence length is lower.',
+            recommendation: Object.freeze({ text: 'Split the sentence.' }),
+            acceptanceCriteria: Object.freeze({ text: 'Average sentence length is lower.' }),
           }),
         ]),
     });
@@ -295,10 +295,10 @@ describe('EditorialIntelligenceOrchestrator', () => {
     });
 
     expect(report.findings).toHaveLength(1);
-    expect(report.findings[0]?.findingId).toBe(
+    expect(report.findings[0]?.id).toBe(
       buildDeterministicEditorialFindingId({
         reportId: report.reportId,
-        module: 'editorial',
+        category: 'editorial',
         analyzerId: 'readability',
         code: 'long-sentence',
         identityKey: 'identity-key-1',

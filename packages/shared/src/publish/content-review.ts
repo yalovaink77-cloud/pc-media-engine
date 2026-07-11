@@ -1,7 +1,5 @@
-import type {
-  EditorialIntelligenceFinding,
-  PublicationReadinessAssessment,
-} from './editorial-intelligence.js';
+import type { EditorialFinding } from './editorial-finding.js';
+import type { PublicationReadinessAssessment } from './editorial-intelligence.js';
 import type { GeneratedContentStatus, GeneratedContentWarning } from './generated-content.js';
 import type { GenerationPolicySnapshot } from './generation-policy.js';
 
@@ -70,7 +68,7 @@ export interface ContentReviewRequest {
   /** Present when editorial intelligence analysis ran before review creation. */
   readonly editorialReportId?: string;
   /** Findings from pre-review editorial intelligence analysis. */
-  readonly preReviewFindings?: readonly EditorialIntelligenceFinding[];
+  readonly preReviewFindings?: readonly EditorialFinding[];
   /** Advisory readiness from editorial intelligence — human approval still required. */
   readonly publicationReadiness?: PublicationReadinessAssessment;
 }

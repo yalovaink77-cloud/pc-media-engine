@@ -1,15 +1,15 @@
 import type {
-  EditorialIntelligenceFinding,
+  EditorialFinding,
   EditorialIntelligenceProfile,
   EditorialIntelligenceReport,
+  FindingCategory,
 } from '@pcme/shared';
 
 import type { GeneratedContentArtifact } from '../artifact/types.js';
 import { aggregateEditorialIntelligenceReport } from './aggregate.js';
-import {
-  buildDeterministicEditorialFindingId,
-  buildDeterministicEditorialReportId,
-} from './ids.js';
+import { buildDeterministicEditorialFindingId } from './finding/ids.js';
+import { normalizeEditorialFindingInput } from './finding/validate.js';
+import { buildDeterministicEditorialReportId } from './ids.js';
 import type { EditorialModuleAnalysisInput } from './module.js';
 import { createDefaultEditorialModuleRegistry, type EditorialModuleRegistry } from './registry.js';
 
@@ -28,7 +28,7 @@ export interface EditorialIntelligenceOrchestratorOptions {
   }) => string;
   readonly findingIdGenerator?: (input: {
     reportId: string;
-    module: EditorialIntelligenceFinding['module'];
+    category: FindingCategory;
     analyzerId: string;
     code: string;
     identityKey: string;
@@ -36,25 +36,26 @@ export interface EditorialIntelligenceOrchestratorOptions {
 }
 
 function assignFindingIds(
-  findings: readonly EditorialIntelligenceFinding[],
+  findings: readonly EditorialFinding[],
   reportId: string,
   findingIdGenerator: EditorialIntelligenceOrchestratorOptions['findingIdGenerator'],
-): readonly EditorialIntelligenceFinding[] {
+): readonly EditorialFinding[] {
   const generateId = findingIdGenerator ?? buildDeterministicEditorialFindingId;
 
   return Object.freeze(
-    findings.map((finding) =>
-      Object.freeze({
-        ...finding,
-        findingId: generateId({
+    findings.map((finding) => {
+      const normalized = normalizeEditorialFindingInput(finding);
+      return Object.freeze({
+        ...normalized,
+        id: generateId({
           reportId,
-          module: finding.module,
-          analyzerId: finding.analyzerId,
-          code: finding.code,
-          identityKey: finding.findingId || finding.code,
+          category: normalized.category,
+          analyzerId: normalized.analyzerId,
+          code: normalized.code,
+          identityKey: finding.id || normalized.code,
         }),
-      }),
-    ),
+      });
+    }),
   );
 }
 

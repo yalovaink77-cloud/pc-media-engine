@@ -35,6 +35,8 @@ function cloneReviewRequest(review: ContentReviewRequest): ContentReviewRequest 
           review.preReviewFindings.map((finding) =>
             Object.freeze({
               ...finding,
+              recommendation: Object.freeze({ ...finding.recommendation }),
+              acceptanceCriteria: Object.freeze({ ...finding.acceptanceCriteria }),
               location: finding.location ? Object.freeze({ ...finding.location }) : undefined,
               metadata: finding.metadata ? Object.freeze({ ...finding.metadata }) : undefined,
             }),

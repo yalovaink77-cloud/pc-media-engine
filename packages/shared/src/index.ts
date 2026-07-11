@@ -1,6 +1,17 @@
 /** @pcme/shared — cross-package utilities and neutral domain contracts. */
 export type {
+  AcceptanceCriteria,
+  EditorialFinding,
+  EditorialFindingId,
+  EditorialFindingInput,
   EditorialFindingLocation,
+  FindingCategory,
+  FindingCode,
+  FindingConfidence,
+  FindingRecommendation,
+  FindingSeverity,
+} from './publish/index.js';
+export type {
   EditorialIntelligenceConfidence,
   EditorialIntelligenceFinding,
   EditorialIntelligenceProfile,
@@ -53,6 +64,15 @@ export type {
   PublishingOutboxStatus,
   PublishingReviewSummaryPayload,
   ReservePublishingIdempotencyInput,
+} from './publish/index.js';
+export {
+  EDITORIAL_FINDING_ID_PATTERN,
+  EditorialFindingError,
+  EditorialFindingValidationError,
+  FINDING_CATEGORIES,
+  FINDING_CODE_PATTERN,
+  FINDING_CONFIDENCES,
+  FINDING_SEVERITIES,
 } from './publish/index.js';
 export {
   buildPublishingIdempotencyKey,

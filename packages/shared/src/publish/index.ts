@@ -11,7 +11,29 @@ export type {
   ContentReviewStatus,
 } from './content-review.js';
 export type {
+  AcceptanceCriteria,
+  EditorialFinding,
+  EditorialFindingId,
+  EditorialFindingInput,
   EditorialFindingLocation,
+  FindingCategory,
+  FindingCode,
+  FindingConfidence,
+  FindingRecommendation,
+  FindingSeverity,
+} from './editorial-finding.js';
+export {
+  EDITORIAL_FINDING_ID_PATTERN,
+  FINDING_CATEGORIES,
+  FINDING_CODE_PATTERN,
+  FINDING_CONFIDENCES,
+  FINDING_SEVERITIES,
+} from './editorial-finding.js';
+export {
+  EditorialFindingError,
+  EditorialFindingValidationError,
+} from './editorial-finding-errors.js';
+export type {
   EditorialIntelligenceConfidence,
   EditorialIntelligenceFinding,
   EditorialIntelligenceProfile,
