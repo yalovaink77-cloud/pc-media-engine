@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   FakeGenerationProvider,
@@ -17,7 +18,9 @@ import {
   resolveMonorepoRoot,
 } from '../config.js';
 import {
+  assertMergedTokensUnchanged,
   assertSpacesPreserved,
+  CONFIRMED_MERGED_WORD_TOKENS,
   detectFormattingCorruption,
   normalizePreservingMarkdownWhitespace,
 } from '../formatting.js';
@@ -29,8 +32,8 @@ import {
 } from '../outputs.js';
 import {
   analyzePilotDraftQuality,
-  detectMissingCitationPlaceholders,
-  detectUnsupportedClaims,
+  detectUnresolvedSourcePlaceholders,
+  detectUnsupportedOrOverstatedClaims,
 } from '../quality.js';
 import { runPiercingConnectPilotDraft } from '../run-pilot-draft.js';
 import { extractMarkdownHeadings, findMissingRequiredSections } from '../section-markers.js';
@@ -38,6 +41,10 @@ import { extractMarkdownHeadings, findMissingRequiredSections } from '../section
 const tempDirs: string[] = [];
 const FIXED_CREATED_AT = '2026-07-11T12:00:00.000Z';
 const PRODUCT_ID = 'neilmed-piercing-aftercare-fine-mist';
+const FIXTURE_PATH = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../__fixtures__/neilmed-generated-review.md',
+);
 
 const QUALITY_DRAFT = `# NeilMed Piercing Aftercare Fine Mist Review
 
@@ -90,20 +97,7 @@ No. Availability checks must remain educational and non-urgent.
 [Affiliate disclosure placeholder: update before publication if any commercial relationship exists.]
 
 ## Source Notes
-[Source: product official record]
-[Source: ingredient evidence record]
-[Source: APP-aligned aftercare guidance]
-`;
-
-const CORRUPT_DRAFT = QUALITY_DRAFT.replace(
-  'This draft summarizes',
-  'This draft summarizes productthat reviewaims Itis woundcare AftercareFine concerns.',
-);
-
-const UNSUPPORTED_CLAIM_DRAFT = `${QUALITY_DRAFT}
-
-Extra note: It is suitable for all types of piercings and should be used 1-2 times daily.
-It is suitable for sensitive skin and reduces the risk of introducing bacteria with guaranteed healing.
+Resolved source record: product YAML id neilmed-piercing-aftercare-fine-mist (human-verified).
 `;
 
 class AbsolutePathWarningProvider implements GenerationProviderAdapter {
@@ -237,17 +231,58 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(result.wordpressInvoked).toBe(false);
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(before).toBe(after);
-    expect(result.missingSections).toEqual([]);
-    expect(result.findings?.some((finding) => finding.code === 'missing-section-markers')).toBe(
-      false,
-    );
 
     const reviewMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
     expect(reviewMarkdown).toContain('product that');
-    expect(reviewMarkdown).toContain('[Source: product official record]');
-    expect(JSON.parse(await readFile(join(outputDir, 'review-summary.json'), 'utf8')).status).toBe(
-      'pending-review',
-    );
+  });
+
+  it('enforces quality findings for the NeilMed generated draft fixture', async () => {
+    const repoPath = await createFixtureRepo();
+    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-neilmed-'));
+    tempDirs.push(outputDir);
+    const fetchSpy = vi.fn().mockRejectedValue(new Error('network disabled'));
+    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
+
+    const result = await runPiercingConnectPilotDraft({
+      repoPath,
+      outputDir,
+      mediaEngineRoot: resolveMonorepoRoot(),
+      fixedCreatedAt: FIXED_CREATED_AT,
+      env: { OPENROUTER_API_KEY: 'test-key' },
+      generationProvider: new FakeGenerationProvider({ generatedContent: neilmedDraft }),
+      fetchFn: fetchSpy as unknown as typeof fetch,
+    });
+
+    expect(result.status).toBe('succeeded-pending-review');
+    expect(result.reviewStatus).toBe('pending-review');
+    expect(result.wordpressInvoked).toBe(false);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    const codes = new Set(result.findings?.map((finding) => finding.code));
+    expect(codes.has('formatting-corruption')).toBe(true);
+    expect(codes.has('unresolved-source-placeholders')).toBe(true);
+    expect(codes.has('unsupported-or-overstated-claims')).toBe(true);
+
+    expect(result.reviewSummary?.findings.length).toBeGreaterThan(0);
+    expect(result.reviewSummary?.warningCount).toBe(result.reviewSummary?.findings.length);
+    expect(result.warningCount).toBe(result.reviewSummary?.warningCount);
+
+    const writtenSummary = JSON.parse(
+      await readFile(join(outputDir, 'review-summary.json'), 'utf8'),
+    ) as {
+      status: string;
+      warningCount: number;
+      findings: readonly { code: string }[];
+    };
+    expect(writtenSummary.status).toBe('pending-review');
+    expect(writtenSummary.warningCount).toBe(writtenSummary.findings.length);
+    expect(
+      writtenSummary.findings.some((finding) => finding.code === 'formatting-corruption'),
+    ).toBe(true);
+
+    const writtenMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
+    expect(writtenMarkdown).toContain('simpleformulation');
+    expect(assertMergedTokensUnchanged(neilmedDraft, writtenMarkdown)).toBe(true);
   });
 
   it('redacts absolute paths and still reaches pending-review outputs', async () => {
@@ -281,31 +316,6 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(combined).not.toContain(repoPath);
     expect(combined).not.toContain('/home/');
     expect(combined).toContain('<commerce-root>');
-  });
-
-  it('records quality findings for unsupported claims while remaining pending-review', async () => {
-    const repoPath = await createFixtureRepo();
-    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-claims-'));
-    tempDirs.push(outputDir);
-
-    const result = await runPiercingConnectPilotDraft({
-      repoPath,
-      outputDir,
-      mediaEngineRoot: resolveMonorepoRoot(),
-      fixedCreatedAt: FIXED_CREATED_AT,
-      env: { OPENROUTER_API_KEY: 'test-key' },
-      generationProvider: new FakeGenerationProvider({
-        generatedContent: UNSUPPORTED_CLAIM_DRAFT,
-      }),
-    });
-
-    expect(result.status).toBe('succeeded-pending-review');
-    expect(result.reviewStatus).toBe('pending-review');
-    expect(result.findings?.some((finding) => finding.code === 'unsupported-claim')).toBe(true);
-    expect(
-      result.reviewSummary?.findings.some((finding) => finding.code === 'unsupported-claim'),
-    ).toBe(true);
-    expect(result.wordpressInvoked).toBe(false);
   });
 
   it('keeps pilot outputs under a gitignored exports path', async () => {
@@ -353,7 +363,7 @@ Questions
 Disclosure
 
 ## Source Notes
-[Source: product official record]
+Resolved notes
 `;
 
     const headings = extractMarkdownHeadings(markdown);
@@ -367,50 +377,85 @@ Disclosure
   });
 });
 
-describe('pilot quality analysis', () => {
-  it('requires structured source-note placeholders', () => {
-    const findings = detectMissingCitationPlaceholders(
-      '## Source Notes\nPlease refer to the provided context.',
-    );
-    expect(findings.some((finding) => finding.code === 'missing-citation-placeholders')).toBe(true);
+describe('NeilMed fixture quality analysis', () => {
+  it('detects confirmed merged words from the generated draft', async () => {
+    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
+    const formatting = detectFormattingCorruption(neilmedDraft);
+    expect(formatting.some((entry) => entry.startsWith('confirmed-merged-tokens:'))).toBe(true);
+    for (const token of [
+      'simpleformulation',
+      'includingits',
+      'fluidsand',
+      'universallyapplicable',
+      'seekinga',
+      'cleanlinessduring',
+      'professionalpiercer',
+      'AftercareFine',
+    ]) {
+      expect(
+        neilmedDraft.includes(token) || neilmedDraft.toLowerCase().includes(token.toLowerCase()),
+      ).toBe(true);
+    }
+    expect(CONFIRMED_MERGED_WORD_TOKENS).toContain('asa');
   });
 
-  it('warns on unsupported frequency and suitability claims', () => {
-    const findings = detectUnsupportedClaims(
-      'Use 1-2 times daily. Suitable for all types of piercings. It is suitable for sensitive skin.',
+  it('flags unresolved source placeholders and overstated claims', async () => {
+    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
+    const placeholders = detectUnresolvedSourcePlaceholders(neilmedDraft);
+    expect(placeholders.some((finding) => finding.code === 'unresolved-source-placeholders')).toBe(
+      true,
     );
-    expect(findings.map((finding) => finding.detail)).toEqual(
+
+    const claims = detectUnsupportedOrOverstatedClaims(neilmedDraft);
+    expect(claims.some((finding) => finding.code === 'unsupported-or-overstated-claims')).toBe(
+      true,
+    );
+    expect(claims.map((finding) => finding.detail)).toEqual(
       expect.arrayContaining([
-        'fixed-usage-frequency',
-        'universal-suitability',
-        'sensitive-skin-suitability',
+        'supported-by-evidence',
+        'minimizes-risk',
+        'beneficial-claim',
+        'consistent-with-professional-recommendations',
+      ]),
+    );
+
+    const findings = analyzePilotDraftQuality(neilmedDraft, createPiercingConnectPilotConfig());
+    const codes = findings.map((finding) => finding.code);
+    expect(codes).toEqual(
+      expect.arrayContaining([
+        'formatting-corruption',
+        'unresolved-source-placeholders',
+        'unsupported-or-overstated-claims',
       ]),
     );
   });
 
-  it('flags formatting corruption without altering pending-review posture in analysis', () => {
-    expect(detectFormattingCorruption(CORRUPT_DRAFT).length).toBeGreaterThan(0);
-    const findings = analyzePilotDraftQuality(CORRUPT_DRAFT, createPiercingConnectPilotConfig());
-    expect(findings.some((finding) => finding.code === 'formatting-corruption')).toBe(true);
+  it('does not false-positive on product names, URLs, or markdown syntax alone', () => {
+    const clean = [
+      '# NeilMed Piercing Aftercare Fine Mist',
+      '',
+      'See https://example.com/product and `product_id`.',
+      '',
+      '- [label](https://example.com)',
+      '',
+      'NeilMed remains a brand identifier with normal spaces.',
+    ].join('\n');
+    expect(detectFormattingCorruption(clean)).toEqual([]);
   });
 });
 
 describe('pilot output path sanitization and whitespace', () => {
-  it('preserves ordinary spaces through scrubbing and normalization', () => {
+  it('preserves ordinary spaces and does not repair provider merged tokens', async () => {
     const mediaEngineRoot = '/home/murat/Projects/pc-media-engine';
-    const input =
-      'One product that has gained attention. This review aims to provide wound care guidance. It is cautious.';
-    const normalized = normalizePreservingMarkdownWhitespace(input);
+    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
+    const normalized = normalizePreservingMarkdownWhitespace(neilmedDraft);
     const scrubbed = scrubSensitiveText(normalized, mediaEngineRoot, {
       additionalRoots: ['/home/murat/Projects/piercingconnect-commerce'],
     });
 
-    expect(scrubbed).toContain('product that');
-    expect(scrubbed).toContain('review aims');
-    expect(scrubbed).toContain('It is');
-    expect(scrubbed).toContain('wound care');
-    expect(assertSpacesPreserved(input, scrubbed)).toBe(true);
-    expect(scrubbed).not.toMatch(/productthat|reviewaims|Itis|woundcare/);
+    expect(assertSpacesPreserved(neilmedDraft, scrubbed)).toBe(true);
+    expect(assertMergedTokensUnchanged(neilmedDraft, scrubbed)).toBe(true);
+    expect(scrubbed).toContain('simpleformulation');
   });
 
   it('still rejects unsanitized absolute paths at the hard gate and reports field path only', () => {

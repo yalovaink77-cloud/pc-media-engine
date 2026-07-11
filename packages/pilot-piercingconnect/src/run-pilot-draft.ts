@@ -194,7 +194,7 @@ export async function runPiercingConnectPilotDraft(
       );
     }
 
-    // Preserve Markdown whitespace; project filesystem paths before artifact validation/write.
+    // Preserve provider whitespace exactly (no dictionary repair). Only scrub unsafe metadata.
     const scrubOptions = { additionalRoots: [repoPath] as const };
     const normalizedContent = normalizePreservingMarkdownWhitespace(
       generation.response.content ?? '',
@@ -212,7 +212,7 @@ export async function runPiercingConnectPilotDraft(
       ),
     });
 
-    const { artifact, validation } = createGeneratedContentArtifact(job, providerResponse, {
+    const { artifact } = createGeneratedContentArtifact(job, providerResponse, {
       createdAt: options.fixedCreatedAt,
       validation: {
         absolutePathPatterns: Object.freeze([ABSOLUTE_PATH_PATTERN]),
@@ -290,11 +290,7 @@ export async function runPiercingConnectPilotDraft(
       jobId: job.jobId,
       artifactId: artifact.artifactId,
       reviewId: review.reviewId,
-      warningCount:
-        artifact.warnings.length +
-        validation.warnings.length +
-        plan.warnings.length +
-        findings.length,
+      warningCount: reviewSummary.warningCount,
       missingSections: Object.freeze(missingSections),
       findings,
       outputs,

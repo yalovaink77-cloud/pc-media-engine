@@ -13,9 +13,12 @@ export {
 } from './config.js';
 export { PiercingConnectPilotError } from './errors.js';
 export {
+  assertMergedTokensUnchanged,
   assertSpacesPreserved,
+  CONFIRMED_MERGED_WORD_TOKENS,
   detectFormattingCorruption,
   normalizePreservingMarkdownWhitespace,
+  stripProtectedMarkdownRegions,
 } from './formatting.js';
 export {
   ABSOLUTE_PATH_PATTERN,
@@ -34,7 +37,9 @@ export {
 export {
   analyzePilotDraftQuality,
   detectMissingCitationPlaceholders,
+  detectUnresolvedSourcePlaceholders,
   detectUnsupportedClaims,
+  detectUnsupportedOrOverstatedClaims,
   type PilotQualityFinding,
   type PilotQualityFindingCode,
 } from './quality.js';

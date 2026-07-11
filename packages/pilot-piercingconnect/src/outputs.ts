@@ -208,7 +208,7 @@ export function buildReviewSummary(input: {
         }),
       ),
     ),
-    warningCount: input.review.warnings.length + findings.length,
+    warningCount: findings.length + input.review.warnings.length,
     warnings: Object.freeze(
       input.review.warnings.map((warning) =>
         Object.freeze({
