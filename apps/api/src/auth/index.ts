@@ -1,5 +1,5 @@
 export { compareApiKeyToHash, compareRawApiKeys, generateApiKey, hashApiKey } from './api-key.js';
-export type { AuthConfig, AuthConfigValidation } from './config.js';
+export type { AuthConfig, AuthConfigValidation, AuthConfigValidationOptions } from './config.js';
 export { loadAuthConfig, validateAuthConfig } from './config.js';
 export type { JwtClaims, JwtPayload, JwtVerifyResult } from './jwt.js';
 export { signJwt, verifyJwt } from './jwt.js';

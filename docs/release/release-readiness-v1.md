@@ -18,7 +18,7 @@ The branch is **architecturally coherent** for its stated scope: knowledge → g
 
 The branch does **not** complete v1.0 production operations on its own. Two publishing stacks coexist (legacy BullMQ + new durable handoff). The main worker entry point (`apps/worker/src/index.ts`) still boots only BullMQ processing and the legacy publishing queue — durable handoff publishing is opt-in via `apps/worker/src/durable-publishing/bootstrap.ts` and `apps/worker/scripts/publishing-worker-run-once.ts`. Production deployment documentation contains **incorrect WordPress environment variable names** relative to the runtime loader in `plugins/wordpress/src/config.ts`.
 
-**Merge into `main` is recommended with conditions.** A v1.0 production cut requires resolving HIGH findings (especially deployment docs and auth defaults) before live operation.
+**Merge into `main` is recommended.** The three release conditions from §3 (WordPress env template, production auth guard, durable worker documentation) were remediated on 2026-07-11. Remaining HIGH items (H-3, H-6–H-8) are post-merge hardening, not merge gates.
 
 ---
 
@@ -40,13 +40,21 @@ The branch does **not** complete v1.0 production operations on its own. Two publ
 
 ## 3. Merge Recommendation
 
-### **GO WITH CONDITIONS**
+### **GO**
 
 Merge `feature/commerce-knowledge-loader` into `main` when:
 
 1. CI passes on the PR (`lint`, `typecheck`, `build`, `test`, `format:check` — `.github/workflows/ci.yml`).
-2. Merge notes call out that **v1.0 production** requires the HIGH-priority items in §5 before live publishing.
+2. The three release conditions in §3.1 are verified (remediated 2026-07-11).
 3. `docs/architecture/architecture-review-v1.md` is treated as **partially superseded** by Sprints 037–040 (durable outbox, enqueue, worker, pipeline dry run).
+
+### 3.1 Release conditions — resolved (2026-07-11)
+
+| Condition | Status | Remediation |
+| --------- | ------ | ----------- |
+| **H-1** WordPress production env var names | **Resolved** | `deploy/env/.env.production.example` aligned to `plugins/wordpress/src/config.ts` (`WORDPRESS_URL`, `WORDPRESS_USERNAME`, `WORDPRESS_APP_PASSWORD`); `docs/releases/beta-checklist.md` updated |
+| **H-4 / H-5** Production API auth disabled silently | **Resolved** | `apps/api/src/auth/config.ts` — `validateAuthConfig(..., { production: true })` errors when auth disabled or incomplete; `apps/api/src/server.ts` calls `assertNoFatalErrors` in production; tests in `apps/api/src/__tests__/auth.test.ts` |
+| **H-2** Durable worker entry unclear | **Resolved** | `docs/deployment/durable-publishing-worker.md`; `apps/worker/src/index.ts` header comment; `docs/deployment/production-checklist.md` link; optional vars in `deploy/env/.env.production.example` |
 
 ---
 
@@ -66,11 +74,11 @@ All wired production call sites of `createWordPressPublishingTargetAdapter` pass
 
 | ID | Finding | Evidence |
 | -- | ------- | -------- |
-| H-1 | **Production deployment template uses wrong WordPress env var names** | Template: `deploy/env/.env.production.example:66–68` documents `WORDPRESS_API_URL`, `WORDPRESS_PASSWORD`. Runtime: `plugins/wordpress/src/config.ts:5–9, 94–96` requires `WORDPRESS_URL` (or `WORDPRESS_BASE_URL`), `WORDPRESS_USERNAME`, `WORDPRESS_APP_PASSWORD`. Same mismatch in `docs/releases/beta-checklist.md:59–61, 123–125`. |
-| H-2 | **Dual publishing stacks without unified worker entry** | Legacy: `apps/worker/src/index.ts:36–37` → BullMQ `startPublishingWorker`. New: `apps/worker/src/durable-publishing/bootstrap.ts` + `packages/publishing/src/worker/publishing-worker.ts`. Durable handoff is not started from main worker entry. |
+| H-1 | ~~Production deployment template uses wrong WordPress env var names~~ **Resolved** | Was: `deploy/env/.env.production.example` documented `WORDPRESS_API_URL`, `WORDPRESS_PASSWORD`. Fixed: `WORDPRESS_URL`, `WORDPRESS_USERNAME`, `WORDPRESS_APP_PASSWORD` per `plugins/wordpress/src/config.ts` |
+| H-2 | **Dual publishing stacks without unified worker entry** (documented, not unified) | Legacy: `apps/worker/src/index.ts:36–37`. Durable: `docs/deployment/durable-publishing-worker.md`, `pnpm publishing-worker:run-once` |
 | H-3 | **Dual WordPress integrations in one plugin** | `plugins/wordpress/src/wordpress-media.publisher.ts` (legacy `Publisher` / publisher-sdk) and `plugins/wordpress/src/wordpress-publishing-target.adapter.ts` (handoff `PublishingTargetAdapter`). Both exported from `plugins/wordpress/src/index.ts`. |
-| H-4 | **API authentication disabled by default** | `apps/api/src/auth/config.ts:5–6, 70` — `PCME_AUTH_ENABLED === 'true'` required. Warning emitted when disabled (`validateAuthConfig` line 96–99). Production template recommends enabling auth (`deploy/env/.env.production.example:41–46`). |
-| H-5 | **Auth misconfiguration does not abort API startup** | `apps/api/src/server.ts:91–95` logs auth validation errors but continues boot. |
+| H-4 | ~~API authentication disabled by default in production~~ **Resolved** | `apps/api/src/auth/config.ts` production guard; `deploy/env/.env.production.example:41–46` unchanged (already recommends auth) |
+| H-5 | ~~Auth misconfiguration does not abort API startup~~ **Resolved** | `apps/api/src/server.ts` — production auth validation is fatal via `assertNoFatalErrors` |
 | H-6 | **Smoke suites not executed in CI** | `.github/workflows/ci.yml` runs `pnpm test` only; 43 root `*:smoke` commands (`package.json:29–71`) and `pipeline:dry-run` are manual. |
 | H-7 | **`architecture-review-v1.md` partially stale** | Dated 2026-07-10; states handoff path does not use PublishingOutbox/worker (`docs/architecture/architecture-review-v1.md:15–16, 84–92`). Sprints 037–040 added `packages/database` outbox repos, `packages/publishing/src/enqueue/`, `packages/publishing/src/worker/`, and `packages/publishing/src/pipeline/`. |
 | H-8 | **15 workspace packages use no-op test scripts** | `"test": "node -e \"process.exit(0)\""` in `@pcme/shared`, `@pcme/core`, `@pcme/analytics`, stub providers/plugins. Inflates `pnpm test` / turbo pass rate without assertions. |
@@ -125,11 +133,11 @@ All wired production call sites of `createWordPressPublishingTargetAdapter` pass
 
 ### Merge blockers (must not defer past v1.0 production)
 
-| Item | Severity | Location |
-| ---- | -------- | -------- |
-| WordPress production env template mismatch | HIGH → production blocker | `deploy/env/.env.production.example:66–68` |
-| Production API without `PCME_AUTH_ENABLED=true` | HIGH → production blocker | `apps/api/src/auth/config.ts:70` |
-| Expecting durable handoff from default worker process | HIGH → operational blocker | `apps/worker/src/index.ts` vs `apps/worker/src/durable-publishing/` |
+| Item | Severity | Location | Status |
+| ---- | -------- | -------- | ------ |
+| WordPress production env template mismatch | HIGH | `deploy/env/.env.production.example` | **Resolved** |
+| Production API without `PCME_AUTH_ENABLED=true` | HIGH | `apps/api/src/auth/config.ts`, `apps/api/src/server.ts` | **Resolved** |
+| Expecting durable handoff from default worker process | HIGH | `docs/deployment/durable-publishing-worker.md` | **Resolved** (documented) |
 
 ---
 
@@ -173,13 +181,13 @@ All wired production call sites of `createWordPressPublishingTargetAdapter` pass
 
 ## 11. Immediate Post-Merge Tasks
 
-| Priority | Task | Owner hint |
-| -------- | ---- | ---------- |
-| P0 | Fix WordPress env var names in `deploy/env/.env.production.example` and `docs/releases/beta-checklist.md` to match `plugins/wordpress/src/config.ts` | Platform / DevOps |
-| P0 | Document required production env: `PCME_AUTH_ENABLED=true`, JWT/API keys | Platform |
+| Priority | Task | Owner hint | Status |
+| -------- | ---- | ---------- | ------ |
+| ~~P0~~ | ~~Fix WordPress env var names in `deploy/env/.env.production.example` and `docs/releases/beta-checklist.md`~~ | Platform / DevOps | **Done** |
+| ~~P0~~ | ~~Document required production env: `PCME_AUTH_ENABLED=true`, JWT/API keys~~ | Platform | **Done** (template + production auth guard) |
+| ~~P1~~ | ~~Document durable handoff operation: `pnpm publishing-worker:run-once` vs legacy BullMQ worker~~ | Operations | **Done** |
 | P1 | Update `README.md` status, test description, module list, links to `docs/releases/` | Docs |
 | P1 | Add architecture addendum for durable publishing path (supersedes §2.2 of architecture-review-v1) | Architecture |
-| P1 | Document durable handoff operation: `pnpm publishing-worker:run-once` vs legacy BullMQ worker | Operations |
 | P2 | Align smoke suite count in `beta-release-candidate.md` (27 vs 28) | Release |
 | P2 | Consider adding `pnpm beta-rc:smoke` or subset to CI (nightly) | CI |
 
@@ -203,13 +211,11 @@ All wired production call sites of `createWordPressPublishingTargetAdapter` pass
 
 ## 13. Final Verdict
 
-`feature/commerce-knowledge-loader` successfully delivers the **commerce knowledge loader and full offline content pipeline** with durable publishing primitives, validated by unit tests, integration tests, and `pipeline:dry-run`. The codebase is **safe to merge into `main`** for continued v1.0 hardening.
-
-**v1.0 production release** should remain **conditional**: fix deployment documentation (H-1), enforce authentication (H-4), and clarify operational entry points for durable publishing (H-2) before any live WordPress or public API exposure.
+`feature/commerce-knowledge-loader` successfully delivers the **commerce knowledge loader and full offline content pipeline** with durable publishing primitives, validated by unit tests, integration tests, and `pipeline:dry-run`. The three release conditions (H-1, H-4/H-5, H-2 documentation) were remediated on 2026-07-11.
 
 The branch represents a **major capability increment** over `main` with **no identified merge blockers** in application code, **zero critical security regressions** on wired paths, and **acceptable technical debt** documented above.
 
-**Recommendation: GO WITH CONDITIONS**
+**Recommendation: GO**
 
 ---
 

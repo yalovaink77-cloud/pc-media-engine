@@ -47,6 +47,11 @@ export type AuthConfigValidation = {
   warnings: string[];
 };
 
+export type AuthConfigValidationOptions = {
+  /** When true, disabled or incomplete auth is treated as a fatal startup error. */
+  readonly production?: boolean;
+};
+
 function parseApiKeyRoles(raw: string | undefined): Record<string, Role> {
   const map: Record<string, Role> = {};
   if (!raw) return map;
@@ -89,14 +94,22 @@ export function loadAuthConfig(): AuthConfig {
   };
 }
 
-export function validateAuthConfig(config: AuthConfig): AuthConfigValidation {
+export function validateAuthConfig(
+  config: AuthConfig,
+  options?: AuthConfigValidationOptions,
+): AuthConfigValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
+  const production = options?.production === true;
 
   if (!config.enabled) {
-    warnings.push(
-      'Auth is disabled (PCME_AUTH_ENABLED != true) — all requests are unauthenticated',
-    );
+    if (production) {
+      errors.push('Authentication must be enabled in production (set PCME_AUTH_ENABLED=true)');
+    } else {
+      warnings.push(
+        'Auth is disabled (PCME_AUTH_ENABLED != true) — all requests are unauthenticated',
+      );
+    }
     return { errors, warnings };
   }
 

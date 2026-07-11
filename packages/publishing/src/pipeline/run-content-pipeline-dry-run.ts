@@ -207,11 +207,17 @@ interface WordPressPublishingPluginModule {
     env: NodeJS.ProcessEnv,
     options: { forceDraft: boolean },
   ) => PublishingTargetAdapter;
-  hasWordPressHandoffCredentials: (env: NodeJS.ProcessEnv) => boolean;
 }
 
 async function loadWordPressPublishingPlugin(): Promise<WordPressPublishingPluginModule> {
   return (await import(WORDPRESS_PLUGIN_MODULE)) as WordPressPublishingPluginModule;
+}
+
+function hasWordPressHandoffCredentialsInEnv(env: NodeJS.ProcessEnv = process.env): boolean {
+  const url = (env['WORDPRESS_URL'] ?? env['WORDPRESS_BASE_URL'] ?? '').trim();
+  const username = (env['WORDPRESS_USERNAME'] ?? '').trim();
+  const appPassword = (env['WORDPRESS_APP_PASSWORD'] ?? '').trim();
+  return Boolean(url && username && appPassword);
 }
 
 async function resolvePublishingAdapter(
@@ -227,15 +233,15 @@ async function resolvePublishingAdapter(
     return new FakePublishingTargetAdapter(fakeOptions);
   }
 
-  const { createWordPressPublishingTargetAdapter, hasWordPressHandoffCredentials } =
-    await loadWordPressPublishingPlugin();
-  if (!hasWordPressHandoffCredentials(process.env)) {
+  if (!hasWordPressHandoffCredentialsInEnv(process.env)) {
     throw new ContentPipelineDryRunError(
       'mode-unavailable',
       'publishing-adapter',
       'WordPress draft mode requires WordPress handoff credentials',
     );
   }
+
+  const { createWordPressPublishingTargetAdapter } = await loadWordPressPublishingPlugin();
 
   return createWordPressPublishingTargetAdapter(process.env, { forceDraft: true });
 }
