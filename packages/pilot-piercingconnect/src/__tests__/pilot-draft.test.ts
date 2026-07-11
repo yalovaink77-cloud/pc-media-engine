@@ -11,7 +11,12 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_PILOT_OUTPUT_DIR, resolveMonorepoRoot } from '../config.js';
-import { assertSafeOutputPayload, scrubSensitiveText, writePilotOutputs } from '../outputs.js';
+import {
+  assertSafeOutputPayload,
+  findUnsafeOutputLocation,
+  scrubSensitiveText,
+  writePilotOutputs,
+} from '../outputs.js';
 import { runPiercingConnectPilotDraft } from '../run-pilot-draft.js';
 
 const tempDirs: string[] = [];
@@ -81,12 +86,14 @@ class AbsolutePathWarningProvider implements GenerationProviderAdapter {
   ) {}
 
   async generate(request: GenerationProviderRequest) {
-    // Keep markdown path-free so artifact validation stays valid; paths leak via
-    // provider warning strings (the pilot write-gate failure mode).
-    const inner = new FakeGenerationProvider({ generatedContent: SAMPLE_DRAFT });
+    // Paths arrive via provider warning strings and draft text (OpenRouter-like leakage).
+    const inner = new FakeGenerationProvider({
+      generatedContent: `${SAMPLE_DRAFT}\n\nInspected ${this.roots.commerceRepoPath} and https://neilmed.com/products\n`,
+    });
     const response = await inner.generate(request);
     return Object.freeze({
       ...response,
+      model: `${this.roots.mediaEngineRoot}/models/custom`,
       warnings: Object.freeze([
         `sourcePath=${this.roots.commerceRepoPath}`,
         `Also checked /Users/ci/runner/work/pcme/file.yaml and ${this.roots.mediaEngineRoot}/packages/content`,
@@ -241,13 +248,22 @@ describe('runPiercingConnectPilotDraft', () => {
     const artifactMetadata = await readFile(join(outputDir, 'artifact-metadata.json'), 'utf8');
     const reviewSummary = await readFile(join(outputDir, 'review-summary.json'), 'utf8');
     const combined = `${reviewMarkdown}\n${artifactMetadata}\n${reviewSummary}`;
+    const parsedMetadata = JSON.parse(artifactMetadata);
+    const parsedSummary = JSON.parse(reviewSummary);
 
     expect(combined).not.toContain(repoPath);
     expect(combined).not.toContain(mediaEngineRoot);
     expect(combined).not.toContain('/home/');
     expect(combined).not.toContain('/Users/');
     expect(combined).toContain('<commerce-root>');
-    expect(JSON.parse(reviewSummary).status).toBe('pending-review');
+    expect(parsedMetadata.warnings.every((warning: { message?: string }) => !warning.message)).toBe(
+      true,
+    );
+    expect(parsedSummary.warnings.every((warning: { message?: string }) => !warning.message)).toBe(
+      true,
+    );
+    expect(parsedSummary.status).toBe('pending-review');
+    expect(parsedMetadata.model).toContain('<monorepo-root>');
   });
 
   it('keeps pilot outputs under a gitignored exports path', async () => {
@@ -275,13 +291,17 @@ describe('pilot output path sanitization', () => {
     expect(scrubbed).not.toContain('/tmp/');
   });
 
-  it('still rejects unsanitized absolute paths at the hard gate', () => {
-    expect(() =>
-      assertSafeOutputPayload(
-        { message: 'Loaded from /home/murat/Projects/piercingconnect-commerce' },
-        '/home/murat/Projects/pc-media-engine',
-      ),
-    ).toThrow(/absolute paths/);
+  it('still rejects unsanitized absolute paths at the hard gate and reports field path only', () => {
+    const payload = { message: 'Loaded from /home/murat/Projects/piercingconnect-commerce' };
+    const location = findUnsafeOutputLocation(payload, '/home/murat/Projects/pc-media-engine');
+
+    expect(location).toEqual({ path: '$.message', kind: 'absolute-path' });
+    expect(() => assertSafeOutputPayload(payload, '/home/murat/Projects/pc-media-engine')).toThrow(
+      /field: \$\.message/,
+    );
+    expect(() => assertSafeOutputPayload(payload, '/home/murat/Projects/pc-media-engine')).toThrow(
+      /absolute paths/,
+    );
   });
 
   it('writes scrubbed markdown when draft text contains absolute paths', async () => {

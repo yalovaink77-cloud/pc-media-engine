@@ -16,9 +16,11 @@ export {
   assertSafeOutputPayload,
   buildArtifactMetadata,
   buildReviewSummary,
+  findUnsafeOutputLocation,
   type PilotArtifactMetadata,
   type PilotOutputPaths,
   type PilotReviewSummary,
+  scrubPayloadStrings,
   scrubSensitiveText,
   writePilotOutputs,
 } from './outputs.js';

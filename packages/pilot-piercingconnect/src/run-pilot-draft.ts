@@ -25,12 +25,14 @@ import {
 } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
 import {
+  ABSOLUTE_PATH_PATTERN,
   assertDraftContainsRequiredSections,
   buildArtifactMetadata,
   buildReviewSummary,
   type PilotArtifactMetadata,
   type PilotOutputPaths,
   type PilotReviewSummary,
+  scrubSensitiveText,
   writePilotOutputs,
 } from './outputs.js';
 import { PilotStructuredGenerationProvider } from './structured-provider.js';
@@ -192,8 +194,27 @@ export async function runPiercingConnectPilotDraft(
       );
     }
 
-    const { artifact, validation } = createGeneratedContentArtifact(job, generation.response, {
+    // Project filesystem paths out of provider text before artifact validation/write.
+    // Pilot artifact checks use filesystem path patterns only (not URL false-positives).
+    const scrubOptions = { additionalRoots: [repoPath] as const };
+    const providerResponse = Object.freeze({
+      ...generation.response,
+      content: scrubSensitiveText(generation.response.content ?? '', mediaEngineRoot, scrubOptions),
+      model: generation.response.model
+        ? scrubSensitiveText(generation.response.model, mediaEngineRoot, scrubOptions)
+        : generation.response.model,
+      warnings: Object.freeze(
+        (generation.response.warnings ?? []).map((warning) =>
+          scrubSensitiveText(warning, mediaEngineRoot, scrubOptions),
+        ),
+      ),
+    });
+
+    const { artifact, validation } = createGeneratedContentArtifact(job, providerResponse, {
       createdAt: options.fixedCreatedAt,
+      validation: {
+        absolutePathPatterns: Object.freeze([ABSOLUTE_PATH_PATTERN]),
+      },
     });
 
     if (artifact.status === 'invalid' || artifact.status === 'rejected') {
