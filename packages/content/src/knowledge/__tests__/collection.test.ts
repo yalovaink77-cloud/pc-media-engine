@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { resolveCommerceRepositoryPath } from '../../commerce/paths.js';
+import { COMMERCE_COLLECTION_REGISTRY } from '../adapters/commerce/collection-registry.js';
 import {
   CommerceKnowledgeSourceAdapter,
   getCommerceSupportedEntityTypes,
@@ -30,25 +30,48 @@ async function createFixtureRepo(collections: Record<string, string[]>): Promise
   return realpath(root);
 }
 
+function buildMinimalCollectionRecord(
+  entityLabel: string,
+  displayNameFields?: readonly string[],
+): string {
+  const id = `${entityLabel}-fixture`;
+  if (displayNameFields?.includes('primary_keyword')) {
+    return `id: ${id}\nslug: ${id}\nprimary_keyword: ${entityLabel} fixture\n`;
+  }
+  return `id: ${id}\nslug: ${id}\nname: ${entityLabel} fixture\n`;
+}
+
+async function createFullSupportedCollectionsFixture(): Promise<string> {
+  const collections: Record<string, string[]> = {
+    brands: ['id: brand-a\nslug: brand-a\nname: Brand A\n'],
+    products: ['id: product-a\nslug: product-a\nname: Product A\nbrand: brand-a\n'],
+  };
+
+  for (const definition of COMMERCE_COLLECTION_REGISTRY) {
+    if (definition.loadTier === 0) {
+      continue;
+    }
+
+    const collectionDir = definition.dataSegments.at(0);
+    if (collectionDir === undefined) {
+      continue;
+    }
+
+    collections[collectionDir] = [
+      buildMinimalCollectionRecord(definition.entityLabel, definition.displayNameFields),
+    ];
+  }
+
+  return createFixtureRepo(collections);
+}
+
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
 
 describe('CommerceKnowledgeSourceAdapter collections', () => {
-  it('loads all supported entity collections from the commerce repository', async () => {
-    let repoPath: string;
-    try {
-      repoPath = await resolveCommerceRepositoryPath({});
-    } catch {
-      repoPath = await createFixtureRepo({
-        brands: ['id: brand-a\nslug: brand-a\nname: Brand A\n'],
-        products: ['id: product-a\nslug: product-a\nname: Product A\nbrand: brand-a\n'],
-        ingredients: ['id: ingredient-a\nslug: ingredient-a\nname: Ingredient A\n'],
-        problems: ['id: problem-a\nslug: problem-a\nname: Problem A\n'],
-        keywords: ['id: keyword-a\nslug: keyword-a\nprimary_keyword: Keyword A\n'],
-      });
-    }
-
+  it('loads all supported entity collections from isolated fixtures', async () => {
+    const repoPath = await createFullSupportedCollectionsFixture();
     const adapter = new CommerceKnowledgeSourceAdapter({ repoPath });
     const result = await adapter.loadAllCollections();
 

@@ -219,6 +219,19 @@ The branch represents a **major capability increment** over `main` with **no ide
 
 ---
 
+## 14. Merge-check remediation (2026-07-11)
+
+Pull-request validation blockers addressed on this branch:
+
+| Blocker | Fix |
+| ------- | --- |
+| GitHub Actions could not locate `pnpm` during `setup-node` cache init | Reordered `.github/workflows/ci.yml`: `pnpm/action-setup@v4` (pinned `9.15.0` from `packageManager`) before `actions/setup-node@v4` with `cache: pnpm` and `cache-dependency-path: pnpm-lock.yaml`; kept Node 20 and `pnpm install --frozen-lockfile` |
+| Content collection test depended on local sibling `piercingconnect-commerce` | `collection.test.ts` now builds an isolated temp fixture covering every registry collection; no fallback to `resolveCommerceRepositoryPath` |
+| WordPress idempotency unit test timed out under load | Removed dynamic adapter import; use static import, explicit in-memory idempotency store, and mocked repository only (no network/DB) |
+| Full `pnpm test` segfault/bus error on modest hardware | Added root `pnpm test:ci` → `turbo test --concurrency=2`; CI uses bounded parallelism while package-level `test` scripts stay unchanged |
+
+---
+
 ## Appendix A — Branch delta summary
 
 Commits on `feature/commerce-knowledge-loader` not on `main` (20 commits, abbreviated):

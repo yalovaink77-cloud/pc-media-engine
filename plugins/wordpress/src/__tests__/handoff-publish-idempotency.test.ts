@@ -1,3 +1,4 @@
+import type { PublishingHandoffPackage } from '@pcme/publishing';
 import type {
   ProjectScopedPersistenceContext,
   PublishingIdempotencyRecord,
@@ -11,6 +12,7 @@ import {
   buildHandoffPublishRequestHash,
   HandoffPublishIdempotencyGuard,
 } from '../handoff-publish-idempotency.js';
+import { WordPressPublishingTargetAdapter } from '../wordpress-publishing-target.adapter.js';
 
 const CONTEXT: ProjectScopedPersistenceContext = Object.freeze({
   organizationId: 'org-1',
@@ -45,6 +47,51 @@ function makeMockRepository(
     releaseExpired: vi.fn().mockResolvedValue(0),
     ...overrides,
   };
+}
+
+function buildReadyHandoffPackage(): PublishingHandoffPackage {
+  return Object.freeze({
+    handoffId: 'handoff-123',
+    artifactId: 'artifact-123',
+    reviewId: 'review-123',
+    jobId: 'job-123',
+    requestId: 'request-123',
+    sourceId: 'source-123',
+    snapshotId: 'snapshot-123',
+    contentType: 'product-review',
+    locale: 'en',
+    format: 'markdown' as const,
+    content: '# Title\n\nBody',
+    target: Object.freeze({
+      targetId: 'wordpress',
+      platform: 'wordpress',
+      supportedFormats: Object.freeze(['markdown', 'html']),
+    }),
+    publishingMetadata: Object.freeze({
+      title: 'Product Review',
+      slug: 'product-review',
+      publishStatus: 'draft' as const,
+    }),
+    policySnapshot: Object.freeze({
+      safetyConstraints: Object.freeze([]),
+      affiliateConstraints: Object.freeze([]),
+      citationRequirements: Object.freeze([]),
+      blockedFields: Object.freeze([]),
+      strictMode: false,
+      contextComplete: true,
+      warningCount: 0,
+    }),
+    reviewSummary: Object.freeze({
+      reviewId: 'review-123',
+      status: 'approved' as const,
+      decision: 'approve' as const,
+      reviewerId: 'reviewer-1',
+      findingCount: 0,
+    }),
+    warnings: Object.freeze([]),
+    status: 'ready' as const,
+    createdAt: '2026-07-10T12:00:00.000Z',
+  });
 }
 
 describe('HandoffPublishIdempotencyGuard', () => {
@@ -101,8 +148,6 @@ describe('HandoffPublishIdempotencyGuard', () => {
 
 describe('WordPressPublishingTargetAdapter persistent idempotency', () => {
   it('uses persistent idempotency without requiring database access in unit tests', async () => {
-    const { WordPressPublishingTargetAdapter } =
-      await import('../wordpress-publishing-target.adapter.js');
     const fetchFn = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -128,17 +173,19 @@ describe('WordPressPublishingTargetAdapter persistent idempotency', () => {
           }),
         ),
     });
+    const idempotencyStore = new InMemoryWordPressHandoffIdempotencyStore();
     const adapter = new WordPressPublishingTargetAdapter(
       Object.freeze({
         baseUrl: 'https://wp.example.com',
         username: 'editor',
         appPassword: 'secret-app-password-value',
-        requestTimeoutMs: 5_000,
+        requestTimeoutMs: 1_000,
         defaultAuthor: '7',
         defaultStatus: 'draft',
       }),
       {
         fetchFn,
+        idempotencyStore,
         persistentIdempotency: {
           repository,
           context: CONTEXT,
@@ -146,48 +193,7 @@ describe('WordPressPublishingTargetAdapter persistent idempotency', () => {
         },
       },
     );
-    const pkg = Object.freeze({
-      handoffId: 'handoff-123',
-      artifactId: 'artifact-123',
-      reviewId: 'review-123',
-      jobId: 'job-123',
-      requestId: 'request-123',
-      sourceId: 'source-123',
-      snapshotId: 'snapshot-123',
-      contentType: 'product-review',
-      locale: 'en',
-      format: 'markdown' as const,
-      content: '# Title\n\nBody',
-      target: Object.freeze({
-        targetId: 'wordpress',
-        platform: 'wordpress',
-        supportedFormats: Object.freeze(['markdown', 'html']),
-      }),
-      publishingMetadata: Object.freeze({
-        title: 'Product Review',
-        slug: 'product-review',
-        publishStatus: 'draft' as const,
-      }),
-      policySnapshot: Object.freeze({
-        safetyConstraints: Object.freeze([]),
-        affiliateConstraints: Object.freeze([]),
-        citationRequirements: Object.freeze([]),
-        blockedFields: Object.freeze([]),
-        strictMode: false,
-        contextComplete: true,
-        warningCount: 0,
-      }),
-      reviewSummary: Object.freeze({
-        reviewId: 'review-123',
-        status: 'approved' as const,
-        decision: 'approve' as const,
-        reviewerId: 'reviewer-1',
-        findingCount: 0,
-      }),
-      warnings: Object.freeze([]),
-      status: 'ready' as const,
-      createdAt: '2026-07-10T12:00:00.000Z',
-    });
+    const pkg = buildReadyHandoffPackage();
 
     const first = await adapter.publish(pkg);
     const second = await adapter.publish(pkg);
@@ -196,5 +202,6 @@ describe('WordPressPublishingTargetAdapter persistent idempotency', () => {
     expect(second).toEqual(first);
     expect(fetchFn).toHaveBeenCalledOnce();
     expect(repository.markCompleted).toHaveBeenCalledOnce();
+    expect(repository.get).toHaveBeenCalledOnce();
   });
 });

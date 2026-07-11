@@ -16,6 +16,7 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
+    "test:ci": "turbo test --concurrency=2",
     "format": "prettier --write .",
     "format:check": "prettier --check . && editorconfig-checker",
     "editorconfig:check": "editorconfig-checker",
