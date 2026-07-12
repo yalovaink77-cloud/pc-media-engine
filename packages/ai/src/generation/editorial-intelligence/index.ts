@@ -1,5 +1,18 @@
 export { aggregateEditorialIntelligenceReport } from './aggregate.js';
 export {
+  type AiSeoAnalysisInput,
+  type AiSeoAnalysisResult,
+  AiSeoAnalyzer,
+  type AiSeoAnalyzerModuleOptions,
+  type AiSeoAnalyzerOptions,
+  createAiSeoAnalyzerModule,
+  createDefaultAiSeoRuleRegistry,
+} from './ai-seo/index.js';
+export {
+  CROSS_MODULE_FINDING_OWNERSHIP,
+  dedupeCrossModuleFindings,
+} from './cross-module-dedupe.js';
+export {
   createDefaultEditorialRuleRegistry,
   createEditorialAnalyzerModule,
   dedupeAndSortEditorialFindings,

@@ -1,3 +1,4 @@
+import type { AiSeoAnalyzerProfile } from './ai-seo-analyzer.js';
 import type { EditorialAnalyzerProfile } from './editorial-analyzer.js';
 import type { EditorialFinding } from './editorial-finding.js';
 import type { FindingConfidence } from './editorial-finding.js';
@@ -61,4 +62,5 @@ export interface EditorialIntelligenceProfile {
   readonly editorialAnalyzer?: EditorialAnalyzerProfile;
   readonly evidenceAnalyzer?: EvidenceAnalyzerProfile;
   readonly seoAnalyzer?: SeoAnalyzerProfile;
+  readonly aiSeoAnalyzer?: AiSeoAnalyzerProfile;
 }

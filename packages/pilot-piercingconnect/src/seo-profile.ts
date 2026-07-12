@@ -11,6 +11,7 @@ import {
   DEFAULT_SEO_TITLE_LENGTH_THRESHOLDS,
 } from '@pcme/shared';
 
+import { createPiercingConnectAiSeoAnalyzerProfile } from './ai-seo-profile.js';
 import { type PiercingConnectPilotConfig, PILOT_REQUIRED_SECTIONS } from './config.js';
 import { createPiercingConnectEditorialAnalyzerProfile } from './editorial-profile.js';
 import { createPiercingConnectEvidenceAnalyzerProfile } from './evidence-profile.js';
@@ -120,19 +121,22 @@ export function withPiercingConnectSeoAnalyzer(
   });
 }
 
-/** Attach PiercingConnect editorial, evidence, and SEO analyzer settings. */
+/** Attach PiercingConnect editorial, evidence, SEO, and AI SEO analyzer settings. */
 export function withPiercingConnectIntelligenceAnalyzers(
   profile: EditorialIntelligenceProfile,
   config?: Pick<PiercingConnectPilotConfig, 'requiredSections' | 'requiredSourcePlaceholders'>,
 ): EditorialIntelligenceProfile {
-  return withPiercingConnectSeoAnalyzer(
-    Object.freeze({
-      ...profile,
-      editorialAnalyzer: createPiercingConnectEditorialAnalyzerProfile({
-        requiredSections: config?.requiredSections ?? PILOT_REQUIRED_SECTIONS,
+  return Object.freeze({
+    ...withPiercingConnectSeoAnalyzer(
+      Object.freeze({
+        ...profile,
+        editorialAnalyzer: createPiercingConnectEditorialAnalyzerProfile({
+          requiredSections: config?.requiredSections ?? PILOT_REQUIRED_SECTIONS,
+        }),
+        evidenceAnalyzer: createPiercingConnectEvidenceAnalyzerProfile(config),
+        aiSeoAnalyzer: createPiercingConnectAiSeoAnalyzerProfile(),
       }),
-      evidenceAnalyzer: createPiercingConnectEvidenceAnalyzerProfile(config),
-    }),
-    config,
-  );
+      config,
+    ),
+  });
 }

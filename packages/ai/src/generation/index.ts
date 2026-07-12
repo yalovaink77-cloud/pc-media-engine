@@ -33,9 +33,12 @@ export type {
 } from './editorial-intelligence/index.js';
 export {
   aggregateEditorialIntelligenceReport,
+  AiSeoAnalyzer,
   buildDeterministicEditorialFindingId,
   buildDeterministicEditorialReportId,
   buildDeterministicEditorialRuleId,
+  createAiSeoAnalyzerModule,
+  createDefaultAiSeoRuleRegistry,
   createDefaultEditorialModuleRegistry,
   createDefaultEditorialRuleRegistry,
   createDefaultEvidenceRuleRegistry,
@@ -45,6 +48,8 @@ export {
   createEmptyEditorialModule,
   createEvidenceAnalyzerModule,
   createSeoAnalyzerModule,
+  CROSS_MODULE_FINDING_OWNERSHIP,
+  dedupeCrossModuleFindings,
   EditorialAnalyzer,
   EditorialIntelligenceOrchestrator,
   EditorialModuleRegistry,

@@ -1,5 +1,6 @@
 import type { EditorialModuleId } from '@pcme/shared';
 
+import { createAiSeoAnalyzerModule } from './ai-seo/module.js';
 import { createEditorialAnalyzerModule } from './editorial/module.js';
 import { createEvidenceAnalyzerModule } from './evidence/module.js';
 import type { EditorialModule } from './module.js';
@@ -64,6 +65,9 @@ export function createDefaultEditorialModuleRegistry(): EditorialModuleRegistry 
       }
       if (moduleId === 'seo') {
         return createSeoAnalyzerModule();
+      }
+      if (moduleId === 'ai-seo') {
+        return createAiSeoAnalyzerModule();
       }
       return createEmptyEditorialModule(moduleId);
     }),

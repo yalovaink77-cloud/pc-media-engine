@@ -1,3 +1,4 @@
+export { createPiercingConnectAiSeoAnalyzerProfile } from './ai-seo-profile.js';
 export {
   createPiercingConnectPilotConfig,
   DEFAULT_COMMERCE_REPO_RELATIVE_PATH,

@@ -1,4 +1,18 @@
 export type {
+  AiSeoAnalyzerProfile,
+  AiSeoCanonicalEntity,
+  AiSeoChunkingTargets,
+  AiSeoContradictionPatternPair,
+  AiSeoFactualDensityThresholds,
+  AiSeoPatternMarker,
+  AiSeoSectionLengthTargets,
+} from './ai-seo-analyzer.js';
+export {
+  DEFAULT_AI_SEO_CHUNKING_TARGETS,
+  DEFAULT_AI_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_AI_SEO_SUMMARY_SECTION_ALIASES,
+} from './ai-seo-analyzer.js';
+export type {
   ContentReviewCheckId,
   ContentReviewDecision,
   ContentReviewerIdentity,

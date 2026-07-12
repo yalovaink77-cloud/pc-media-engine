@@ -23,6 +23,15 @@ export type {
   EvidenceRequiredSection,
 } from './publish/index.js';
 export type {
+  AiSeoAnalyzerProfile,
+  AiSeoCanonicalEntity,
+  AiSeoChunkingTargets,
+  AiSeoContradictionPatternPair,
+  AiSeoFactualDensityThresholds,
+  AiSeoPatternMarker,
+  AiSeoSectionLengthTargets,
+} from './publish/index.js';
+export type {
   SeoAnalyzerProfile,
   SeoContentCompletenessThresholds,
   SeoInternalLinkTargetDescriptor,
@@ -93,6 +102,9 @@ export type {
   ReservePublishingIdempotencyInput,
 } from './publish/index.js';
 export {
+  DEFAULT_AI_SEO_CHUNKING_TARGETS,
+  DEFAULT_AI_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_AI_SEO_SUMMARY_SECTION_ALIASES,
   DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
   DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
   DEFAULT_SEO_FAQ_SECTION_ALIASES,

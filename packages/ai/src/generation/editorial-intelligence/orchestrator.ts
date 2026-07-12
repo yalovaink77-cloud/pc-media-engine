@@ -8,6 +8,7 @@ import type {
 
 import type { GeneratedContentArtifact } from '../artifact/types.js';
 import { aggregateEditorialIntelligenceReport } from './aggregate.js';
+import { dedupeCrossModuleFindings } from './cross-module-dedupe.js';
 import { buildDeterministicEditorialFindingId } from './finding/ids.js';
 import { normalizeEditorialFindingInput } from './finding/validate.js';
 import { buildDeterministicEditorialReportId } from './ids.js';
@@ -94,7 +95,8 @@ export class EditorialIntelligenceOrchestrator {
 
     const enabledModules = this.registry.resolveEnabled(input.profile.enabledModules);
     const rawFindings = enabledModules.flatMap((module) => module.analyze(moduleInput));
-    const findings = assignFindingIds(rawFindings, reportId, this.findingIdGenerator);
+    const dedupedFindings = dedupeCrossModuleFindings(rawFindings);
+    const findings = assignFindingIds(dedupedFindings, reportId, this.findingIdGenerator);
 
     return aggregateEditorialIntelligenceReport({
       reportId,
