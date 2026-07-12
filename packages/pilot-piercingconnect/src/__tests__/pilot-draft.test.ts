@@ -363,11 +363,11 @@ Alternatives
 ## FAQ
 Questions
 
-## Affiliate Disclosure Placeholder
-Disclosure
-
 ## Source Notes
 Resolved notes
+
+## Affiliate Disclosure
+We may earn a commission from qualifying purchases. This review remains editorially independent.
 `;
 
     const headings = extractMarkdownHeadings(markdown);
@@ -432,7 +432,7 @@ describe('NeilMed fixture quality analysis', () => {
       true,
     );
     expect(claims.map((finding) => finding.detail)).toEqual(
-      expect.arrayContaining(['beneficial-claim', 'minimizes-risk']),
+      expect.arrayContaining(['minimizes-risk', 'consistent-with-professional-recommendations']),
     );
 
     const findings = analyzePilotDraftQuality(neilmedDraft, createPiercingConnectPilotConfig());

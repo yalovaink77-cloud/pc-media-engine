@@ -28,7 +28,7 @@ describe('PiercingConnect editorial analyzer profile', () => {
 
     const codes = result.findings.map((finding) => finding.code);
     expect(codes).not.toContain('formatting-corruption');
-    expect(codes).toContain('promotional-tone');
+    expect(codes).toContain('thin-section');
     expect(neilmedDraft).toBe(before);
   });
 

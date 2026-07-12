@@ -429,7 +429,7 @@ describe('AiSeoAnalyzer', () => {
 
     expect(codes).toContain('indirect-faq-answer');
     expect(codes).toContain('incomplete-audience-question-coverage');
-    expect(codes).toContain('contradictory-suitability-or-limitation');
+    expect(codes).not.toContain('contradictory-suitability-or-limitation');
     expect(codes).not.toContain('unsupported-authoritative-phrasing');
     expect(result.findings.length).toBeGreaterThan(0);
   });

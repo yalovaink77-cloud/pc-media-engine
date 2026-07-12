@@ -1,3 +1,7 @@
+import {
+  alignSuitabilityLimitationLanguage,
+  resolveAffiliateDisclosure,
+} from './commercial-attribution.js';
 import { PILOT_REQUIRED_SOURCE_PLACEHOLDERS } from './config.js';
 import {
   normalizePreservingMarkdownWhitespace,
@@ -40,9 +44,9 @@ export function resolvePublicationSourcePlaceholders(markdown: string): string {
   return resolved;
 }
 
-/** Normalize, resolve evidence placeholders, and repair formatting for publication drafts. */
+/** Normalize, resolve placeholders, and apply publication-quality repairs for drafts. */
 export function preparePublicationDraft(markdown: string): string {
-  return repairPublicationFormatting(
-    resolvePublicationSourcePlaceholders(normalizePreservingMarkdownWhitespace(markdown)),
-  );
+  const normalized = normalizePreservingMarkdownWhitespace(markdown);
+  const withCommercial = alignSuitabilityLimitationLanguage(resolveAffiliateDisclosure(normalized));
+  return repairPublicationFormatting(resolvePublicationSourcePlaceholders(withCommercial));
 }

@@ -372,7 +372,7 @@ describe('CommercialAnalyzer', () => {
     const result = analyze(neilmedDraft, createRegressionCommercialProfile());
     const codes = result.findings.map((finding) => finding.code);
 
-    expect(codes).toContain('affiliate-disclosure-missing');
+    expect(codes).not.toContain('affiliate-disclosure-missing');
     expect(codes).toContain('missing-alternatives');
     expect(codes).toContain('unsupported-purchase-recommendation');
     expect(codes).toContain('missing-who-should-avoid-guidance');

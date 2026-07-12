@@ -72,18 +72,18 @@ export const PILOT_REQUIRED_SECTIONS = Object.freeze([
     headingAliases: Object.freeze(['faq', 'frequently asked questions']),
   }),
   Object.freeze({
-    id: 'affiliate-disclosure-placeholder',
-    label: 'Affiliate Disclosure Placeholder',
-    headingAliases: Object.freeze([
-      'affiliate disclosure placeholder',
-      'affiliate disclosure',
-      'disclosure',
-    ]),
-  }),
-  Object.freeze({
     id: 'source-notes',
     label: 'Source Notes',
     headingAliases: Object.freeze(['source notes', 'source-notes', 'source-note', 'source note']),
+  }),
+  Object.freeze({
+    id: 'affiliate-disclosure',
+    label: 'Affiliate Disclosure',
+    headingAliases: Object.freeze([
+      'affiliate disclosure',
+      'affiliate disclosure placeholder',
+      'disclosure',
+    ]),
   }),
 ] as const);
 
@@ -176,7 +176,8 @@ function buildDefaultStructureInstruction(
     'After generation, replace each [Source: ...] placeholder with a resolved source record sentence that includes the phrase "resolved source record".',
     'Pair medical or wound-care statements with verification markers such as "verified structured fact" or "human-verified" in the same paragraph.',
     'Pair authoritative claims with uncertainty or manufacturer attribution (for example "according to manufacturer materials" or "may").',
-    'Include an Affiliate Disclosure Placeholder section that remains a placeholder until human review.',
+    'Replace the affiliate disclosure placeholder with a resolved statement that includes "may earn a commission" and "editorially independent".',
+    'Keep suitability and limitation language aligned: avoid pairing strong benefit claims with "no guarantee" or "may still experience" phrasing across sections.',
   ].join('\n');
 }
 

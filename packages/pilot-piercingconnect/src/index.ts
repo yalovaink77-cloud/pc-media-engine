@@ -6,6 +6,12 @@ export {
 } from './acceptance-report.js';
 export { createPiercingConnectAiSeoAnalyzerProfile } from './ai-seo-profile.js';
 export {
+  alignSuitabilityLimitationLanguage,
+  resolveAffiliateDisclosure,
+  RESOLVED_AFFILIATE_DISCLOSURE,
+  SUITABILITY_LIMITATION_ALIGNMENTS,
+} from './commercial-attribution.js';
+export {
   createPiercingConnectCommercialAnalyzerProfile,
   withPiercingConnectCommercialAnalyzer,
 } from './commercial-profile.js';

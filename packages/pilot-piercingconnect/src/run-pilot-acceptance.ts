@@ -252,9 +252,7 @@ export async function runPiercingConnectPilotAcceptance(
       createdAt: fixedCreatedAt,
     });
 
-    const draftV2 = preparePublicationDraft(
-      `${draftV1}\n\n## Affiliate Disclosure\nWe may earn a commission from qualifying purchases. This review remains editorially independent.`,
-    );
+    const draftV2 = preparePublicationDraft(draftV1);
     const provider =
       options.generationProvider ?? new FakeGenerationProvider({ generatedContent: draftV2 });
     const revised = await loop.runRevision({

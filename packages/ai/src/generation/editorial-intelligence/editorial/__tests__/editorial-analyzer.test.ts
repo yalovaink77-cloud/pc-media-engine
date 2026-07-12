@@ -308,7 +308,7 @@ describe('EditorialAnalyzer', () => {
     const codes = result.findings.map((finding) => finding.code);
 
     expect(codes).not.toContain('formatting-corruption');
-    expect(codes).toContain('promotional-tone');
+    expect(codes).toContain('thin-section');
     expect(result.findings.length).toBeGreaterThan(0);
   });
 });

@@ -14,8 +14,9 @@ describe('runPiercingConnectPilotAcceptance', () => {
     expect(result.outputs?.acceptanceReportPath).toContain('acceptance-report.json');
     expect(result.outputs?.wordpressDraftPath).toContain('wordpress-draft.md');
     expect(result.outputs?.wordpressHandoffPath).toContain('wordpress-handoff-package.json');
-    expect(result.humanReviewStatus).toBe('pending-review');
-    expect(result.wordpressDraftStatus).toBe('blocked');
+    expect(result.humanReviewStatus).toBe('approved-with-notes');
+    expect(result.wordpressDraftStatus).toBe('ready');
+    expect(result.wordpressInvoked).toBe(true);
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();
   });

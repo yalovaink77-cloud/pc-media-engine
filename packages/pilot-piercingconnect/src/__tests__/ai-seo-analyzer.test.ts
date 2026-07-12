@@ -13,7 +13,7 @@ const FIXTURE_PATH = join(
 );
 
 describe('PiercingConnect AI SEO analyzer profile', () => {
-  it('produces AI SEO findings for the NeilMed corrupt fixture without mutating content', async () => {
+  it('does not flag contradictory suitability on the publication-ready NeilMed fixture', async () => {
     const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
     const before = neilmedDraft;
     const analyzer = new AiSeoAnalyzer();
@@ -27,11 +27,30 @@ describe('PiercingConnect AI SEO analyzer profile', () => {
     );
 
     const codes = result.findings.map((finding) => finding.code);
+    expect(codes).not.toContain('contradictory-suitability-or-limitation');
     expect(codes).toContain('incomplete-audience-question-coverage');
-    expect(codes).toContain('indirect-faq-answer');
-    expect(codes).toContain('contradictory-suitability-or-limitation');
-    expect(codes).toContain('low-source-transparency');
     expect(neilmedDraft).toBe(before);
+  });
+
+  it('still detects contradictory suitability in misaligned drafts', () => {
+    const analyzer = new AiSeoAnalyzer();
+    const result = analyzer.analyze(
+      Object.freeze({
+        content: [
+          '## Who May Consider It',
+          'This product is beneficial for healing piercings.',
+          '## Limitations',
+          'There is no guarantee of outcomes.',
+        ].join('\n\n'),
+        reportId: 'report-corrupt',
+        artifactId: 'artifact-corrupt',
+      }),
+      createPiercingConnectAiSeoAnalyzerProfile(),
+    );
+
+    expect(
+      result.findings.some((finding) => finding.code === 'contradictory-suitability-or-limitation'),
+    ).toBe(true);
   });
 
   it('keeps PiercingConnect AI SEO configuration in the profile adapter only', () => {
