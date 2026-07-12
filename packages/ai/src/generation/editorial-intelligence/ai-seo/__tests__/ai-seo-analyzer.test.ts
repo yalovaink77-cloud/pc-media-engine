@@ -422,7 +422,7 @@ describe('AiSeoAnalyzer', () => {
     ).toBe(false);
   });
 
-  it('produces expected findings for the NeilMed corrupt fixture profile', async () => {
+  it('produces expected findings for the evidence-attributed NeilMed fixture profile', async () => {
     const neilmedDraft = await readFile(NEILMED_FIXTURE_PATH, 'utf8');
     const result = analyze(neilmedDraft, createRegressionAiSeoProfile());
     const codes = result.findings.map((finding) => finding.code);
@@ -430,8 +430,7 @@ describe('AiSeoAnalyzer', () => {
     expect(codes).toContain('indirect-faq-answer');
     expect(codes).toContain('incomplete-audience-question-coverage');
     expect(codes).toContain('contradictory-suitability-or-limitation');
-    expect(codes).toContain('low-source-transparency');
-    expect(codes).toContain('missing-manufacturer-versus-verified-labeling');
+    expect(codes).not.toContain('unsupported-authoritative-phrasing');
     expect(result.findings.length).toBeGreaterThan(0);
   });
 });

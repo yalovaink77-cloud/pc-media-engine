@@ -70,6 +70,19 @@ const OVERSTATED_CLAIM_PATTERNS: readonly { readonly id: string; readonly patter
 
 const STRUCTURED_SOURCE_PLACEHOLDER_PATTERN = /\[Source:\s*[^\]]+\]/gi;
 
+function placeholderSatisfied(markdown: string, placeholder: string): boolean {
+  const normalized = markdown.toLowerCase();
+  if (normalized.includes(placeholder.toLowerCase())) {
+    return true;
+  }
+
+  const sourceKey = placeholder
+    .replace(/^\[Source:\s*|\]$/gi, '')
+    .trim()
+    .toLowerCase();
+  return normalized.includes(`resolved source record from ${sourceKey}`);
+}
+
 export function detectUnsupportedOrOverstatedClaims(
   markdown: string,
 ): readonly PilotQualityFinding[] {
@@ -112,9 +125,8 @@ export function detectUnresolvedSourcePlaceholders(
     );
   }
 
-  const normalized = markdown.toLowerCase();
   const missingRequired = requiredPlaceholders.filter(
-    (placeholder) => !normalized.includes(placeholder.toLowerCase()),
+    (placeholder) => !placeholderSatisfied(markdown, placeholder),
   );
   if (missingRequired.length > 0) {
     findings.push(

@@ -28,6 +28,11 @@ export {
 } from './editorial-profile.js';
 export { PiercingConnectPilotError } from './errors.js';
 export {
+  preparePublicationDraft,
+  PUBLICATION_SOURCE_PLACEHOLDER_REPAIRS,
+  resolvePublicationSourcePlaceholders,
+} from './evidence-attribution.js';
+export {
   createPiercingConnectEvidenceAnalyzerProfile,
   withPiercingConnectEvidenceAnalyzer,
 } from './evidence-profile.js';

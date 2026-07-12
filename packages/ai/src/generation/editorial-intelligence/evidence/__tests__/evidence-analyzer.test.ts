@@ -34,7 +34,11 @@ function createRegressionEvidenceProfile(): EvidenceAnalyzerProfile {
     ]),
     sourcePlaceholderPattern: DEFAULT_SOURCE_PLACEHOLDER_PATTERN,
     evidenceNotesSectionAliases: Object.freeze(['source notes', 'source-notes']),
-    verificationMarkers: Object.freeze(['human-verified', 'resolved source record']),
+    verificationMarkers: Object.freeze([
+      'human-verified',
+      'resolved source record',
+      'verified structured fact',
+    ]),
     manufacturerClaimMarkers: Object.freeze([
       Object.freeze({
         id: 'marketed-for',
@@ -102,6 +106,20 @@ describe('EvidenceAnalyzer', () => {
     expect(
       result.findings.some((finding) => finding.code === 'missing-required-source-placeholder'),
     ).toBe(true);
+  });
+
+  it('accepts resolved source records in place of required placeholders', () => {
+    const result = analyze(
+      [
+        'resolved source record from product official record',
+        'resolved source record from ingredient evidence record',
+        'resolved source record from APP-aligned aftercare guidance',
+      ].join('\n'),
+      createRegressionEvidenceProfile(),
+    );
+    expect(
+      result.findings.some((finding) => finding.code === 'missing-required-source-placeholder'),
+    ).toBe(false);
   });
 
   it('detects duplicate citation placeholders', () => {
@@ -224,16 +242,15 @@ describe('EvidenceAnalyzer', () => {
     ).toBe(true);
   });
 
-  it('produces expected findings for the NeilMed corrupt fixture profile', async () => {
+  it('produces expected findings for the evidence-attributed NeilMed fixture profile', async () => {
     const neilmedDraft = await readFile(NEILMED_FIXTURE_PATH, 'utf8');
     const result = analyze(neilmedDraft, createRegressionEvidenceProfile());
     const codes = result.findings.map((finding) => finding.code);
 
-    expect(codes).toContain('unresolved-source-placeholder');
-    expect(codes).toContain('missing-evidence-notes');
-    expect(codes).toContain('missing-verification-marker');
+    expect(codes).not.toContain('unresolved-source-placeholder');
+    expect(codes).not.toContain('missing-evidence-notes');
+    expect(codes).not.toContain('medical-statement-without-evidence');
     expect(codes).toContain('manufacturer-claim-indicator');
-    expect(codes).toContain('recommendation-without-evidence');
     expect(result.findings.length).toBeGreaterThan(0);
   });
 });

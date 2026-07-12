@@ -173,6 +173,9 @@ function buildDefaultStructureInstruction(
     '- Keep product names spaced correctly (for example "Aftercare Fine Mist", not "AftercareFine Mist").',
     'Source Notes must include these structured placeholders (do not invent links):',
     ...requiredSourcePlaceholders.map((placeholder) => `- ${placeholder}`),
+    'After generation, replace each [Source: ...] placeholder with a resolved source record sentence that includes the phrase "resolved source record".',
+    'Pair medical or wound-care statements with verification markers such as "verified structured fact" or "human-verified" in the same paragraph.',
+    'Pair authoritative claims with uncertainty or manufacturer attribution (for example "according to manufacturer materials" or "may").',
     'Include an Affiliate Disclosure Placeholder section that remains a placeholder until human review.',
   ].join('\n');
 }

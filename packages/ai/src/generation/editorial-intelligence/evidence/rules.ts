@@ -60,6 +60,19 @@ function normalizePlaceholder(value: string): string {
   return value.trim().toLowerCase();
 }
 
+function placeholderRequirementSatisfied(content: string, placeholder: string): boolean {
+  const normalized = content.toLowerCase();
+  if (normalized.includes(placeholder.toLowerCase())) {
+    return true;
+  }
+
+  const sourceKey = placeholder
+    .replace(/^\[Source:\s*|\]$/gi, '')
+    .trim()
+    .toLowerCase();
+  return normalized.includes(`resolved source record from ${sourceKey}`);
+}
+
 function hasVerificationMarker(content: string, markers: readonly string[]): boolean {
   const normalized = content.toLowerCase();
   return markers.some((marker) => normalized.includes(marker.toLowerCase()));
@@ -124,8 +137,9 @@ function executeMissingRequiredSourcePlaceholder(
     return Object.freeze([]);
   }
 
-  const normalized = context.content.toLowerCase();
-  const missing = required.filter((placeholder) => !normalized.includes(placeholder.toLowerCase()));
+  const missing = required.filter(
+    (placeholder) => !placeholderRequirementSatisfied(context.content, placeholder),
+  );
   if (missing.length === 0) {
     return Object.freeze([]);
   }

@@ -302,12 +302,12 @@ describe('EditorialAnalyzer', () => {
     expect(enabledResult.findings.some((finding) => finding.code === 'long-sentence')).toBe(true);
   });
 
-  it('produces expected findings for the NeilMed corrupt fixture profile', async () => {
+  it('produces expected findings for the evidence-attributed NeilMed fixture profile', async () => {
     const neilmedDraft = await readFile(NEILMED_FIXTURE_PATH, 'utf8');
     const result = analyze(neilmedDraft, createRegressionAnalyzerProfile());
     const codes = result.findings.map((finding) => finding.code);
 
-    expect(codes).toContain('formatting-corruption');
+    expect(codes).not.toContain('formatting-corruption');
     expect(codes).toContain('promotional-tone');
     expect(result.findings.length).toBeGreaterThan(0);
   });

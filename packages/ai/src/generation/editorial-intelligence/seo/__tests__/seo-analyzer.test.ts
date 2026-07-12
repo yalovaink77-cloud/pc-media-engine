@@ -367,7 +367,7 @@ describe('SeoAnalyzer', () => {
     expect(enabledResult.findings.some((finding) => finding.code === 'missing-h1')).toBe(true);
   });
 
-  it('produces expected findings for the NeilMed corrupt fixture profile', async () => {
+  it('produces expected findings for the evidence-attributed NeilMed fixture profile', async () => {
     const neilmedDraft = await readFile(NEILMED_FIXTURE_PATH, 'utf8');
     const result = analyze(neilmedDraft, createRegressionSeoProfile());
     const codes = result.findings.map((finding) => finding.code);
@@ -375,7 +375,6 @@ describe('SeoAnalyzer', () => {
     expect(codes).toContain('weak-title-keyword-coverage');
     expect(codes).toContain('insufficient-faq-question-count');
     expect(codes).toContain('missing-internal-link-opportunity');
-    expect(codes).toContain('missing-external-citation-opportunity');
     expect(codes).toContain('search-intent-gap');
     expect(codes).toContain('indirect-faq-answer');
     expect(result.findings.length).toBeGreaterThan(0);

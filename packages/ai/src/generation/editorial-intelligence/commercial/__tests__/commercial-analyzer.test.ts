@@ -367,7 +367,7 @@ describe('CommercialAnalyzer', () => {
     ).toBe(false);
   });
 
-  it('produces expected findings for the NeilMed corrupt fixture profile', async () => {
+  it('produces expected findings for the evidence-attributed NeilMed fixture profile', async () => {
     const neilmedDraft = await readFile(NEILMED_FIXTURE_PATH, 'utf8');
     const result = analyze(neilmedDraft, createRegressionCommercialProfile());
     const codes = result.findings.map((finding) => finding.code);

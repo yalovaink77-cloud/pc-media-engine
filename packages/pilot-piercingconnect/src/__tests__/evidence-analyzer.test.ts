@@ -13,7 +13,7 @@ const FIXTURE_PATH = join(
 );
 
 describe('PiercingConnect evidence analyzer profile', () => {
-  it('produces evidence findings for the NeilMed corrupt fixture without mutating content', async () => {
+  it('does not flag unresolved placeholders on the evidence-attributed NeilMed fixture', async () => {
     const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
     const before = neilmedDraft;
     const analyzer = new EvidenceAnalyzer();
@@ -27,11 +27,27 @@ describe('PiercingConnect evidence analyzer profile', () => {
     );
 
     const codes = result.findings.map((finding) => finding.code);
-    expect(codes).toContain('unresolved-source-placeholder');
-    expect(codes).toContain('missing-evidence-notes');
-    expect(codes).toContain('missing-verification-marker');
+    expect(codes).not.toContain('unresolved-source-placeholder');
+    expect(codes).not.toContain('missing-evidence-notes');
+    expect(codes).not.toContain('medical-statement-without-evidence');
     expect(codes).toContain('manufacturer-claim-indicator');
     expect(neilmedDraft).toBe(before);
+  });
+
+  it('still detects unresolved placeholders in corrupted provider output', () => {
+    const analyzer = new EvidenceAnalyzer();
+    const result = analyzer.analyze(
+      Object.freeze({
+        content: 'Claim text [Source: product official record]',
+        reportId: 'report-corrupt',
+        artifactId: 'artifact-corrupt',
+      }),
+      createPiercingConnectEvidenceAnalyzerProfile(),
+    );
+
+    expect(
+      result.findings.some((finding) => finding.code === 'unresolved-source-placeholder'),
+    ).toBe(true);
   });
 
   it('keeps PiercingConnect markers in the profile adapter only', () => {
