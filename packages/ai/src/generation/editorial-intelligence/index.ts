@@ -51,6 +51,15 @@ export {
   validateEditorialRule,
 } from './rule/index.js';
 export {
+  createDefaultSeoRuleRegistry,
+  createSeoAnalyzerModule,
+  type SeoAnalysisInput,
+  type SeoAnalysisResult,
+  SeoAnalyzer,
+  type SeoAnalyzerModuleOptions,
+  type SeoAnalyzerOptions,
+} from './seo/index.js';
+export {
   parseEditorialIntelligenceReport,
   serializeEditorialIntelligenceReport,
 } from './serialize.js';

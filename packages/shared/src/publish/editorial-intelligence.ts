@@ -2,6 +2,7 @@ import type { EditorialAnalyzerProfile } from './editorial-analyzer.js';
 import type { EditorialFinding } from './editorial-finding.js';
 import type { FindingConfidence } from './editorial-finding.js';
 import type { EvidenceAnalyzerProfile } from './evidence-analyzer.js';
+import type { SeoAnalyzerProfile } from './seo-analyzer.js';
 
 /** Intelligence module identifiers for editorial analysis profiles. */
 export type EditorialModuleId = 'editorial' | 'evidence' | 'seo' | 'ai-seo' | 'affiliate';
@@ -59,4 +60,5 @@ export interface EditorialIntelligenceProfile {
   readonly enabledModules: readonly EditorialModuleId[];
   readonly editorialAnalyzer?: EditorialAnalyzerProfile;
   readonly evidenceAnalyzer?: EvidenceAnalyzerProfile;
+  readonly seoAnalyzer?: SeoAnalyzerProfile;
 }

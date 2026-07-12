@@ -136,3 +136,17 @@ export {
   GeneratedContentArtifactTransitionError,
 } from './persistence-errors.js';
 export { isTerminalReviewStatus, validateReviewDecision } from './review-validation.js';
+export type {
+  SeoAnalyzerProfile,
+  SeoContentCompletenessThresholds,
+  SeoInternalLinkTargetDescriptor,
+  SeoLengthThresholds,
+  SeoPatternMarker,
+  SeoRequiredSection,
+} from './seo-analyzer.js';
+export {
+  DEFAULT_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_SEO_META_DESCRIPTION_LENGTH_THRESHOLDS,
+  DEFAULT_SEO_META_DESCRIPTION_SECTION_ALIASES,
+  DEFAULT_SEO_TITLE_LENGTH_THRESHOLDS,
+} from './seo-analyzer.js';

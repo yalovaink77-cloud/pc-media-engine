@@ -23,6 +23,14 @@ export type {
   EvidenceRequiredSection,
 } from './publish/index.js';
 export type {
+  SeoAnalyzerProfile,
+  SeoContentCompletenessThresholds,
+  SeoInternalLinkTargetDescriptor,
+  SeoLengthThresholds,
+  SeoPatternMarker,
+  SeoRequiredSection,
+} from './publish/index.js';
+export type {
   EditorialIntelligenceConfidence,
   EditorialIntelligenceFinding,
   EditorialIntelligenceProfile,
@@ -87,6 +95,10 @@ export type {
 export {
   DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
   DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
+  DEFAULT_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_SEO_META_DESCRIPTION_LENGTH_THRESHOLDS,
+  DEFAULT_SEO_META_DESCRIPTION_SECTION_ALIASES,
+  DEFAULT_SEO_TITLE_LENGTH_THRESHOLDS,
   DEFAULT_SOURCE_PLACEHOLDER_PATTERN,
   EDITORIAL_FINDING_ID_PATTERN,
   EDITORIAL_RULE_ID_PATTERN,

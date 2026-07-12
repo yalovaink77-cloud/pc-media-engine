@@ -3,6 +3,7 @@ import type { EditorialModuleId } from '@pcme/shared';
 import { createEditorialAnalyzerModule } from './editorial/module.js';
 import { createEvidenceAnalyzerModule } from './evidence/module.js';
 import type { EditorialModule } from './module.js';
+import { createSeoAnalyzerModule } from './seo/module.js';
 import { createEmptyEditorialModule } from './stub-modules.js';
 
 /** Registry of editorial intelligence modules keyed by module identifier. */
@@ -60,6 +61,9 @@ export function createDefaultEditorialModuleRegistry(): EditorialModuleRegistry 
       }
       if (moduleId === 'evidence') {
         return createEvidenceAnalyzerModule();
+      }
+      if (moduleId === 'seo') {
+        return createSeoAnalyzerModule();
       }
       return createEmptyEditorialModule(moduleId);
     }),

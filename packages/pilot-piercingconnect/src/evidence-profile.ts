@@ -13,7 +13,6 @@ import {
   PILOT_REQUIRED_SECTIONS,
   PILOT_REQUIRED_SOURCE_PLACEHOLDERS,
 } from './config.js';
-import { createPiercingConnectEditorialAnalyzerProfile } from './editorial-profile.js';
 
 const EVIDENCE_SECTION_IDS = Object.freeze([
   'source-notes',
@@ -135,20 +134,4 @@ export function withPiercingConnectEvidenceAnalyzer(
     ...profile,
     evidenceAnalyzer: createPiercingConnectEvidenceAnalyzerProfile(config),
   });
-}
-
-/** Attach both PiercingConnect editorial and evidence analyzer settings. */
-export function withPiercingConnectIntelligenceAnalyzers(
-  profile: EditorialIntelligenceProfile,
-  config?: Pick<PiercingConnectPilotConfig, 'requiredSections' | 'requiredSourcePlaceholders'>,
-): EditorialIntelligenceProfile {
-  return withPiercingConnectEvidenceAnalyzer(
-    Object.freeze({
-      ...profile,
-      editorialAnalyzer: createPiercingConnectEditorialAnalyzerProfile({
-        requiredSections: config?.requiredSections ?? PILOT_REQUIRED_SECTIONS,
-      }),
-    }),
-    config,
-  );
 }

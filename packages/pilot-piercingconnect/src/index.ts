@@ -19,7 +19,6 @@ export { PiercingConnectPilotError } from './errors.js';
 export {
   createPiercingConnectEvidenceAnalyzerProfile,
   withPiercingConnectEvidenceAnalyzer,
-  withPiercingConnectIntelligenceAnalyzers,
 } from './evidence-profile.js';
 export {
   assertMergedTokensUnchanged,
@@ -63,6 +62,11 @@ export {
   findMissingRequiredSections,
   type MarkdownHeading,
 } from './section-markers.js';
+export {
+  createPiercingConnectSeoAnalyzerProfile,
+  withPiercingConnectIntelligenceAnalyzers,
+  withPiercingConnectSeoAnalyzer,
+} from './seo-profile.js';
 export {
   createPilotStructuredGenerationProvider,
   PilotStructuredGenerationProvider,
