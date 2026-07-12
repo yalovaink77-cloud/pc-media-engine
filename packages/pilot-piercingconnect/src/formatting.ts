@@ -24,6 +24,35 @@ export const CONFIRMED_MERGED_WORD_TOKENS = Object.freeze([
   'aftercarefine',
 ] as const);
 
+/** Deterministic spacing repairs for confirmed NeilMed merged-word corruption. */
+export const PUBLICATION_FORMATTING_REPAIRS = Object.freeze([
+  Object.freeze({ pattern: /\bAftercareFine\b/g, replacement: 'Aftercare Fine' }),
+  Object.freeze({ pattern: /\bsimpleformulation\b/gi, replacement: 'simple formulation' }),
+  Object.freeze({ pattern: /\bincludingits\b/gi, replacement: 'including its' }),
+  Object.freeze({ pattern: /\basa\b/gi, replacement: 'as a' }),
+  Object.freeze({ pattern: /\bfluidsand\b/gi, replacement: 'fluids and' }),
+  Object.freeze({
+    pattern: /\buniversallyapplicable\b/gi,
+    replacement: 'universally applicable',
+  }),
+  Object.freeze({ pattern: /\bseekinga\b/gi, replacement: 'seeking a' }),
+  Object.freeze({ pattern: /\bcleanlinessduring\b/gi, replacement: 'cleanliness during' }),
+  Object.freeze({ pattern: /\bprofessionalpiercer\b/gi, replacement: 'professional piercer' }),
+  Object.freeze({ pattern: /\baftercarefine\b/gi, replacement: 'aftercare fine' }),
+] as const);
+
+/**
+ * Repair confirmed publication formatting corruption after provider generation.
+ * Only restores spaces for known merged-word patterns; does not alter analyzer rules.
+ */
+export function repairPublicationFormatting(markdown: string): string {
+  let repaired = markdown;
+  for (const { pattern, replacement } of PUBLICATION_FORMATTING_REPAIRS) {
+    repaired = repaired.replace(pattern, replacement);
+  }
+  return repaired;
+}
+
 /**
  * Strip Markdown regions where product names, URLs, identifiers, and syntax
  * should not trigger merged-word detection.

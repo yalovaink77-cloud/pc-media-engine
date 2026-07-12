@@ -169,6 +169,8 @@ function buildDefaultStructureInstruction(
     '- Do not state fixed usage frequency (for example "1-2 times daily") unless explicitly present in supplied context as a verified fact.',
     '- Do not claim sensitive-skin suitability, reduced bacterial risk, or guaranteed healing benefits without verified evidence in context.',
     '- Prefer "may", "according to manufacturer materials", and "consult a qualified professional" over certainty.',
+    '- Preserve spaces between words in body copy and headings (for example "simple formulation", not "simpleformulation").',
+    '- Keep product names spaced correctly (for example "Aftercare Fine Mist", not "AftercareFine Mist").',
     'Source Notes must include these structured placeholders (do not invent links):',
     ...requiredSourcePlaceholders.map((placeholder) => `- ${placeholder}`),
     'Include an Affiliate Disclosure Placeholder section that remains a placeholder until human review.',

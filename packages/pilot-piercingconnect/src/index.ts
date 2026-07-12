@@ -37,6 +37,8 @@ export {
   CONFIRMED_MERGED_WORD_TOKENS,
   detectFormattingCorruption,
   normalizePreservingMarkdownWhitespace,
+  PUBLICATION_FORMATTING_REPAIRS,
+  repairPublicationFormatting,
   stripProtectedMarkdownRegions,
 } from './formatting.js';
 export {

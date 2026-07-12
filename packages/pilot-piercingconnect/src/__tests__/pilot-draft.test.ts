@@ -18,11 +18,10 @@ import {
   resolveMonorepoRoot,
 } from '../config.js';
 import {
-  assertMergedTokensUnchanged,
   assertSpacesPreserved,
-  CONFIRMED_MERGED_WORD_TOKENS,
   detectFormattingCorruption,
   normalizePreservingMarkdownWhitespace,
+  repairPublicationFormatting,
 } from '../formatting.js';
 import {
   assertSafeOutputPayload,
@@ -259,7 +258,7 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
 
     const codes = new Set(result.findings?.map((finding) => finding.code));
-    expect(codes.has('formatting-corruption')).toBe(true);
+    expect(codes.has('formatting-corruption')).toBe(false);
     expect(codes.has('unresolved-source-placeholders')).toBe(true);
     expect(codes.has('unsupported-or-overstated-claims')).toBe(true);
 
@@ -278,11 +277,11 @@ describe('runPiercingConnectPilotDraft', () => {
     expect(writtenSummary.warningCount).toBe(writtenSummary.findings.length);
     expect(
       writtenSummary.findings.some((finding) => finding.code === 'formatting-corruption'),
-    ).toBe(true);
+    ).toBe(false);
 
     const writtenMarkdown = await readFile(join(outputDir, 'generated-review.md'), 'utf8');
-    expect(writtenMarkdown).toContain('simpleformulation');
-    expect(assertMergedTokensUnchanged(neilmedDraft, writtenMarkdown)).toBe(true);
+    expect(writtenMarkdown).toContain('simple formulation');
+    expect(detectFormattingCorruption(writtenMarkdown)).toEqual([]);
   });
 
   it('redacts absolute paths and still reaches pending-review outputs', async () => {
@@ -378,25 +377,24 @@ Resolved notes
 });
 
 describe('NeilMed fixture quality analysis', () => {
-  it('detects confirmed merged words from the generated draft', async () => {
-    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
-    const formatting = detectFormattingCorruption(neilmedDraft);
+  const CORRUPTED_NEILMED_SNIPPET =
+    'It contains a simpleformulation of sterile water and includingits formulation.';
+
+  it('detects confirmed merged words in corrupted provider output', () => {
+    const formatting = detectFormattingCorruption(CORRUPTED_NEILMED_SNIPPET);
     expect(formatting.some((entry) => entry.startsWith('confirmed-merged-tokens:'))).toBe(true);
-    for (const token of [
-      'simpleformulation',
-      'includingits',
-      'fluidsand',
-      'universallyapplicable',
-      'seekinga',
-      'cleanlinessduring',
-      'professionalpiercer',
-      'AftercareFine',
-    ]) {
-      expect(
-        neilmedDraft.includes(token) || neilmedDraft.toLowerCase().includes(token.toLowerCase()),
-      ).toBe(true);
-    }
-    expect(CONFIRMED_MERGED_WORD_TOKENS).toContain('asa');
+  });
+
+  it('repairs confirmed merged words from corrupted provider output', () => {
+    const repaired = repairPublicationFormatting(CORRUPTED_NEILMED_SNIPPET);
+    expect(repaired).toContain('simple formulation');
+    expect(repaired).toContain('including its');
+    expect(detectFormattingCorruption(repaired)).toEqual([]);
+  });
+
+  it('does not flag the clean NeilMed fixture', async () => {
+    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
+    expect(detectFormattingCorruption(neilmedDraft)).toEqual([]);
   });
 
   it('flags unresolved source placeholders and overstated claims', async () => {
@@ -423,11 +421,11 @@ describe('NeilMed fixture quality analysis', () => {
     const codes = findings.map((finding) => finding.code);
     expect(codes).toEqual(
       expect.arrayContaining([
-        'formatting-corruption',
         'unresolved-source-placeholders',
         'unsupported-or-overstated-claims',
       ]),
     );
+    expect(codes).not.toContain('formatting-corruption');
   });
 
   it('does not false-positive on product names, URLs, or markdown syntax alone', () => {
@@ -445,17 +443,18 @@ describe('NeilMed fixture quality analysis', () => {
 });
 
 describe('pilot output path sanitization and whitespace', () => {
-  it('preserves ordinary spaces and does not repair provider merged tokens', async () => {
+  it('repairs provider merged tokens and preserves added spaces', async () => {
     const mediaEngineRoot = '/home/murat/Projects/pc-media-engine';
-    const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
-    const normalized = normalizePreservingMarkdownWhitespace(neilmedDraft);
-    const scrubbed = scrubSensitiveText(normalized, mediaEngineRoot, {
+    const corrupted = 'A simpleformulation appears here.';
+    const normalized = normalizePreservingMarkdownWhitespace(corrupted);
+    const repaired = repairPublicationFormatting(normalized);
+    const scrubbed = scrubSensitiveText(repaired, mediaEngineRoot, {
       additionalRoots: ['/home/murat/Projects/piercingconnect-commerce'],
     });
 
-    expect(assertSpacesPreserved(neilmedDraft, scrubbed)).toBe(true);
-    expect(assertMergedTokensUnchanged(neilmedDraft, scrubbed)).toBe(true);
-    expect(scrubbed).toContain('simpleformulation');
+    expect(assertSpacesPreserved(corrupted, scrubbed)).toBe(true);
+    expect(scrubbed).toContain('simple formulation');
+    expect(detectFormattingCorruption(scrubbed)).toEqual([]);
   });
 
   it('still rejects unsanitized absolute paths at the hard gate and reports field path only', () => {

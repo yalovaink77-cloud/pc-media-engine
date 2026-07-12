@@ -24,7 +24,10 @@ import {
   resolvePilotOutputDir,
 } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
-import { normalizePreservingMarkdownWhitespace } from './formatting.js';
+import {
+  normalizePreservingMarkdownWhitespace,
+  repairPublicationFormatting,
+} from './formatting.js';
 import {
   ABSOLUTE_PATH_PATTERN,
   buildArtifactMetadata,
@@ -196,8 +199,8 @@ export async function runPiercingConnectPilotDraft(
 
     // Preserve provider whitespace exactly (no dictionary repair). Only scrub unsafe metadata.
     const scrubOptions = { additionalRoots: [repoPath] as const };
-    const normalizedContent = normalizePreservingMarkdownWhitespace(
-      generation.response.content ?? '',
+    const normalizedContent = repairPublicationFormatting(
+      normalizePreservingMarkdownWhitespace(generation.response.content ?? ''),
     );
     const providerResponse = Object.freeze({
       ...generation.response,

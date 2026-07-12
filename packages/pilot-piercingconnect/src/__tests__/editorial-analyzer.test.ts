@@ -13,7 +13,7 @@ const FIXTURE_PATH = join(
 );
 
 describe('PiercingConnect editorial analyzer profile', () => {
-  it('produces editorial findings for the NeilMed corrupt fixture without mutating content', async () => {
+  it('does not flag formatting corruption on the clean NeilMed fixture', async () => {
     const neilmedDraft = await readFile(FIXTURE_PATH, 'utf8');
     const before = neilmedDraft;
     const analyzer = new EditorialAnalyzer();
@@ -27,9 +27,23 @@ describe('PiercingConnect editorial analyzer profile', () => {
     );
 
     const codes = result.findings.map((finding) => finding.code);
-    expect(codes).toContain('formatting-corruption');
+    expect(codes).not.toContain('formatting-corruption');
     expect(codes).toContain('promotional-tone');
     expect(neilmedDraft).toBe(before);
+  });
+
+  it('still detects formatting corruption in corrupted provider output', () => {
+    const analyzer = new EditorialAnalyzer();
+    const result = analyzer.analyze(
+      Object.freeze({
+        content: 'A simpleformulation appears in this draft body.',
+        reportId: 'report-corrupt',
+        artifactId: 'artifact-corrupt',
+      }),
+      createPiercingConnectEditorialAnalyzerProfile(),
+    );
+
+    expect(result.findings.some((finding) => finding.code === 'formatting-corruption')).toBe(true);
   });
 
   it('does not hardcode NeilMed tokens in the generic analyzer package', () => {

@@ -24,6 +24,10 @@ import {
 } from './config.js';
 import { PiercingConnectPilotError } from './errors.js';
 import {
+  normalizePreservingMarkdownWhitespace,
+  repairPublicationFormatting,
+} from './formatting.js';
+import {
   assertSafeOutputPayload,
   type PilotRevisionOutputPaths,
   scrubPayloadStrings,
@@ -196,7 +200,9 @@ export async function runPiercingConnectPilotAcceptance(
         mediaEngineRoot,
         'packages/pilot-piercingconnect/src/__fixtures__/neilmed-generated-review.md',
       );
-    const draftV1 = await readFile(fixturePath, 'utf8');
+    const draftV1 = repairPublicationFormatting(
+      normalizePreservingMarkdownWhitespace(await readFile(fixturePath, 'utf8')),
+    );
 
     const orchestrator = await createCommerceContentOrchestrator({
       commerce: { repoPath, mediaEngineRoot },
@@ -251,7 +257,9 @@ export async function runPiercingConnectPilotAcceptance(
       createdAt: fixedCreatedAt,
     });
 
-    const draftV2 = `${draftV1}\n\n## Affiliate Disclosure\nWe may earn a commission from qualifying purchases. This review remains editorially independent.`;
+    const draftV2 = repairPublicationFormatting(
+      `${draftV1}\n\n## Affiliate Disclosure\nWe may earn a commission from qualifying purchases. This review remains editorially independent.`,
+    );
     const provider =
       options.generationProvider ?? new FakeGenerationProvider({ generatedContent: draftV2 });
     const revised = await loop.runRevision({
