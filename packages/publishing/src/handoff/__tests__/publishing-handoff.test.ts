@@ -235,7 +235,11 @@ describe('createPublishingHandoff', () => {
     const { artifact, review } = await createApprovedPair('approved');
     const mismatchedReview: ContentReviewResult = Object.freeze({
       ...review,
-      review: Object.freeze({ ...review.review, artifactId: 'other-artifact' }),
+      review: Object.freeze({
+        ...review.review,
+        artifactId: 'other-artifact',
+        activeArtifactId: 'other-artifact',
+      }),
     });
 
     const result = createPublishingHandoff(buildRequest(artifact, mismatchedReview));
@@ -244,6 +248,32 @@ describe('createPublishingHandoff', () => {
     expect(
       result.validation.errors.some((error) => error.code === 'artifact-review-mismatch'),
     ).toBe(true);
+  });
+
+  it('accepts handoff when activeArtifactId matches the revision artifact', async () => {
+    const { artifact, review } = await createApprovedPair('approved');
+    const revisionArtifact: GeneratedContentArtifact = Object.freeze({
+      ...artifact,
+      artifactId: 'artifact-revision-v2',
+      jobId: 'job-revision-v2',
+      parentArtifactId: artifact.artifactId,
+      revisionNumber: 2,
+    });
+    const revisionReview: ContentReviewResult = Object.freeze({
+      ...review,
+      review: Object.freeze({
+        ...review.review,
+        artifactId: artifact.artifactId,
+        activeArtifactId: revisionArtifact.artifactId,
+        jobId: revisionArtifact.jobId,
+        revisionCount: 1,
+      }),
+    });
+
+    const result = createPublishingHandoff(buildRequest(revisionArtifact, revisionReview));
+
+    expect(result.validation.valid).toBe(true);
+    expect(result.package.artifactId).toBe(revisionArtifact.artifactId);
   });
 
   it('blocks handoff when title or slug is missing', async () => {

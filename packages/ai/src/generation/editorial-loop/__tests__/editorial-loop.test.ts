@@ -197,6 +197,8 @@ describe('createEditorialLoopService', () => {
     });
     expect(reopened.review.status).toBe('pending-review');
     expect(reopened.review.activeArtifactId).toBe(revised.artifact.artifactId);
+    expect(reopened.review.artifactId).toBe(revised.artifact.artifactId);
+    expect(reopened.review.jobId).toBe(revised.artifact.jobId);
     expect(reopened.review.revisionCount).toBe(1);
     expect(reopened.history.some((event) => event.type === 'revision-completed')).toBe(true);
     expect(draftV1).toBe(before);

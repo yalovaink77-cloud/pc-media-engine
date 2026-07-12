@@ -1,3 +1,9 @@
+export {
+  buildPilotAcceptanceReport,
+  type PilotAcceptanceReport,
+  type PilotSectionAssessment,
+  type PilotUnresolvedFinding,
+} from './acceptance-report.js';
 export { createPiercingConnectAiSeoAnalyzerProfile } from './ai-seo-profile.js';
 export {
   createPiercingConnectCommercialAnalyzerProfile,
@@ -57,6 +63,12 @@ export {
   type PilotQualityFinding,
   type PilotQualityFindingCode,
 } from './quality.js';
+export {
+  type PiercingConnectPilotAcceptanceResult,
+  type PilotAcceptanceOutputPaths,
+  runPiercingConnectPilotAcceptance,
+  type RunPiercingConnectPilotAcceptanceOptions,
+} from './run-pilot-acceptance.js';
 export {
   type PiercingConnectPilotResult,
   type PiercingConnectPilotStatus,

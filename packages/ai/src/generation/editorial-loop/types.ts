@@ -15,6 +15,7 @@ export interface BeginRevisionInput {
 export interface CompleteRevisionInput {
   readonly reviewId: string;
   readonly activeArtifactId: string;
+  readonly activeJobId: string;
   readonly editorialReport: EditorialIntelligenceReport;
   readonly timestamp?: string;
 }

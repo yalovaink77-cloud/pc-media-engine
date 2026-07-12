@@ -255,6 +255,9 @@ importers:
       '@pcme/provider-ai-openrouter':
         specifier: workspace:*
         version: link:../../providers/ai/openrouter
+      '@pcme/publishing':
+        specifier: workspace:*
+        version: link:../publishing
       '@pcme/shared':
         specifier: workspace:*
         version: link:../shared

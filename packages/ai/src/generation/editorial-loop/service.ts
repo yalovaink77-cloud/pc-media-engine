@@ -235,6 +235,7 @@ export function createEditorialLoopService(
       return reviewStore.completeRevision({
         reviewId: input.reviewId,
         activeArtifactId: input.activeArtifact.artifactId,
+        activeJobId: input.activeArtifact.jobId,
         editorialReport: input.report,
         timestamp: input.timestamp,
       });

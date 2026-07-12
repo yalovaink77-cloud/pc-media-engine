@@ -19,12 +19,14 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "pilot": "tsx src/scripts/piercingconnect-pilot.ts",
-    "pilot:revision": "tsx src/scripts/piercingconnect-pilot-revision.ts"
+    "pilot:revision": "tsx src/scripts/piercingconnect-pilot-revision.ts",
+    "pilot:acceptance": "tsx src/scripts/piercingconnect-pilot-acceptance.ts"
   },
   "dependencies": {
     "@pcme/ai": "workspace:*",
     "@pcme/content": "workspace:*",
     "@pcme/provider-ai-openrouter": "workspace:*",
+    "@pcme/publishing": "workspace:*",
     "@pcme/shared": "workspace:*"
   },
   "devDependencies": {

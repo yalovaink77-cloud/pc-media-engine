@@ -55,6 +55,7 @@
     "pipeline:dry-run": "pnpm --filter @pcme/publishing pipeline:dry-run",
     "piercingconnect:pilot": "pnpm --filter @pcme/pilot-piercingconnect pilot",
     "piercingconnect:pilot:revision": "pnpm --filter @pcme/pilot-piercingconnect pilot:revision",
+    "piercingconnect:pilot:acceptance": "pnpm --filter @pcme/pilot-piercingconnect pilot:acceptance",
     "generation-provider:smoke": "pnpm --filter @pcme/provider-ai-openrouter generation-provider:smoke",
     "ghost:smoke": "pnpm --filter @pcme/plugin-ghost smoke",
     "dashboard-ops:smoke": "pnpm --filter @pcme/dashboard smoke:ops",

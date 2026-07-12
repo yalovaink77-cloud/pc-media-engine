@@ -236,6 +236,8 @@ export class InMemoryContentReviewStore {
       ...record.review,
       status: 'pending-review',
       activeArtifactId: input.activeArtifactId,
+      artifactId: input.activeArtifactId,
+      jobId: input.activeJobId,
       revisionCount: (record.review.revisionCount ?? 0) + 1,
       editorialReportId: input.editorialReport.reportId,
       preReviewFindings: Object.freeze(
