@@ -65,6 +65,15 @@ export {
 } from './editorial-rule.js';
 export { EditorialRuleError, EditorialRuleValidationError } from './editorial-rule-errors.js';
 export type {
+  EvidenceAnalyzerProfile,
+  EvidencePatternMarker,
+  EvidenceRequiredSection,
+} from './evidence-analyzer.js';
+export {
+  DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
+  DEFAULT_SOURCE_PLACEHOLDER_PATTERN,
+} from './evidence-analyzer.js';
+export type {
   GeneratedContentArtifact,
   GeneratedContentFormat,
   GeneratedContentMetadata,

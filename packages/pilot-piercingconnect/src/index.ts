@@ -17,6 +17,11 @@ export {
 } from './editorial-profile.js';
 export { PiercingConnectPilotError } from './errors.js';
 export {
+  createPiercingConnectEvidenceAnalyzerProfile,
+  withPiercingConnectEvidenceAnalyzer,
+  withPiercingConnectIntelligenceAnalyzers,
+} from './evidence-profile.js';
+export {
   assertMergedTokensUnchanged,
   assertSpacesPreserved,
   CONFIRMED_MERGED_WORD_TOKENS,

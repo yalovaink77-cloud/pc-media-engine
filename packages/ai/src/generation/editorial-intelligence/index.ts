@@ -11,6 +11,15 @@ export {
   extractMarkdownHeadings,
 } from './editorial/index.js';
 export {
+  createDefaultEvidenceRuleRegistry,
+  createEvidenceAnalyzerModule,
+  type EvidenceAnalysisInput,
+  type EvidenceAnalysisResult,
+  EvidenceAnalyzer,
+  type EvidenceAnalyzerModuleOptions,
+  type EvidenceAnalyzerOptions,
+} from './evidence/index.js';
+export {
   buildDeterministicEditorialFindingId,
   isBlockingEditorialFinding,
   normalizeEditorialFindingInput,

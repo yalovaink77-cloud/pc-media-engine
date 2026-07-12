@@ -18,6 +18,11 @@ export type {
   EditorialTonePattern,
 } from './publish/index.js';
 export type {
+  EvidenceAnalyzerProfile,
+  EvidencePatternMarker,
+  EvidenceRequiredSection,
+} from './publish/index.js';
+export type {
   EditorialIntelligenceConfidence,
   EditorialIntelligenceFinding,
   EditorialIntelligenceProfile,
@@ -81,6 +86,8 @@ export type {
 } from './publish/index.js';
 export {
   DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
+  DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
+  DEFAULT_SOURCE_PLACEHOLDER_PATTERN,
   EDITORIAL_FINDING_ID_PATTERN,
   EDITORIAL_RULE_ID_PATTERN,
   EditorialFindingError,

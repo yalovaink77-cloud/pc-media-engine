@@ -1,6 +1,7 @@
 import type { EditorialModuleId } from '@pcme/shared';
 
 import { createEditorialAnalyzerModule } from './editorial/module.js';
+import { createEvidenceAnalyzerModule } from './evidence/module.js';
 import type { EditorialModule } from './module.js';
 import { createEmptyEditorialModule } from './stub-modules.js';
 
@@ -53,10 +54,14 @@ export function createDefaultEditorialModuleRegistry(): EditorialModuleRegistry 
   ]);
 
   return new EditorialModuleRegistry(
-    moduleIds.map((moduleId) =>
-      moduleId === 'editorial'
-        ? createEditorialAnalyzerModule()
-        : createEmptyEditorialModule(moduleId),
-    ),
+    moduleIds.map((moduleId) => {
+      if (moduleId === 'editorial') {
+        return createEditorialAnalyzerModule();
+      }
+      if (moduleId === 'evidence') {
+        return createEvidenceAnalyzerModule();
+      }
+      return createEmptyEditorialModule(moduleId);
+    }),
   );
 }
