@@ -15,6 +15,7 @@ export type FindingCategory =
   | 'evidence'
   | 'seo'
   | 'ai-seo'
+  | 'commercial'
   | 'affiliate'
   | 'knowledge'
   | 'publication'
@@ -84,6 +85,7 @@ export const FINDING_CATEGORIES = Object.freeze([
   'evidence',
   'seo',
   'ai-seo',
+  'commercial',
   'affiliate',
   'knowledge',
   'publication',

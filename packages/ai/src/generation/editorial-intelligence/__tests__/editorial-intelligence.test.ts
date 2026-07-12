@@ -37,7 +37,7 @@ const testProfile: EditorialIntelligenceProfile = Object.freeze({
     'evidence',
     'seo',
     'ai-seo',
-    'affiliate',
+    'commercial',
   ] as const satisfies readonly EditorialModuleId[]),
 });
 
@@ -282,7 +282,7 @@ describe('EditorialIntelligenceOrchestrator', () => {
       createEmptyEditorialModule('evidence'),
       createEmptyEditorialModule('seo'),
       createEmptyEditorialModule('ai-seo'),
-      createEmptyEditorialModule('affiliate'),
+      createEmptyEditorialModule('commercial'),
     ]);
 
     const orchestrator = createEditorialIntelligenceOrchestrator({ registry });

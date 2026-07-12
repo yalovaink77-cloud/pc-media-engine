@@ -12,6 +12,7 @@ import {
 } from '@pcme/shared';
 
 import { createPiercingConnectAiSeoAnalyzerProfile } from './ai-seo-profile.js';
+import { createPiercingConnectCommercialAnalyzerProfile } from './commercial-profile.js';
 import { type PiercingConnectPilotConfig, PILOT_REQUIRED_SECTIONS } from './config.js';
 import { createPiercingConnectEditorialAnalyzerProfile } from './editorial-profile.js';
 import { createPiercingConnectEvidenceAnalyzerProfile } from './evidence-profile.js';
@@ -121,7 +122,7 @@ export function withPiercingConnectSeoAnalyzer(
   });
 }
 
-/** Attach PiercingConnect editorial, evidence, SEO, and AI SEO analyzer settings. */
+/** Attach PiercingConnect editorial, evidence, SEO, AI SEO, and commercial analyzer settings. */
 export function withPiercingConnectIntelligenceAnalyzers(
   profile: EditorialIntelligenceProfile,
   config?: Pick<PiercingConnectPilotConfig, 'requiredSections' | 'requiredSourcePlaceholders'>,
@@ -135,6 +136,7 @@ export function withPiercingConnectIntelligenceAnalyzers(
         }),
         evidenceAnalyzer: createPiercingConnectEvidenceAnalyzerProfile(config),
         aiSeoAnalyzer: createPiercingConnectAiSeoAnalyzerProfile(),
+        commercialAnalyzer: createPiercingConnectCommercialAnalyzerProfile(),
       }),
       config,
     ),

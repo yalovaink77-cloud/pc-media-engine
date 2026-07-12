@@ -33,7 +33,19 @@ const SEMANTIC_OWNERSHIP_GROUPS = Object.freeze([
     owner: 'ai-seo' as const,
     codes: Object.freeze(['missing-verification-marker', 'low-source-transparency']),
   }),
+  Object.freeze({
+    key: 'promotional-tone',
+    owner: 'commercial' as const,
+    codes: Object.freeze(['promotional-tone', 'overly-promotional-language']),
+    documentWide: true,
+  }),
 ] as const);
+
+function isDocumentWideSemanticGroup(
+  group: (typeof SEMANTIC_OWNERSHIP_GROUPS)[number],
+): group is (typeof SEMANTIC_OWNERSHIP_GROUPS)[number] & { readonly documentWide: true } {
+  return 'documentWide' in group && group.documentWide === true;
+}
 
 function compareFindingInputs(left: EditorialFindingInput, right: EditorialFindingInput): number {
   if (left.category !== right.category) {
@@ -152,6 +164,39 @@ export function dedupeCrossModuleFindings(
         if (index !== primaryIndex) {
           suppressed.add(index);
         }
+      }
+    }
+  }
+
+  for (const semanticGroup of SEMANTIC_OWNERSHIP_GROUPS) {
+    if (!isDocumentWideSemanticGroup(semanticGroup)) {
+      continue;
+    }
+
+    const indices: number[] = [];
+    for (const [index, finding] of findings.entries()) {
+      if (suppressed.has(index)) {
+        continue;
+      }
+      if (!(semanticGroup.codes as readonly string[]).includes(finding.code)) {
+        continue;
+      }
+      indices.push(index);
+    }
+
+    if (indices.length <= 1) {
+      continue;
+    }
+
+    const categories = new Set(indices.map((index) => findings[index]!.category));
+    if (categories.size <= 1) {
+      continue;
+    }
+
+    const primaryIndex = selectPrimaryIndex(findings, indices, semanticGroup.owner);
+    for (const index of indices) {
+      if (index !== primaryIndex) {
+        suppressed.add(index);
       }
     }
   }

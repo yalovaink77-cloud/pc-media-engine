@@ -13,6 +13,20 @@ export {
   DEFAULT_AI_SEO_SUMMARY_SECTION_ALIASES,
 } from './ai-seo-analyzer.js';
 export type {
+  CommercialAnalyzerProfile,
+  CommercialDisclosureRequirement,
+  CommercialPatternMarker,
+  CommercialPromotionThresholds,
+  CommercialProsConsThresholds,
+  CommercialRequiredSection,
+} from './commercial-analyzer.js';
+export {
+  DEFAULT_COMMERCIAL_ADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_ALTERNATIVES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISCLOSURE_SECTION_ALIASES,
+} from './commercial-analyzer.js';
+export type {
   ContentReviewCheckId,
   ContentReviewDecision,
   ContentReviewerIdentity,

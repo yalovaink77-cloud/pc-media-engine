@@ -82,6 +82,28 @@ describe('dedupeCrossModuleFindings', () => {
     expect(deduped[0]?.category).toBe('evidence');
   });
 
+  it('prefers commercial for promotional tone overlap at the same section', () => {
+    const location = Object.freeze({ sectionId: 'overview' });
+    const findings = Object.freeze([
+      finding({
+        category: 'editorial',
+        code: 'promotional-tone',
+        id: 'tone:promotional:overview',
+        location,
+      }),
+      finding({
+        category: 'commercial',
+        code: 'overly-promotional-language',
+        id: 'promotion:overview:excessive',
+        location,
+      }),
+    ]);
+
+    const deduped = dedupeCrossModuleFindings(findings);
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.category).toBe('commercial');
+  });
+
   it('retains findings with different codes at the same section', () => {
     const location = Object.freeze({ sectionId: 'overview' });
     const findings = Object.freeze([

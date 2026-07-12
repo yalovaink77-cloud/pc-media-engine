@@ -9,6 +9,15 @@ export {
   createDefaultAiSeoRuleRegistry,
 } from './ai-seo/index.js';
 export {
+  type CommercialAnalysisInput,
+  type CommercialAnalysisResult,
+  CommercialAnalyzer,
+  type CommercialAnalyzerModuleOptions,
+  type CommercialAnalyzerOptions,
+  createCommercialAnalyzerModule,
+  createDefaultCommercialRuleRegistry,
+} from './commercial/index.js';
+export {
   CROSS_MODULE_FINDING_OWNERSHIP,
   dedupeCrossModuleFindings,
 } from './cross-module-dedupe.js';

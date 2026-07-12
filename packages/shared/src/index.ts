@@ -12,6 +12,14 @@ export type {
   FindingSeverity,
 } from './publish/index.js';
 export type {
+  CommercialAnalyzerProfile,
+  CommercialDisclosureRequirement,
+  CommercialPatternMarker,
+  CommercialPromotionThresholds,
+  CommercialProsConsThresholds,
+  CommercialRequiredSection,
+} from './publish/index.js';
+export type {
   EditorialAnalyzerProfile,
   EditorialAnalyzerThresholds,
   EditorialRequiredSection,
@@ -105,6 +113,10 @@ export {
   DEFAULT_AI_SEO_CHUNKING_TARGETS,
   DEFAULT_AI_SEO_FAQ_SECTION_ALIASES,
   DEFAULT_AI_SEO_SUMMARY_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_ADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_ALTERNATIVES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISCLOSURE_SECTION_ALIASES,
   DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
   DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
   DEFAULT_SEO_FAQ_SECTION_ALIASES,

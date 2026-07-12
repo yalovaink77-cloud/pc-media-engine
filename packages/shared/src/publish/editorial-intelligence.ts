@@ -1,4 +1,5 @@
 import type { AiSeoAnalyzerProfile } from './ai-seo-analyzer.js';
+import type { CommercialAnalyzerProfile } from './commercial-analyzer.js';
 import type { EditorialAnalyzerProfile } from './editorial-analyzer.js';
 import type { EditorialFinding } from './editorial-finding.js';
 import type { FindingConfidence } from './editorial-finding.js';
@@ -6,7 +7,8 @@ import type { EvidenceAnalyzerProfile } from './evidence-analyzer.js';
 import type { SeoAnalyzerProfile } from './seo-analyzer.js';
 
 /** Intelligence module identifiers for editorial analysis profiles. */
-export type EditorialModuleId = 'editorial' | 'evidence' | 'seo' | 'ai-seo' | 'affiliate';
+export type EditorialModuleId =
+  'editorial' | 'evidence' | 'seo' | 'ai-seo' | 'commercial' | 'affiliate';
 
 /** @deprecated Use FindingConfidence from editorial-finding.js */
 export type EditorialIntelligenceConfidence = FindingConfidence;
@@ -63,4 +65,5 @@ export interface EditorialIntelligenceProfile {
   readonly evidenceAnalyzer?: EvidenceAnalyzerProfile;
   readonly seoAnalyzer?: SeoAnalyzerProfile;
   readonly aiSeoAnalyzer?: AiSeoAnalyzerProfile;
+  readonly commercialAnalyzer?: CommercialAnalyzerProfile;
 }

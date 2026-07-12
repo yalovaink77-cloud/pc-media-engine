@@ -1,6 +1,7 @@
 import type { EditorialModuleId } from '@pcme/shared';
 
 import { createAiSeoAnalyzerModule } from './ai-seo/module.js';
+import { createCommercialAnalyzerModule } from './commercial/module.js';
 import { createEditorialAnalyzerModule } from './editorial/module.js';
 import { createEvidenceAnalyzerModule } from './evidence/module.js';
 import type { EditorialModule } from './module.js';
@@ -52,6 +53,7 @@ export function createDefaultEditorialModuleRegistry(): EditorialModuleRegistry 
     'evidence',
     'seo',
     'ai-seo',
+    'commercial',
     'affiliate',
   ]);
 
@@ -68,6 +70,9 @@ export function createDefaultEditorialModuleRegistry(): EditorialModuleRegistry 
       }
       if (moduleId === 'ai-seo') {
         return createAiSeoAnalyzerModule();
+      }
+      if (moduleId === 'commercial') {
+        return createCommercialAnalyzerModule();
       }
       return createEmptyEditorialModule(moduleId);
     }),
