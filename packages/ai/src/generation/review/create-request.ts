@@ -46,6 +46,9 @@ export function createContentReviewRequest(
   return Object.freeze({
     reviewId,
     artifactId: artifact.artifactId,
+    activeArtifactId: artifact.artifactId,
+    rootArtifactId: artifact.rootArtifactId ?? artifact.artifactId,
+    revisionCount: 0,
     jobId: artifact.jobId,
     contentType: artifact.contentType,
     locale: artifact.locale,

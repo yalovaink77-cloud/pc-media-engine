@@ -19,6 +19,16 @@ export type {
   CommercialProsConsThresholds,
   CommercialRequiredSection,
 } from './publish/index.js';
+export type { RevisionLocation } from './publish/index.js';
+export type {
+  ContentRevisionItem,
+  ContentRevisionRequest,
+  RevisionComparisonSummary,
+  RevisionGlobalConstraints,
+  RevisionModuleBundle,
+  RevisionPriority,
+  RevisionStatus,
+} from './publish/index.js';
 export type {
   EditorialAnalyzerProfile,
   EditorialAnalyzerThresholds,
@@ -119,6 +129,7 @@ export {
   DEFAULT_COMMERCIAL_DISCLOSURE_SECTION_ALIASES,
   DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
   DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
+  DEFAULT_REVISION_GLOBAL_CONSTRAINTS,
   DEFAULT_SEO_FAQ_SECTION_ALIASES,
   DEFAULT_SEO_META_DESCRIPTION_LENGTH_THRESHOLDS,
   DEFAULT_SEO_META_DESCRIPTION_SECTION_ALIASES,
@@ -156,5 +167,6 @@ export {
   PublishingOutboxDuplicateError,
   PublishingOutboxNotFoundError,
   PublishingOutboxTerminalStateError,
+  RevisionValidationError,
   validateReviewDecision,
 } from './publish/index.js';

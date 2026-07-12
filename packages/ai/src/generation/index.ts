@@ -75,6 +75,8 @@ export {
   validateEditorialFinding,
   validateEditorialRule,
 } from './editorial-intelligence/index.js';
+export type { EditorialLoopService, EditorialLoopServiceOptions } from './editorial-loop/index.js';
+export { createEditorialLoopService } from './editorial-loop/index.js';
 export {
   GenerationBlockedMetadataError,
   GenerationJobBlockedError,
@@ -122,6 +124,23 @@ export {
   isTerminalReviewStatus,
   validateReviewDecision,
 } from './review/index.js';
+export type {
+  BuildRevisionRequestFromReportInput,
+  CreateRevisionArtifactInput,
+  CreateRevisionGenerationJobInput,
+} from './revision/index.js';
+export {
+  assertRevisionCountWithinLimit,
+  buildDeterministicRevisionArtifactId,
+  buildDeterministicRevisionItemId,
+  buildDeterministicRevisionJobId,
+  buildDeterministicRevisionRequestId,
+  buildRevisionRequestFromReport,
+  compareRevisionReports,
+  createRevisionArtifact,
+  createRevisionGenerationJob,
+  DEFAULT_MAX_REVISION_COUNT,
+} from './revision/index.js';
 export { buildProviderUsage, runGenerationJob, toProviderExecutionError } from './run.js';
 export type {
   CreateGenerationJobOptions,

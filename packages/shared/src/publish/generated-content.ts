@@ -29,6 +29,14 @@ export interface GeneratedContentMetadata {
 /** Provider-neutral artifact representing validated AI generation output. */
 export interface GeneratedContentArtifact {
   readonly artifactId: string;
+  /** Monotonic revision number within a lineage. Initial drafts use 1. */
+  readonly revisionNumber?: number;
+  /** Stable lineage root. Defaults to the first artifact ID when omitted. */
+  readonly rootArtifactId?: string;
+  /** Immediate parent artifact when this draft is a revision. */
+  readonly parentArtifactId?: string;
+  /** Structured revision request that produced this artifact, when applicable. */
+  readonly revisionRequestId?: string;
   readonly jobId: string;
   readonly requestId: string;
   readonly sourceId: string;

@@ -79,6 +79,16 @@ function assertArtifactApprovable(reviewId: string, artifactStatus: GeneratedCon
   }
 }
 
+function assertReviewableStatus(reviewId: string, status: ContentReviewStatus): void {
+  if (status === 'revision-in-progress') {
+    throw new ContentReviewValidationError(
+      reviewId,
+      'revision-in-progress',
+      'Content review is awaiting revision completion',
+    );
+  }
+}
+
 /** Validate a review decision before it is applied. */
 export function validateReviewDecision(input: {
   readonly review: ContentReviewRequest;
@@ -92,6 +102,7 @@ export function validateReviewDecision(input: {
 
   assertNotExpired(input.review, nowMs);
   assertNotTerminal(input.review);
+  assertReviewableStatus(input.review.reviewId, input.review.status);
   assertReviewer(input.review.reviewId, input.reviewer);
 
   if (input.decision === 'approve' || input.decision === 'approve-with-notes') {

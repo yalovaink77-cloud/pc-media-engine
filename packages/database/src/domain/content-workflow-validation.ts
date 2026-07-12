@@ -80,6 +80,8 @@ export function toDbContentReviewStatus(status: ContentReviewStatus): ContentRev
       return 'approved_with_notes';
     case 'changes-requested':
       return 'changes_requested';
+    case 'revision-in-progress':
+      return 'changes_requested';
     case 'rejected':
       return 'rejected';
     case 'expired':

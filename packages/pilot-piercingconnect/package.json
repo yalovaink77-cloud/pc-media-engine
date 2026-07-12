@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "pilot": "tsx src/scripts/piercingconnect-pilot.ts"
+    "pilot": "tsx src/scripts/piercingconnect-pilot.ts",
+    "pilot:revision": "tsx src/scripts/piercingconnect-pilot-revision.ts"
   },
   "dependencies": {
     "@pcme/ai": "workspace:*",

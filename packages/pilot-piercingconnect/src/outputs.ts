@@ -64,6 +64,19 @@ export interface PilotOutputPaths {
   readonly reviewSummaryPath: string;
 }
 
+export interface PilotRevisionOutputPaths {
+  readonly outputDir: string;
+  readonly generatedReviewPath: string;
+  readonly generatedReviewV2Path: string;
+  readonly editorialReportPath: string;
+  readonly editorialReportV2Path: string;
+  readonly revisionRequestPath: string;
+  readonly revisionComparisonPath: string;
+  readonly artifactMetadataPath: string;
+  readonly reviewSummaryPath: string;
+  readonly editorialHistoryPath: string;
+}
+
 export interface ScrubSensitiveTextOptions {
   readonly additionalRoots?: readonly string[];
 }

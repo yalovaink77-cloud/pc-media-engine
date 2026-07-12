@@ -43,6 +43,7 @@ export {
   type PilotArtifactMetadata,
   type PilotOutputPaths,
   type PilotReviewSummary,
+  type PilotRevisionOutputPaths,
   scrubPayloadStrings,
   scrubSensitiveText,
   writePilotOutputs,
@@ -62,6 +63,11 @@ export {
   runPiercingConnectPilotDraft,
   type RunPiercingConnectPilotDraftOptions,
 } from './run-pilot-draft.js';
+export {
+  type PiercingConnectPilotRevisionResult,
+  runPiercingConnectPilotRevision,
+  type RunPiercingConnectPilotRevisionOptions,
+} from './run-pilot-revision.js';
 export {
   extractMarkdownHeadings,
   findMissingRequiredSections,

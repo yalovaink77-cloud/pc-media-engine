@@ -34,8 +34,14 @@ function cloneWithStatus(
   });
 }
 
+/** Minimal artifact store contract used by the editorial revision loop. */
+export interface GeneratedContentArtifactStore {
+  save(artifact: GeneratedContentArtifact): void;
+  getById(artifactId: string): GeneratedContentArtifact | undefined;
+}
+
 /** In-memory artifact store for tests and offline development only. */
-export class InMemoryGeneratedContentArtifactStore {
+export class InMemoryGeneratedContentArtifactStore implements GeneratedContentArtifactStore {
   private readonly artifacts = new Map<string, GeneratedContentArtifact>();
 
   save(artifact: GeneratedContentArtifact): void {

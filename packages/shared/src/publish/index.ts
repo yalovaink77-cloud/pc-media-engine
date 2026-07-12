@@ -39,6 +39,19 @@ export type {
   ContentReviewStatus,
 } from './content-review.js';
 export type {
+  ContentRevisionItem,
+  ContentRevisionRequest,
+  RevisionComparisonSummary,
+  RevisionGlobalConstraints,
+  RevisionModuleBundle,
+  RevisionPriority,
+  RevisionStatus,
+} from './content-revision.js';
+export {
+  DEFAULT_REVISION_GLOBAL_CONSTRAINTS,
+  RevisionValidationError,
+} from './content-revision.js';
+export type {
   EditorialAnalyzerProfile,
   EditorialAnalyzerThresholds,
   EditorialRequiredSection,
@@ -164,6 +177,7 @@ export {
   GeneratedContentArtifactTransitionError,
 } from './persistence-errors.js';
 export { isTerminalReviewStatus, validateReviewDecision } from './review-validation.js';
+export type { RevisionLocation } from './revision-location.js';
 export type {
   SeoAnalyzerProfile,
   SeoContentCompletenessThresholds,
