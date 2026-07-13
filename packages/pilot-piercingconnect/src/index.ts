@@ -79,6 +79,7 @@ export {
 export {
   type PiercingConnectPilotAcceptanceResult,
   type PilotAcceptanceOutputPaths,
+  prepareActiveArtifactForHandoff,
   runPiercingConnectPilotAcceptance,
   type RunPiercingConnectPilotAcceptanceOptions,
 } from './run-pilot-acceptance.js';
@@ -107,3 +108,8 @@ export {
   createPilotStructuredGenerationProvider,
   PilotStructuredGenerationProvider,
 } from './structured-provider.js';
+export {
+  assertPilotDraftPublishStatus,
+  requirePilotWordPressForceDraft,
+  resolvePilotPublishingTargetAdapter,
+} from './wordpress-draft-safety.js';

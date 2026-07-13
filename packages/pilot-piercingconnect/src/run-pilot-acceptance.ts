@@ -11,8 +11,12 @@ import {
   serializeEditorialIntelligenceReport,
 } from '@pcme/ai';
 import { createCommerceContentOrchestrator } from '@pcme/content';
-import { createPublishingHandoff, FakePublishingTargetAdapter } from '@pcme/publishing';
-import type { EditorialIntelligenceProfile, EditorialModuleId } from '@pcme/shared';
+import { createPublishingHandoff, type PublishingTargetAdapter } from '@pcme/publishing';
+import type {
+  EditorialIntelligenceProfile,
+  EditorialModuleId,
+  GeneratedContentArtifact,
+} from '@pcme/shared';
 
 import { buildPilotAcceptanceReport } from './acceptance-report.js';
 import {
@@ -31,6 +35,10 @@ import {
   scrubSensitiveText,
 } from './outputs.js';
 import { withPiercingConnectIntelligenceAnalyzers } from './seo-profile.js';
+import {
+  assertPilotDraftPublishStatus,
+  resolvePilotPublishingTargetAdapter,
+} from './wordpress-draft-safety.js';
 
 const REVIEWER = Object.freeze({ reviewerId: 'pilot-reviewer', displayName: 'Pilot Reviewer' });
 
@@ -62,6 +70,29 @@ export interface RunPiercingConnectPilotAcceptanceOptions {
   readonly fixturePath?: string;
   readonly fixedCreatedAt?: string;
   readonly generationProvider?: GenerationProviderAdapter;
+  /** Optional publishing target. Real WordPress adapters require wordpressForceDraft: true. */
+  readonly publishingTargetAdapter?: PublishingTargetAdapter;
+  /** Must be true when publishingTargetAdapter.targetId is 'wordpress'. */
+  readonly wordpressForceDraft?: boolean;
+}
+
+/** Clone the active revision artifact with prepared content; leave the prior artifact untouched. */
+export function prepareActiveArtifactForHandoff(
+  activeArtifact: GeneratedContentArtifact,
+): GeneratedContentArtifact {
+  const preparedContent = preparePublicationDraft(activeArtifact.content);
+  return Object.freeze({
+    ...activeArtifact,
+    content: preparedContent,
+    warnings: Object.freeze([...activeArtifact.warnings]),
+    policySnapshot: Object.freeze({
+      ...activeArtifact.policySnapshot,
+      safetyConstraints: Object.freeze([...activeArtifact.policySnapshot.safetyConstraints]),
+      affiliateConstraints: Object.freeze([...activeArtifact.policySnapshot.affiliateConstraints]),
+      citationRequirements: Object.freeze([...activeArtifact.policySnapshot.citationRequirements]),
+      blockedFields: Object.freeze([...activeArtifact.policySnapshot.blockedFields]),
+    }),
+  });
 }
 
 function createPilotIntelligenceProfile(
@@ -293,8 +324,14 @@ export async function runPiercingConnectPilotAcceptance(
       humanReviewStatus = handoffReview.review.status;
     }
 
+    const handoffArtifact = prepareActiveArtifactForHandoff(revised.artifact);
+    const publishStatus = assertPilotDraftPublishStatus('draft');
+    const publisher = resolvePilotPublishingTargetAdapter({
+      publishingTargetAdapter: options.publishingTargetAdapter,
+      wordpressForceDraft: options.wordpressForceDraft,
+    });
     const handoff = createPublishingHandoff({
-      artifact: revised.artifact,
+      artifact: handoffArtifact,
       review: handoffReview,
       target: Object.freeze({
         targetId: 'wordpress',
@@ -306,7 +343,7 @@ export async function runPiercingConnectPilotAcceptance(
         slug: 'neilmed-piercing-aftercare-fine-mist-review',
         excerpt:
           'Educational product review for NeilMed Piercing Aftercare Fine Mist with editorial intelligence findings.',
-        publishStatus: 'draft',
+        publishStatus,
       }),
     });
 
@@ -323,7 +360,6 @@ export async function runPiercingConnectPilotAcceptance(
     });
 
     if (handoff.validation.valid) {
-      const publisher = new FakePublishingTargetAdapter();
       const publishResult = await publisher.publish(handoff.package);
       wordpressInvoked = true;
       wordpressDraftStatus = publishResult.success ? 'ready' : 'blocked';
@@ -349,7 +385,7 @@ export async function runPiercingConnectPilotAcceptance(
     const outputs = await writeAcceptanceOutputs({
       outputDir,
       draftV1,
-      draftV2: revised.artifact.content,
+      draftV2: handoffArtifact.content,
       reportV1: serializeEditorialIntelligenceReport(initial.report),
       reportV2: serializeEditorialIntelligenceReport(reanalyzed.report),
       revisionRequest: requested.revisionRequest,
