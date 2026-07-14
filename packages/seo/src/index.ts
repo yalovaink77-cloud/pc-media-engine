@@ -1,3 +1,9 @@
+export { extractMarkdownFaqEntries, type FaqEntry } from './analysis/faq.js';
+export {
+  containsNormalizedPhrase,
+  normalizeSeoText,
+  partitionKeywordCoverage,
+} from './analysis/text.js';
 export { buildAltTextPlaceholder, resolveImageOrientation } from './enrichment/image.js';
 export {
   enrichMetadata,

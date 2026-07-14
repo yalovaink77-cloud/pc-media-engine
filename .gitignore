@@ -22,6 +22,9 @@ build/
 # Local data
 data/
 
+# Local pilot/export artifacts (never commit generated drafts)
+exports/
+
 # Deployment runtime artifacts
 deploy/backups/
 deploy/env/.env.production

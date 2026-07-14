@@ -49,6 +49,10 @@ export function createGeneratedContentArtifact(
 
   const artifact: GeneratedContentArtifact = Object.freeze({
     artifactId,
+    revisionNumber: options?.lineage?.revisionNumber ?? 1,
+    rootArtifactId: options?.lineage?.rootArtifactId ?? artifactId,
+    parentArtifactId: options?.lineage?.parentArtifactId,
+    revisionRequestId: options?.lineage?.revisionRequestId,
     jobId: job.jobId,
     requestId: job.requestId,
     sourceId: job.sourceId,

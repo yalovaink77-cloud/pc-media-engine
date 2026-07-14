@@ -137,11 +137,12 @@ export function validatePublishingHandoff(
     );
   }
 
-  if (review.review.artifactId !== artifact.artifactId) {
+  const reviewedArtifactId = review.review.activeArtifactId ?? review.review.artifactId;
+  if (reviewedArtifactId !== artifact.artifactId) {
     errors.push(
       buildIssue(
         'artifact-review-mismatch',
-        'Review artifactId does not match artifact.artifactId',
+        'Review active artifact does not match the handoff artifact',
         'error',
       ),
     );

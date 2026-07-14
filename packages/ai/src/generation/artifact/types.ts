@@ -38,6 +38,12 @@ export interface CreateGeneratedContentArtifactOptions {
   }) => string;
   readonly validation?: GeneratedContentValidationOptions;
   readonly createdAt?: string;
+  readonly lineage?: {
+    readonly revisionNumber?: number;
+    readonly rootArtifactId?: string;
+    readonly parentArtifactId?: string;
+    readonly revisionRequestId?: string;
+  };
 }
 
 /** Result of mapping a provider response into a generated content artifact. */

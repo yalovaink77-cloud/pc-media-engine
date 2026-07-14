@@ -1,3 +1,5 @@
+import type { EditorialFinding } from './editorial-finding.js';
+import type { PublicationReadinessAssessment } from './editorial-intelligence.js';
 import type { GeneratedContentStatus, GeneratedContentWarning } from './generated-content.js';
 import type { GenerationPolicySnapshot } from './generation-policy.js';
 
@@ -7,6 +9,7 @@ export type ContentReviewStatus =
   | 'approved'
   | 'approved-with-notes'
   | 'changes-requested'
+  | 'revision-in-progress'
   | 'rejected'
   | 'expired';
 
@@ -53,6 +56,12 @@ export interface ContentReviewPolicy {
 export interface ContentReviewRequest {
   readonly reviewId: string;
   readonly artifactId: string;
+  /** Artifact currently under review. Updates when a revision is completed. */
+  readonly activeArtifactId?: string;
+  /** Lineage root for the review chain. */
+  readonly rootArtifactId?: string;
+  /** Number of completed revision passes. */
+  readonly revisionCount?: number;
   readonly jobId: string;
   readonly contentType: string;
   readonly locale: string;
@@ -63,13 +72,26 @@ export interface ContentReviewRequest {
   readonly status: ContentReviewStatus;
   readonly createdAt: string;
   readonly expiresAt: string;
+  /** Present when editorial intelligence analysis ran before review creation. */
+  readonly editorialReportId?: string;
+  /** Findings from pre-review editorial intelligence analysis. */
+  readonly preReviewFindings?: readonly EditorialFinding[];
+  /** Advisory readiness from editorial intelligence — human approval still required. */
+  readonly publicationReadiness?: PublicationReadinessAssessment;
 }
 
 /** Append-only audit event recorded for a content review. */
 export interface ContentReviewHistoryEvent {
   readonly eventId: string;
   readonly reviewId: string;
-  readonly type: 'created' | 'decision-submitted' | 'reopened';
+  readonly type:
+    | 'created'
+    | 'decision-submitted'
+    | 'reopened'
+    | 'revision-requested'
+    | 'revision-started'
+    | 'revision-completed'
+    | 'reanalysis-completed';
   readonly status: ContentReviewStatus;
   readonly decision?: ContentReviewDecision;
   readonly reviewer?: ContentReviewerIdentity;

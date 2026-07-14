@@ -1,5 +1,81 @@
 /** @pcme/shared — cross-package utilities and neutral domain contracts. */
 export type {
+  AcceptanceCriteria,
+  EditorialFinding,
+  EditorialFindingId,
+  EditorialFindingInput,
+  EditorialFindingLocation,
+  FindingCategory,
+  FindingCode,
+  FindingConfidence,
+  FindingRecommendation,
+  FindingSeverity,
+} from './publish/index.js';
+export type {
+  CommercialAnalyzerProfile,
+  CommercialDisclosureRequirement,
+  CommercialPatternMarker,
+  CommercialPromotionThresholds,
+  CommercialProsConsThresholds,
+  CommercialRequiredSection,
+} from './publish/index.js';
+export type { RevisionLocation } from './publish/index.js';
+export type {
+  ContentRevisionItem,
+  ContentRevisionRequest,
+  RevisionComparisonSummary,
+  RevisionGlobalConstraints,
+  RevisionModuleBundle,
+  RevisionPriority,
+  RevisionStatus,
+} from './publish/index.js';
+export type {
+  EditorialAnalyzerProfile,
+  EditorialAnalyzerThresholds,
+  EditorialRequiredSection,
+  EditorialTonePattern,
+} from './publish/index.js';
+export type {
+  EvidenceAnalyzerProfile,
+  EvidencePatternMarker,
+  EvidenceRequiredSection,
+} from './publish/index.js';
+export type {
+  AiSeoAnalyzerProfile,
+  AiSeoCanonicalEntity,
+  AiSeoChunkingTargets,
+  AiSeoContradictionPatternPair,
+  AiSeoFactualDensityThresholds,
+  AiSeoPatternMarker,
+  AiSeoSectionLengthTargets,
+} from './publish/index.js';
+export type {
+  SeoAnalyzerProfile,
+  SeoContentCompletenessThresholds,
+  SeoInternalLinkTargetDescriptor,
+  SeoLengthThresholds,
+  SeoPatternMarker,
+  SeoRequiredSection,
+} from './publish/index.js';
+export type {
+  EditorialIntelligenceConfidence,
+  EditorialIntelligenceFinding,
+  EditorialIntelligenceProfile,
+  EditorialIntelligenceReport,
+  EditorialIntelligenceScores,
+  EditorialModuleId,
+  EditorialModuleSummary,
+  PublicationReadinessAssessment,
+} from './publish/index.js';
+export type {
+  EditorialRule,
+  EditorialRuleId,
+  EditorialRuleInput,
+  EditorialRuleMetadata,
+  RuleCode,
+  RuleGroup,
+} from './publish/index.js';
+export type {
   AppendContentReviewDecisionInput,
   AppendPublishingAttemptInput,
   ClaimNextPublishingOutboxInput,
@@ -44,6 +120,35 @@ export type {
   ReservePublishingIdempotencyInput,
 } from './publish/index.js';
 export {
+  DEFAULT_AI_SEO_CHUNKING_TARGETS,
+  DEFAULT_AI_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_AI_SEO_SUMMARY_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_ADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_ALTERNATIVES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISADVANTAGES_SECTION_ALIASES,
+  DEFAULT_COMMERCIAL_DISCLOSURE_SECTION_ALIASES,
+  DEFAULT_EDITORIAL_ANALYZER_THRESHOLDS,
+  DEFAULT_EVIDENCE_NOTES_SECTION_ALIASES,
+  DEFAULT_REVISION_GLOBAL_CONSTRAINTS,
+  DEFAULT_SEO_FAQ_SECTION_ALIASES,
+  DEFAULT_SEO_META_DESCRIPTION_LENGTH_THRESHOLDS,
+  DEFAULT_SEO_META_DESCRIPTION_SECTION_ALIASES,
+  DEFAULT_SEO_TITLE_LENGTH_THRESHOLDS,
+  DEFAULT_SOURCE_PLACEHOLDER_PATTERN,
+  EDITORIAL_FINDING_ID_PATTERN,
+  EDITORIAL_RULE_ID_PATTERN,
+  EditorialFindingError,
+  EditorialFindingValidationError,
+  EditorialRuleError,
+  EditorialRuleValidationError,
+  FINDING_CATEGORIES,
+  FINDING_CODE_PATTERN,
+  FINDING_CONFIDENCES,
+  FINDING_SEVERITIES,
+  RULE_CODE_PATTERN,
+  RULE_GROUP_PATTERN,
+} from './publish/index.js';
+export {
   buildPublishingIdempotencyKey,
   computePublishingRetryAvailableAt,
   ContentReviewConcurrencyError,
@@ -62,5 +167,6 @@ export {
   PublishingOutboxDuplicateError,
   PublishingOutboxNotFoundError,
   PublishingOutboxTerminalStateError,
+  RevisionValidationError,
   validateReviewDecision,
 } from './publish/index.js';

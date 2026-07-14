@@ -1,0 +1,37 @@
+{
+  "name": "@pcme/pilot-piercingconnect",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "pilot": "tsx src/scripts/piercingconnect-pilot.ts",
+    "pilot:revision": "tsx src/scripts/piercingconnect-pilot-revision.ts",
+    "pilot:acceptance": "tsx src/scripts/piercingconnect-pilot-acceptance.ts"
+  },
+  "dependencies": {
+    "@pcme/ai": "workspace:*",
+    "@pcme/content": "workspace:*",
+    "@pcme/provider-ai-openrouter": "workspace:*",
+    "@pcme/publishing": "workspace:*",
+    "@pcme/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "vitest": "^3.0.5"
+  }
+}

@@ -6,7 +6,10 @@ export {
   GeneratedContentArtifactTransitionError,
 } from './errors.js';
 export { detectGeneratedContentSafetyWarnings } from './safety.js';
-export { InMemoryGeneratedContentArtifactStore } from './store.js';
+export {
+  type GeneratedContentArtifactStore,
+  InMemoryGeneratedContentArtifactStore,
+} from './store.js';
 export type {
   CreateGeneratedContentArtifactOptions,
   CreateGeneratedContentArtifactResult,

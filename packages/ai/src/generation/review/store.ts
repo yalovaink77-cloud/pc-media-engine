@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import type { BeginRevisionInput, CompleteRevisionInput } from '../editorial-loop/types.js';
 import { createReviewCreatedHistoryEvent } from './create-request.js';
 import { validateSubmitDecisionInput } from './decision-rules.js';
 import { ContentReviewNotFoundError, ContentReviewTransitionError } from './errors.js';
@@ -30,6 +31,22 @@ function cloneReviewRequest(review: ContentReviewRequest): ContentReviewRequest 
       citationRequirements: Object.freeze([...review.policySnapshot.citationRequirements]),
       blockedFields: Object.freeze([...review.policySnapshot.blockedFields]),
     }),
+    preReviewFindings: review.preReviewFindings
+      ? Object.freeze(
+          review.preReviewFindings.map((finding) =>
+            Object.freeze({
+              ...finding,
+              recommendation: Object.freeze({ ...finding.recommendation }),
+              acceptanceCriteria: Object.freeze({ ...finding.acceptanceCriteria }),
+              location: finding.location ? Object.freeze({ ...finding.location }) : undefined,
+              metadata: finding.metadata ? Object.freeze({ ...finding.metadata }) : undefined,
+            }),
+          ),
+        )
+      : undefined,
+    publicationReadiness: review.publicationReadiness
+      ? Object.freeze({ ...review.publicationReadiness })
+      : undefined,
   });
 }
 
@@ -137,6 +154,96 @@ export class InMemoryContentReviewStore {
     record.review = cloneReviewRequest({
       ...record.review,
       status: 'pending-review',
+    });
+    record.latestDecision = undefined;
+
+    return toResult(record);
+  }
+
+  beginRevision(input: BeginRevisionInput): ContentReviewResult {
+    const record = this.requireRecord(input.reviewId);
+
+    if (record.review.status !== 'changes-requested') {
+      throw new ContentReviewTransitionError(
+        input.reviewId,
+        record.review.status,
+        'revision-in-progress',
+      );
+    }
+
+    const timestamp = input.timestamp ?? new Date().toISOString();
+    record.history.push(
+      Object.freeze({
+        eventId: randomUUID(),
+        reviewId: input.reviewId,
+        type: 'revision-started',
+        status: 'revision-in-progress',
+        timestamp,
+        notes: input.revisionRequestId,
+      }),
+    );
+    record.review = cloneReviewRequest({
+      ...record.review,
+      status: 'revision-in-progress',
+    });
+
+    return toResult(record);
+  }
+
+  completeRevision(input: CompleteRevisionInput): ContentReviewResult {
+    const record = this.requireRecord(input.reviewId);
+
+    if (record.review.status !== 'revision-in-progress') {
+      throw new ContentReviewTransitionError(
+        input.reviewId,
+        record.review.status,
+        'pending-review',
+      );
+    }
+
+    const timestamp = input.timestamp ?? new Date().toISOString();
+    record.history.push(
+      Object.freeze({
+        eventId: randomUUID(),
+        reviewId: input.reviewId,
+        type: 'revision-completed',
+        status: 'pending-review',
+        timestamp,
+        notes: input.activeArtifactId,
+      }),
+    );
+    record.history.push(
+      Object.freeze({
+        eventId: randomUUID(),
+        reviewId: input.reviewId,
+        type: 'reanalysis-completed',
+        status: 'pending-review',
+        timestamp,
+        notes: input.editorialReport.reportId,
+      }),
+    );
+    record.history.push(
+      Object.freeze({
+        eventId: randomUUID(),
+        reviewId: input.reviewId,
+        type: 'reopened',
+        status: 'pending-review',
+        timestamp,
+      }),
+    );
+
+    record.review = cloneReviewRequest({
+      ...record.review,
+      status: 'pending-review',
+      activeArtifactId: input.activeArtifactId,
+      artifactId: input.activeArtifactId,
+      jobId: input.activeJobId,
+      revisionCount: (record.review.revisionCount ?? 0) + 1,
+      editorialReportId: input.editorialReport.reportId,
+      preReviewFindings: Object.freeze(
+        input.editorialReport.findings.map((finding) => Object.freeze({ ...finding })),
+      ),
+      publicationReadiness: Object.freeze({ ...input.editorialReport.publicationReadiness }),
     });
     record.latestDecision = undefined;
 

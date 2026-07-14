@@ -3,6 +3,7 @@ import type {
   ContentReviewerIdentity,
   ContentReviewFinding,
   ContentReviewPolicy,
+  EditorialIntelligenceReport,
 } from '@pcme/shared';
 
 export type {
@@ -24,6 +25,7 @@ export interface CreateContentReviewRequestOptions {
   readonly policy?: Partial<ContentReviewPolicy>;
   readonly createdAt?: string;
   readonly expiresAt?: string;
+  readonly editorialReport?: EditorialIntelligenceReport;
 }
 
 /** Input for submitting a review decision. */

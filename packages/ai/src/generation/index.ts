@@ -25,6 +25,58 @@ export {
   createGenerationJob,
   DEFAULT_SUPPORTED_OUTPUT_FORMATS,
 } from './create-job.js';
+export type {
+  EditorialIntelligenceAnalysisInput,
+  EditorialIntelligenceOrchestratorOptions,
+  EditorialModule,
+  EditorialModuleAnalysisInput,
+} from './editorial-intelligence/index.js';
+export {
+  aggregateEditorialIntelligenceReport,
+  AiSeoAnalyzer,
+  buildDeterministicEditorialFindingId,
+  buildDeterministicEditorialReportId,
+  buildDeterministicEditorialRuleId,
+  CommercialAnalyzer,
+  createAiSeoAnalyzerModule,
+  createCommercialAnalyzerModule,
+  createDefaultAiSeoRuleRegistry,
+  createDefaultCommercialRuleRegistry,
+  createDefaultEditorialModuleRegistry,
+  createDefaultEditorialRuleRegistry,
+  createDefaultEvidenceRuleRegistry,
+  createDefaultSeoRuleRegistry,
+  createEditorialAnalyzerModule,
+  createEditorialIntelligenceOrchestrator,
+  createEmptyEditorialModule,
+  createEvidenceAnalyzerModule,
+  createSeoAnalyzerModule,
+  CROSS_MODULE_FINDING_OWNERSHIP,
+  dedupeCrossModuleFindings,
+  EditorialAnalyzer,
+  EditorialIntelligenceOrchestrator,
+  EditorialModuleRegistry,
+  EditorialRuleRegistry,
+  EvidenceAnalyzer,
+  isBlockingEditorialFinding,
+  normalizeEditorialFindingInput,
+  normalizeEditorialRuleInput,
+  parseEditorialFinding,
+  parseEditorialFindings,
+  parseEditorialIntelligenceReport,
+  parseEditorialRule,
+  parseEditorialRules,
+  SeoAnalyzer,
+  serializeEditorialFinding,
+  serializeEditorialFindings,
+  serializeEditorialIntelligenceReport,
+  serializeEditorialRule,
+  serializeEditorialRules,
+  validateEditorialFinding,
+  validateEditorialRule,
+} from './editorial-intelligence/index.js';
+export type { EditorialLoopService, EditorialLoopServiceOptions } from './editorial-loop/index.js';
+export { createEditorialLoopService } from './editorial-loop/index.js';
 export {
   GenerationBlockedMetadataError,
   GenerationJobBlockedError,
@@ -72,6 +124,23 @@ export {
   isTerminalReviewStatus,
   validateReviewDecision,
 } from './review/index.js';
+export type {
+  BuildRevisionRequestFromReportInput,
+  CreateRevisionArtifactInput,
+  CreateRevisionGenerationJobInput,
+} from './revision/index.js';
+export {
+  assertRevisionCountWithinLimit,
+  buildDeterministicRevisionArtifactId,
+  buildDeterministicRevisionItemId,
+  buildDeterministicRevisionJobId,
+  buildDeterministicRevisionRequestId,
+  buildRevisionRequestFromReport,
+  compareRevisionReports,
+  createRevisionArtifact,
+  createRevisionGenerationJob,
+  DEFAULT_MAX_REVISION_COUNT,
+} from './revision/index.js';
 export { buildProviderUsage, runGenerationJob, toProviderExecutionError } from './run.js';
 export type {
   CreateGenerationJobOptions,
