@@ -1,0 +1,42 @@
+source_id: app-piercing-faq
+source_type: professional-association-guidance
+publisher: Association of Professional Piercers (APP)
+
+publication_date: null
+last_review_date: null
+
+official_url: https://safepiercing.org/piercing-faq/
+
+evidence_summary: >
+  APP Piercing FAQ provides general professional-position answers on piercing safety,
+  aftercare references, jewelry, minors, MRI compatibility, and oral piercing risks.
+  Saline-specific claims are limited; primary sterile saline guidance remains on the
+  aftercare page.
+
+supported_claims:
+  - id: app-faq-oral-aftercare-link
+    claim: APP publishes separate oral aftercare guidance referenced from the FAQ.
+  - id: app-faq-oral-risks-documented
+    claim: APP documents oral piercing risks including jewelry-related tooth/gum damage and notes proper jewelry sizing/downsize importance.
+  - id: app-faq-downsize-importance
+    claim: After initial swelling subsides, returning to a piercer for downsizing is important to reduce snagging, irritation, and oral structure damage.
+  - id: app-faq-reusable-guns-not-sterilizable
+    claim: APP warns reusable piercing guns cannot be properly sterilized and may damage tissue.
+  - id: app-faq-mri-nonferromagnetic-jewelry
+    claim: High-quality metal body jewelry is non-ferromagnetic and may not need removal for MRI unless in the examined region (with hand-magnet test noted in FAQ).
+
+unsupported_claims:
+  - id: app-faq-packaged-saline-preference
+    claim: Packaged sterile saline is preferred over DIY mixes.
+    reason: Stated on aftercare page, not re-derived as a standalone FAQ claim in reviewed sections.
+  - id: app-faq-saline-concentration
+    claim: 0.9% sodium chloride requirement for aftercare products.
+    reason: Not stated on FAQ page; see app-aftercare record.
+
+confidence_level: medium
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. FAQ is broad; for sterile saline hub content, prefer
+  app-aftercare and app-troubleshooting as primary evidence records. This record
+  supports cross-links on downsizing, oral care pointers, and professional standards.

@@ -1,0 +1,47 @@
+source_id: nhs-infected-piercings
+source_type: public-health-guidance
+publisher: NHS (www.nhs.uk)
+
+publication_date: null
+last_review_date: 2023-04-18
+
+official_url: https://www.nhs.uk/conditions/infected-piercings/
+
+evidence_summary: >
+  NHS patient guidance on infected piercings distinguishes normal early healing signs
+  from infection signs, advises urgent GP/NHS 111 when infection is suspected, and
+  recommends leaving jewellery in unless a doctor advises removal.
+
+supported_claims:
+  - id: nhs-infection-signs
+    claim: Piercing may be infected if area is swollen, painful, hot, very red/dark, has blood or pus (white/green/yellow), or person feels hot/cold/shivery/unwell.
+  - id: nhs-normal-early-signs
+    claim: Normal early healing may include tenderness, itchiness, mild redness, and pale crust-forming fluid.
+  - id: nhs-seek-urgent-care
+    claim: Ask for urgent GP appointment or NHS 111 help if you think piercing might be infected.
+  - id: nhs-leave-jewellery-in
+    claim: Leave jewellery in unless a doctor tells you to take it out.
+  - id: nhs-antibiotics-possible
+    claim: Antibiotics (cream, ointment, or tablets) may be needed if piercing is infected.
+  - id: nhs-prevention-clean-twice-daily
+    claim: Prevention guidance includes cleaning piercing twice a day and using warm salty water to soften crusting.
+
+unsupported_claims:
+  - id: nhs-packaged-sterile-saline-requirement
+    claim: NHS requires packaged sterile saline wound wash for routine piercing aftercare.
+    reason: Prevention section references cleaning and warm salty water; does not specify commercial sterile saline spray products.
+  - id: nhs-diagnosis-by-symptoms-alone
+    claim: Symptom list alone confirms infection without professional assessment.
+    reason: Page directs to medical evaluation.
+
+confidence_level: high
+commercial_independence: independent
+
+notes: >
+  Page last reviewed 18 April 2023; next review due 18 April 2026 per NHS.uk footer.
+  High-caution medical record — use non-diagnostic framing in editorial content.
+  Warm salty water prevention language differs from APP packaged sterile saline
+  preference; do not conflate without explicit editorial context.
+
+related_problems:
+  - infection-concern

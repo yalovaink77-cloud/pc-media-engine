@@ -1,0 +1,69 @@
+source_id: app-aftercare
+source_type: professional-association-guidance
+publisher: Association of Professional Piercers (APP)
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://safepiercing.org/aftercare/
+
+evidence_summary: >
+  APP Suggested Aftercare for Body Piercings recommends sterile saline labeled for
+  wound wash with 0.9% sodium chloride (sometimes with purified water listed) and
+  advises against homemade sea-salt mixes, harsh cleaners, and over-cleaning. Cleaning
+  guidance centers on hand washing, spraying with sterile saline wound wash, and gentle
+  drying with disposable products.
+
+supported_claims:
+  - id: app-aftercare-no-diy-sea-salt
+    claim: Mixing your own sea salt solution is no longer suggested; DIY mixes are commonly too salty and may over-dry the piercing and interfere with healing.
+  - id: app-aftercare-sterile-saline-wound-wash
+    claim: APP strongly encourages use of a sterile saline labeled for use as a wound wash.
+  - id: app-aftercare-nacl-0.9-ingredient
+    claim: Saline ingredients should list 0.9% sodium chloride as the only ingredient (sometimes purified water will be listed).
+  - id: app-aftercare-avoid-additives
+    claim: Additives like moisturizers and antibacterials should be avoided, as should contact lens saline, nasal spray, and eye drops.
+  - id: app-aftercare-spray-during-healing
+    claim: During healing, spray with sterile saline wound wash; moving or rotating jewelry during cleaning is not necessary and may irritate the piercing.
+  - id: app-aftercare-dry-disposable
+    claim: Dry with clean disposable products like gauze or cotton swabs; avoid cloth towels.
+  - id: app-aftercare-avoid-harsh-products
+    claim: Avoid cleaning with alcohol, hydrogen peroxide, antibacterial soaps, iodine, harsh products, and ointments that prevent air circulation.
+  - id: app-aftercare-avoid-overcleaning
+    claim: Avoid over-cleaning because it can delay healing and irritate the piercing.
+  - id: app-aftercare-alternative-if-unavailable
+    claim: If sterile saline is not available in your region, focus on keeping the piercing clean via shower rinsing and check with a local piercer for regional suggestions.
+
+unsupported_claims:
+  - id: app-aftercare-universal-frequency
+    claim: A fixed universal rinse frequency (e.g., exactly 1–2 times daily) for all piercings.
+    reason: Page describes spraying with sterile saline during healing but does not specify a numeric schedule for all body piercings.
+  - id: app-aftercare-brand-endorsement
+    claim: APP endorses any specific commercial sterile saline brand.
+    reason: Guidance is formulation-based, not brand-specific.
+  - id: app-aftercare-guaranteed-healing
+    claim: Sterile saline guarantees healing outcomes or prevents infection.
+    reason: Not stated; disclaimer notes guidance is not a substitute for medical advice.
+
+confidence_level: high
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14 via safepiercing.org/aftercare/. No publication or last-reviewed
+  date appears on the page. Content is licensed CC BY-NC-ND 4.0. PDF download available
+  from the same page. Oral aftercare is referenced elsewhere on APP site; this record
+  covers body piercing aftercare page only.
+
+  Sprint 2 product-claim cross-check (2026-07-14) — APP requirements vs supported
+  manufacturer evidence (not APP brand endorsement):
+
+  | Product record | Aligns with APP framing | Gaps vs APP 0.9% / wound-wash ingredient rule |
+  |----------------|-------------------------|--------------------------------------------------|
+  | official-neilmed | Sterile saline; water + NaCl; preservative-free; spray application; apply-as-needed | **0.9% NaCl unverified** on official label/pages; explicit wound-wash label wording not captured |
+  | official-steri-wash | Sterile; water + NaCl; no drugs/preservatives; spray/mist; apply-as-needed deferral on 4.25 oz label | **0.9% verified 4.25 oz label only** — not confirmed for 3 oz / 8 oz SKUs |
+  | official-recovery-aftercare | Sterile saline; drug/preservative-free; spray; SDS synonym "Sterile Saline Wound Wash 0.9%" | Retail package "labeled for wound wash" wording not separately captured; SDS Section 3 lacks ingredient % table |
+  | official-h2ocean | Comparison peer only | Sea salt + lysozyme + citrate — **not APP-aligned** simple 0.9% NaCl baseline |
+  | official-base-laboratories | Comparison peer only | Multi-additive formula — **not APP-aligned** two-ingredient baseline |
+
+  Editorial rule: cite APP requirements from this record; cite product-specific claims only
+  from manufacturer evidence records. Do not state APP endorses any brand.

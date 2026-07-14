@@ -1,0 +1,41 @@
+id: pc-review-recovery-sterile-saline
+title: 'Recovery Sterile Saline Wash Review'
+content_type: product-review
+pillar: decision-support
+search_intent: validate-product
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: affiliate-review
+related_products:
+  - recovery-sterile-saline-wash-7-4oz
+related_articles:
+  - pc-hub-sterile-saline-complete-guide
+  - pc-review-neilmed-fine-mist
+  - pc-review-steri-wash-saline
+  - pc-review-h2ocean-piercing-aftercare
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-piercing-healing-timeline
+  - pc-guide-infection-vs-irritation
+update_frequency: semiannual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: convert (informed consideration only).
+  Cluster: sterile-saline-sprays.
+  Problem served: reader evaluating Recovery Sterile Saline Wash 7.4 oz (MED-637) after category literacy.
+  Do not publish distribution before pc-hub-sterile-saline-complete-guide is published and interlinked.
+  Evidence: references/evidence/official-recovery-aftercare.yaml — state 0.9% only from verified 7.4 oz SDS synonym ("Sterile Saline Wound Wash 0.9%"); do not invent Section 3 % tables or CoA composition text; do not conflate Purified Saline Wash 1.5 oz/4 oz MSDS with 7.4 oz docs.
+  Production draft: content-operations/production/drafts/recovery-sterile-saline-wash.md.
+  Neutral peer to NeilMed/Steri-Wash/H2Ocean—no ranking for commission.
+  Affiliate: disclosure mandatory; limitations and escalation required in same article.
+  Platform adaptations: separate cards after canonical approval.
+content_class: commercial
+cluster: sterile-saline-sprays
+business_purpose: convert

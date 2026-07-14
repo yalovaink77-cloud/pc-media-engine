@@ -1,0 +1,47 @@
+source_id: usp-saline-guidance
+source_type: pharmacopeial-reference
+publisher: U.S. Food and Drug Administration / DailyMed (label for 0.9% Sodium Chloride Injection, USP)
+
+publication_date: null
+last_review_date: null
+
+official_url: https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=47a0313f-36df-4fa6-a828-c9e1946ba9b0&type=display
+
+evidence_summary: >
+  FDA DailyMed label for 0.9% Sodium Chloride Injection, USP documents the standard
+  pharmaceutical definition of isotonic normal saline (0.9 g NaCl per 100 mL water,
+  sterile, nonpyrogenic, isotonic). USP-NF monograph full text was not accessed in
+  this pass; this record uses the public FDA drug label as a verifiable isotonic
+  saline concentration reference.
+
+supported_claims:
+  - id: usp-nacl-0.9-composition
+    claim: Each 100 mL contains Sodium Chloride USP 0.9 g with Water for Injection; calculated osmolarity 308 mOsmol/L per label.
+  - id: usp-isotonic-definition
+    claim: Product is described as sterile, nonpyrogenic, isotonic sodium chloride injection.
+  - id: usp-normal-saline-equivalence
+    claim: 0.9% sodium chloride injection is standard isotonic normal saline used clinically for fluid/electrolyte replacement contexts per label.
+
+unsupported_claims:
+  - id: usp-piercing-aftercare-indication
+    claim: USP/FDA label indicates indication for body piercing aftercare spray use.
+    reason: Label is for intravenous injection product; piercing topical rinse is out-of-label scope.
+  - id: usp-sterile-water-monograph-text
+    claim: Direct USP monograph language for Sterile Water for Injection or wound-wash products.
+    reason: USP-NF subscription text not accessed; only public FDA label consulted.
+  - id: usp-wound-wash-product-spec
+    claim: Specific over-the-counter wound-wash spray product standards.
+    reason: Not covered by this injection label.
+
+confidence_level: medium
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. Commerce ingredient record `sterile-water` cites
+  `usp-saline-guidance` for isotonic context; this record supports 0.9% NaCl
+  concentration evidence only. Do not extrapolate IV drug label to piercing product
+  marketing claims. Full USP-NF monograph capture remains unresolved.
+
+related_ingredients:
+  - sodium-chloride-0.9-percent
+  - sterile-water

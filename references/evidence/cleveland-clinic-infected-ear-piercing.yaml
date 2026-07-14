@@ -1,0 +1,48 @@
+source_id: cleveland-clinic-infected-ear-piercing
+source_type: public-health-guidance
+publisher: Cleveland Clinic
+
+publication_date: null
+last_review_date: 2023-04-05
+
+official_url: https://my.clevelandclinic.org/health/diseases/21503-infected-ear-piercing
+
+evidence_summary: >
+  Cleveland Clinic guidance on infected ear piercings describes infection signs,
+  treatment options including cleaning with sterile saline, when to seek care, and
+  prevention practices. Medically reviewed page last updated 04/05/2023.
+
+supported_claims:
+  - id: cleveland-infection-signs
+    claim: Infected ear piercing may be red, swollen, sore, warm, itchy, tender, and may ooze blood or white/yellow/green pus.
+  - id: cleveland-open-wound-context
+    claim: New piercing is an open wound that can take several weeks to fully heal; bacteria entry can lead to infection.
+  - id: cleveland-treatment-sterile-saline
+    claim: Treatment may include cleaning the infected ear piercing with sterile saline.
+  - id: cleveland-warm-compress-antibiotics
+    claim: Treatment may include warm compress and topical/oral antibiotics for more severe infections per healthcare provider direction.
+  - id: cleveland-when-to-call-provider
+    claim: Call healthcare provider for chills/fever, embedded jewelry, redness/swelling/pain, or foul-smelling yellow pus/discharge.
+  - id: cleveland-cartilage-higher-risk
+    claim: Upper ear cartilage piercings are more likely to become infected than earlobe piercings.
+
+unsupported_claims:
+  - id: cleveland-prevention-saline-only
+    claim: Cleveland recommends sterile saline as sole routine aftercare for all new piercings.
+    reason: Prevention section lists soap/cleanser, rubbing alcohol, and antibiotic ointment — differs from APP saline-first framing; cite carefully without overgeneralizing.
+  - id: cleveland-piercing-brand-guidance
+    claim: Specific commercial sterile saline product recommendations.
+    reason: Not stated.
+
+confidence_level: high
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. Prevention section includes rubbing alcohol and antibiotic
+  ointment steps that conflict with APP aftercare avoidance of harsh products —
+  editorial content should not merge Cleveland prevention steps with APP piercing
+  aftercare without explicit context. Infection treatment reference to sterile saline
+  supports infection-concern escalation content only.
+
+related_problems:
+  - infection-concern

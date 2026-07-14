@@ -1,15 +1,3 @@
----
-status: reference
-source_of_truth: current Evidence Layer (`references/evidence/`, especially `official-neilmed` and `app-aftercare`)
-last_synchronized_from: content-operations/production/drafts/neilmed-piercing-aftercare-fine-mist.md
-last_synchronized_date: 2026-07-14
-note: >
-  This gold-standard path is a reference mirror of the evidence-synchronized
-  production draft. Do not reintroduce unsupported NeilMed 0.9%, isotonic,
-  drug-free, or healing-guarantee claims. Prefer the Evidence Layer and the
-  production draft as authoritative for new work.
----
-
 # NeilMed Piercing Aftercare Fine Mist Review
 
 **Card ID:** `pc-review-neilmed-fine-mist`  

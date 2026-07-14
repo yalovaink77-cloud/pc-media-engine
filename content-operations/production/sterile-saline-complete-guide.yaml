@@ -23,7 +23,7 @@ related_articles:
   - pc-spoke-sleeping-with-new-piercing
 update_frequency: semiannual
 priority: critical
-status: backlog
+status: production
 owner: editorial-lead
 notes: |
   Business purpose: educate (pre-commercial gateway).
@@ -33,6 +33,7 @@ notes: |
   Affiliate: category-context only—no ranking; link to reviews after education and limitations.
   Do not invent concentration, brand, or outcome claims beyond verified source records at production time.
   Platform adaptations: separate cards after canonical approval.
+  Production brief: content-operations/production/briefs/sterile-saline-complete-guide.md
 content_class: evergreen
 cluster: saline-category-literacy
 business_purpose: educate

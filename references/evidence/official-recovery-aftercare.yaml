@@ -1,0 +1,85 @@
+source_id: official-recovery-aftercare
+source_type: manufacturer-product-documentation
+publisher: Recovery Aftercare
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+
+evidence_summary: >
+  Recovery official product page for Sterile Saline Wash 7.4 oz (MED-637) describes a
+  preservative-free, drug-free, vegan, CFC-free sterile saline spray with bag-on-valve
+  technology and cGMP US manufacturing. The product page links official 7.4 oz SDS,
+  Certificate of Analysis, and gamma sterilization certificate. The 7.4 oz SDS
+  (September 2022) identifies the product synonym as "Sterile Saline Wound Wash 0.9%"
+  and lists piercing aftercare use. Instructions-for-use page provides application
+  directions deferring frequency to piercer when needed. A separate Purified Saline Wash
+  MSDS on the resources page covers 1.5 oz / 4 oz SKUs (propellant documented).
+
+supported_claims:
+  - id: recovery-sizes-7-4oz-1-5oz
+    claim: Sterile Saline Wash is listed in 7.4 oz with 1.5 oz also available.
+  - id: recovery-preservative-drug-free
+    claim: Product is described as preservative-free and drug-free.
+  - id: recovery-vegan-cfc-free
+    claim: Product is vegan, environmentally friendly, and devoid of CFCs, drugs, preservatives, or additives per official product copy.
+  - id: recovery-bag-on-valve
+    claim: Bag-on-valve technology keeps solution pure and protected from the elements.
+  - id: recovery-360-spray
+    claim: 360° spray dispenser for easy application.
+  - id: recovery-cgmp-us-facility
+    claim: Produced in a cGMP American facility; hermetically sealed to prevent contamination.
+  - id: recovery-sku-med-637
+    claim: SKU MED-637 on official product listing.
+  - id: recovery-ifu-frequency-deferral
+    claim: Instructions state spray may be applied as often as needed or as directed by piercer for aftercare.
+  - id: recovery-ifu-external-only
+    claim: Instructions/warnings state for external use only; not for injection; discontinue and consult healthcare practitioner if irritation develops.
+  - id: recovery-ifu-avoid-orifices-burns
+    claim: Warnings state do not use on burn injuries or in body orifices, ear canals, eyes, or mouth.
+  - id: recovery-sds-purified-saline-exists
+    claim: Official resources page hosts MSDS for Recovery Purified Saline Wash Solution Spray (1.5 oz / 44 mL and 4 oz / 118 mL).
+  - id: recovery-sds-dimethyl-ether-propellant
+    claim: Purified Saline Wash Solution MSDS Section 02 lists dimethyl ether 10–20% as hazardous ingredient (aerosol propellant).
+  - id: recovery-sds-7-4oz-linked
+    claim: Official 7.4 oz product page links Recovery Sterile Saline Wash SDS PDF for MED-637.
+  - id: recovery-sds-sku-mapping-7-4oz
+    claim: Official 7.4 oz Sterile Saline Wash (MED-637) product page links dedicated 7.4 oz SDS — distinct from Purified Saline Wash 1.5 oz/4 oz MSDS on resources page.
+  - id: recovery-sds-coa-gamma-linked
+    claim: Official 7.4 oz product page links Certificate of Analysis and gamma sterilization certificate PDFs.
+  - id: recovery-nacl-0.9-percent
+    claim: Official 7.4 oz SDS Section 1 lists product synonym "Sterile Saline Wound Wash 0.9%".
+  - id: recovery-sds-piercing-aftercare-use
+    claim: Official 7.4 oz SDS recommended use includes soothing piercing aftercare and helps remove dirt and debris.
+  - id: recovery-sds-wound-wash-naming
+    claim: Official 7.4 oz SDS uses wound-wash product naming in synonym field (Sterile Saline Wound Wash 0.9%).
+
+unsupported_claims:
+  - id: recovery-ingredient-decomposition
+    claim: Exact ingredient list with water + sodium chloride breakdown and percentage table in SDS Section 3 for 7.4 oz Sterile Saline Wash (MED-637).
+    reason: Official 7.4 oz SDS Section 3 states mixture components are not classified as health hazards above cut-off limits; no quantitative NaCl/water table extracted. 0.9% is documented via Section 1 synonym only.
+  - id: recovery-coa-composition-text
+    claim: Verified NaCl concentration or composition from linked Certificate of Analysis PDF text.
+    reason: Official CoA PDF linked from product page is image-based; machine text extraction returned empty — composition not verified from CoA body text.
+  - id: recovery-healing-guarantee
+    claim: Product guarantees healing or prevents infection.
+    reason: Marketing uses "healthy, hygienic, and healing" language without clinical guarantees.
+  - id: recovery-affiliate-terms
+    claim: Verified affiliate commission structure.
+    reason: Not verified from official pages reviewed.
+
+confidence_level: high
+commercial_independence: manufacturer
+
+notes: >
+  Sprint 2 consulted 2026-07-14: recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+  (SDS/CoA/gamma PDF links), and ingested 7.4 oz SDS PDF
+  (cdn.shopify.com/.../Recovery_7.4oz_Sterile_Saline_SDS__Updated_Sept._6_2022.pdf).
+  Sprint 1 Purified Saline Wash MSDS (1.5 oz/4 oz) remains separate documentation path.
+  APP cross-check (2026-07-14): sterile saline + wound-wash synonym + spray application
+  align with APP aftercare framing; explicit "labeled for wound wash" retail label wording
+  for MED-637 not captured separately from SDS synonym.
+
+related_products:
+  - recovery-sterile-saline-wash-7-4oz

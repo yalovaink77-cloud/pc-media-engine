@@ -1,0 +1,55 @@
+source_id: official-base-laboratories
+source_type: manufacturer-product-documentation
+publisher: Base Laboratories (comparison peer — additive saline spray)
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+
+evidence_summary: >
+  Base Labs Piercing Aftercare Spray is listed in the best-saline-spray-for-piercings
+  keyword cluster as a comparison peer. Official product page verifies a sterile saline
+  mist marketed for piercing aftercare with USP-grade water and sodium chloride plus
+  tea tree oil, allantoin, aloe vera, rosemary leaf oil, and panthenol additive
+  ingredients — not a simple two-ingredient APP-aligned baseline.
+
+supported_claims:
+  - id: base-labs-ingredients-usp-water-nacl
+    claim: Official ingredients block lists USP Grade Water and USP Sodium Chloride.
+  - id: base-labs-ingredients-additives
+    claim: Official ingredients block lists Tea Tree Oil, Allantoin, Aloe Vera, Rosemary Leaf Oil, and Vitamin B5 (Panthenol).
+  - id: base-labs-sterile-saline-mist-marketing
+    claim: Official page markets product as sterile saline mist for healing piercings with touch-free fine mist application.
+  - id: base-labs-sku
+    claim: SKU BSL-PIERCE-SPRY on official shop listing.
+  - id: base-labs-piercing-types-marketing
+    claim: Official marketing states suitability for ears, nose, cartilage, nipple, and body piercings (manufacturer copy).
+
+unsupported_claims:
+  - id: base-labs-nacl-0.9-percent
+    claim: Product contains 0.9% USP sodium chloride / isotonic concentration.
+    reason: Official page lists USP Sodium Chloride without concentration percentage.
+  - id: base-labs-app-alignment
+    claim: Product suitability as APP-aligned sterile isotonic saline baseline (water + sodium chloride only).
+    reason: Official formula includes multiple additive ingredients beyond simple isotonic saline.
+  - id: base-labs-bzk-preservative
+    claim: Product contains benzalkonium chloride or similar preservative.
+    reason: Not listed in official ingredients block fetched; appears on some third-party retailer listings only — unverified for this SKU.
+  - id: base-labs-healing-guarantee
+    claim: Product guarantees healing or prevents infection.
+    reason: Marketing uses soothe/support healing language without clinical guarantees.
+  - id: base-labs-sterility-certification
+    claim: Independently verified sterile manufacturing standard or USP sterile labeling beyond marketing copy.
+    reason: Page uses "sterile saline mist" marketing language; formal sterility certification document not captured.
+
+confidence_level: medium
+commercial_independence: manufacturer
+
+notes: >
+  Sprint 1 consulted 2026-07-14: baselaboratories.com/products/base-labs-piercing-aftercare-spray.
+  Comparison content may cite verified ingredient list and additive formula distinction from
+  APP baseline; do not equate to NeilMed/Steri-Wash/Recovery simple saline positioning.
+
+related_products:
+  - base-laboratories-piercing-aftercare-spray

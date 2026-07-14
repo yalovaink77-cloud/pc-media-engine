@@ -1,0 +1,81 @@
+source_id: official-steri-wash
+source_type: manufacturer-product-documentation
+publisher: Steri-Wash (official storefront at steri-wash.myshopify.com)
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://steri-wash.myshopify.com/pages/frontpage
+
+evidence_summary: >
+  Steri-Wash official storefront describes sterile saline piercing spray-mist in 3 oz,
+  4.25 oz, and 8 oz sizes with no drugs or preservatives, 360° dispensing, twist-lock
+  actuator, and sterility maintained throughout canister life. Frontpage lists spray
+  ingredients as water and sodium chloride. Official 4.25 oz product back label image
+  on the storefront confirms Purified Water and 0.9% USP NaCl (sodium chloride) and
+  describes an isotonic solution. Wholesale listings document medical-grade hospital
+  saline framing (3 oz), vegan-friendly labeling (8 oz), and burns/wounds/piercings use.
+
+supported_claims:
+  - id: steri-wash-no-drugs-preservatives
+    claim: Sterile Saline Piercing Spray-Mist features no drugs or preservatives per official product features list.
+  - id: steri-wash-360-dispense
+    claim: Dispenser allows 360° dispensing.
+  - id: steri-wash-remains-sterile
+    claim: Product remains sterile throughout the life of the canister.
+  - id: steri-wash-sizes-3oz-8oz
+    claim: Piercing spray-mist is offered in 3 oz and 8 oz sizes on official storefront.
+  - id: steri-wash-size-4-25oz
+    claim: A 4.25 oz Sterile Saline Piercing Wash SKU is listed on official storefront (wholesale case listing).
+  - id: steri-wash-made-in-usa
+    claim: Made in the U.S.A. per official features list.
+  - id: steri-wash-wipes-ingredients
+    claim: Steri-Wash Sterile Saline Wipes ingredients are listed as water and sodium chloride with no additional additives.
+  - id: steri-wash-spray-ingredients-water-nacl
+    claim: Official frontpage features list states spray ingredients as Water & Sodium Chloride.
+  - id: steri-wash-8oz-wholesale-burns-wounds
+    claim: Official 8 oz wholesale product description states use for gentle cleaning and irrigation of burns, wounds, and piercings.
+  - id: steri-wash-8oz-wholesale-wound-dressings
+    claim: Official 8 oz wholesale description includes moistening absorbent wound dressings.
+  - id: steri-wash-4-25oz-fine-mist-actuator
+    claim: Official 4.25 oz product copy describes fine mist targeted actuator and gentle cleaning.
+  - id: steri-wash-4-25oz-label-0.9-usp-nacl
+    claim: Official 4.25 oz product back label image lists ingredients as Purified Water, 0.9% USP NaCl (sodium chloride).
+  - id: steri-wash-4-25oz-isotonic-label
+    claim: Official 4.25 oz product back label describes Sterile Saline Piercing Wash as an isotonic solution with NaCl balance matching the human body.
+  - id: steri-wash-3oz-medical-grade-hospital
+    claim: Official 3 oz wholesale product page states it is the same medical grade sterile saline solution used in hospitals.
+  - id: steri-wash-8oz-vegan-friendly
+    claim: Official 8 oz wholesale product description states Vegan Friendly.
+
+unsupported_claims:
+  - id: steri-wash-nacl-0.9-percent
+    claim: Product contains 0.9% USP sodium chloride / isotonic concentration across all SKUs (3 oz, 4.25 oz, 8 oz).
+    reason: 0.9% USP NaCl confirmed on official 4.25 oz back label image only. 3 oz and 8 oz official pages show front packaging without concentration; do not extrapolate from 4.25 oz label to other sizes without matching label evidence.
+  - id: steri-wash-4-25-page-dot-09-text
+    claim: Verified 0.9% concentration from 4.25 oz wholesale product page ".09% Sterile Saline" marketing copy alone.
+    reason: Wholesale page uses ".09%" notation (likely typo). Supported concentration evidence is the official back label image (0.9% USP NaCl), not the ".09%" page copy.
+  - id: steri-wash-healing-claims
+    claim: Product heals piercings or prevents infection.
+    reason: Official copy describes cleansing with fine mist; no medical outcome claims verified.
+  - id: steri-wash-recommended-for-oral
+    claim: Suitable for oral piercings.
+    reason: Not specified on official pages reviewed.
+  - id: steri-wash-affiliate-program
+    claim: Verified direct affiliate program terms.
+    reason: Not documented on official pages reviewed.
+
+confidence_level: medium
+commercial_independence: manufacturer
+
+notes: >
+  Sprint 2 consulted 2026-07-14: frontpage (Water & Sodium Chloride ingredients),
+  4.25 oz wholesale page + official back label image
+  (cdn.shopify.com/.../Steri-Wash_piercing_4.25_back_4250.png — 0.9% USP NaCl),
+  3 oz wholesale page (medical grade hospital saline framing), and 8 oz wholesale page
+  (vegan friendly). Do not treat ".09%" wholesale copy as confirmed 0.9% without label.
+  APP cross-check (2026-07-14): water + NaCl + no drugs/preservatives + spray application
+  align with APP aftercare; 0.9% verified for 4.25 oz SKU only — not full line.
+
+related_products:
+  - steri-wash-saline-spray

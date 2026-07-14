@@ -1,0 +1,58 @@
+source_id: official-h2ocean
+source_type: manufacturer-product-documentation
+publisher: H2Ocean (comparison peer — not APP-aligned sterile saline baseline)
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://h2ocean.com/piercing-aftercare-spray/
+
+evidence_summary: >
+  H2Ocean Piercing Aftercare Spray is a sea-salt and lysozyme aftercare spray referenced
+  for comparison content (neilmed-vs-h2ocean keyword). Official marketing page and shop
+  listing verify a four-ingredient formula (purified water, sea salt, lysozyme, sodium
+  citrate), Red Sea salt positioning, and 1.5 oz / 4 oz sizes. Not equivalent to APP-preferred
+  packaged sterile 0.9% sodium chloride wound wash.
+
+supported_claims:
+  - id: h2ocean-ingredients-four-part
+    claim: Official product page lists ingredients as Deionized/Reverse Osmosis Purified Water, Sea Salt, Lysozyme, and Sodium Citrate.
+  - id: h2ocean-red-sea-salt-positioning
+    claim: Official marketing describes Red Sea salt as primary ingredient with natural lysozyme enzyme.
+  - id: h2ocean-sizes-1-5oz-4oz
+    claim: Official shop offers Piercing Aftercare Spray in 1.5 oz and 4 oz variants.
+  - id: h2ocean-patented-formula-marketing
+    claim: Official shop meta description describes patented sea salt and lysozyme formula.
+  - id: h2ocean-manufacturer-usage-frequency
+    claim: Official shop meta description recommends use 3–6 times daily to remove discharge and debris (manufacturer marketing copy).
+  - id: h2ocean-saline-solution-marketing
+    claim: Official marketing frames product as saline solution spray for piercings (sea-salt-based, not simple isotonic NaCl).
+
+unsupported_claims:
+  - id: h2ocean-ingredient-concentrations
+    claim: Verified ingredient concentrations or percentages for sea salt, lysozyme, or sodium citrate.
+    reason: Official pages list ingredients without quantitative breakdown.
+  - id: h2ocean-sterile-0-9-nacl
+    claim: Product is sterile 0.9% sodium chloride isotonic saline.
+    reason: Formula is sea salt + lysozyme + sodium citrate; no sterile 0.9% NaCl labeling verified on official pages.
+  - id: h2ocean-app-equivalence
+    claim: Product is equivalent to APP-preferred packaged sterile 0.9% sodium chloride wound wash.
+    reason: Ingredient profile and marketing positioning differ from APP-aligned two-ingredient sterile isotonic saline baseline.
+  - id: h2ocean-healing-infection-prevention
+    claim: Product prevents infection, keloids, or guarantees faster healing.
+    reason: Marketing claims possible benefits; no clinical guarantees verified. Comparison content must treat as manufacturer marketing.
+  - id: h2ocean-vegan-natural-claims
+    claim: Verified vegan or "proven healing" status.
+    reason: Site schema/marketing includes natural and vegan language; not independently verified beyond manufacturer copy.
+
+confidence_level: medium
+commercial_independence: manufacturer
+
+notes: >
+  Sprint 1 consulted 2026-07-14: h2ocean.com/piercing-aftercare-spray/ (marketing page
+  with JSON-LD ingredient block) and shop.h2ocean.com/products/piercing-aftercare-spray.
+  Prior fetch timeout resolved via direct curl. Suitable for ingredient-level comparison
+  content; do not attribute APP-aligned sterile saline equivalence.
+
+related_products:
+  - h2ocean-piercing-aftercare-spray

@@ -1,0 +1,43 @@
+id: pc-review-h2ocean-piercing-aftercare
+title: 'H2Ocean Piercing Aftercare Spray Review'
+content_type: product-review
+pillar: decision-support
+search_intent: validate-product
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: affiliate-review
+related_products:
+  - h2ocean-piercing-aftercare-spray
+related_articles:
+  - pc-hub-sterile-saline-complete-guide
+  - pc-review-neilmed-fine-mist
+  - pc-review-steri-wash-saline
+  - pc-review-recovery-sterile-saline
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-piercing-healing-timeline
+  - pc-guide-infection-vs-irritation
+update_frequency: semiannual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: convert (informed consideration only).
+  Cluster: sterile-saline-sprays.
+  Problem served: reader comparing sea-salt/lysozyme aftercare spray peers after category literacy.
+  Comparison peer only — not APP-aligned simple sterile 0.9% sodium chloride wound-wash baseline.
+  Do not publish distribution before pc-hub-sterile-saline-complete-guide is published and interlinked.
+  Evidence: references/evidence/official-h2ocean.yaml — four-ingredient formula (water, sea salt, lysozyme, sodium citrate); do not infer sterility, isotonic concentration, APP equivalence, ingredient percentages, or healing guarantees.
+  Manufacturer 3–6× daily shop copy is marketing only; not APP schedule guidance.
+  Production draft: content-operations/production/drafts/h2ocean-piercing-aftercare.md.
+  Neutral peer relationship—no ranking for commission.
+  Affiliate: disclosure mandatory; limitations and escalation required in same article.
+  Platform adaptations: separate cards after canonical approval.
+content_class: commercial
+cluster: sterile-saline-sprays
+business_purpose: convert

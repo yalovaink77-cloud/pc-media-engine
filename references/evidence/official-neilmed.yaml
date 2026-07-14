@@ -1,0 +1,85 @@
+source_id: official-neilmed
+source_type: manufacturer-product-documentation
+publisher: NeilMed Pharmaceuticals, Inc.
+
+publication_date: null
+last_review_date: 2026-07-14
+
+official_url: https://www.neilmedpac.com/usa/piercing-aftercare/
+
+evidence_summary: >
+  NeilMed official piercing aftercare pages and USA shop listing describe NeilCleanse /
+  NeilMed Piercing Aftercare as a preservative-free, vegan, sterile saline fine-mist spray
+  using pharmaceutical-grade water and sodium chloride, in 75 mL travel and 177 mL sizes via
+  bag-on-valve applicator. Official shop product back label image (177 mL) lists Deionized
+  Water & Sodium Chloride without concentration percentage. Directions-for-use page provides
+  application and safety warnings and hosts APP aftercare brochure PDFs (not NeilMed product
+  specification documents).
+
+supported_claims:
+  - id: neilmed-ingredients-water-nacl
+    claim: Ingredients label lists pharmaceutical-grade water and sodium chloride.
+  - id: neilmed-label-deionized-water-nacl
+    claim: Official USA shop 177 mL product back label image lists Deionized Water & Sodium Chloride as ingredients.
+  - id: neilmed-preservative-free
+    claim: NeilMed Piercing Aftercare Spray is free from preservatives.
+  - id: neilmed-bag-on-valve-sterile
+    claim: Bag-on-valve technology keeps contents sterile and allows spraying when the can is tipped upside down.
+  - id: neilmed-fine-mist-application
+    claim: Fine mist allows spraying saline directly onto the piercing rather than soaking or cotton-ball application.
+  - id: neilmed-travel-75ml
+    claim: A 75 mL travel size is offered and described as TSA carry-on compatible on the official piercing aftercare page.
+  - id: neilmed-product-line-history
+    claim: NeilMed created NeilCleanse Piercing Aftercare Spray in 2014 and added 75 mL travel size in 2016 per official about page.
+  - id: neilmed-shop-177ml-sterile-vegan
+    claim: Official USA shop listing for 177 mL describes the product as natural, vegan, preservative-free sterile saline piercing aftercare spray.
+  - id: neilmed-shop-177ml-size
+    claim: 177 mL Fine Mist Can is sold on official USA shop (shop.neilmedpac.com).
+  - id: neilmed-shop-direct-spray
+    claim: Official shop copy states users can spray saline directly onto the piercing rather than soaking in a saline bath or using a cotton ball.
+  - id: neilmed-neilcleanse-branding
+    claim: Directions-for-use page uses NeilCleanse Piercing Aftercare product naming.
+  - id: neilmed-ifu-external-only
+    claim: Directions/warnings state for external use only; not for injection.
+  - id: neilmed-ifu-avoid-orifices
+    claim: Directions/warnings state do not use in body orifices, ear canals, eyes, or mouth.
+  - id: neilmed-ifu-avoid-burns
+    claim: Directions/warnings state do not use on burn injuries.
+  - id: neilmed-ifu-apply-as-needed
+    claim: Directions state apply as needed; consult healthcare professional for continued wound care management.
+  - id: neilmed-label-external-use-only
+    claim: Official 177 mL back label states for external use only; not for injection.
+  - id: neilmed-label-sterile-r-symbol
+    claim: Official 177 mL back label displays sterile irradiation (STERILE R) symbol.
+
+unsupported_claims:
+  - id: neilmed-nacl-0.9-percent
+    claim: Product contains 0.9% sodium chloride (9 mg/mL isotonic concentration).
+    reason: Official piercing aftercare pages, shop copy, and official 177 mL back label image (shop.neilmedpac.com/cdn/shop/files/177mL-BACK.jpg) list water + sodium chloride without concentration percentage or mg/mL. NeilMed WoundWash on other NeilMed shops lists 9 mg/mL but is a different product line — do not attribute to Piercing Aftercare Fine Mist.
+  - id: neilmed-drug-free-label
+    claim: Product is explicitly labeled drug-free on official pages reviewed.
+    reason: Shop page states natural, vegan, preservative-free sterile saline; explicit "drug-free" wording not verified on pages or label image consulted.
+  - id: neilmed-healing-guarantee
+    claim: Product prevents infection or guarantees faster healing.
+    reason: Marketing emphasizes ease of cleaning; no outcome guarantees on official pages reviewed.
+  - id: neilmed-usage-frequency-specific
+    claim: Specific rinse frequency (e.g., exactly 1–2 times daily).
+    reason: Directions defer to apply as needed; no fixed daily count on official pages reviewed.
+  - id: neilmed-aap-pac-pdf-is-product-spec
+    claim: NeilMed-hosted aap-pac-english.pdf is NeilMed Piercing Aftercare product specification or label documentation.
+    reason: PDF is APP Suggested Aftercare brochure hosted on NeilMed directions-for-use page (safepiercing.org source); not NeilMed 0.9% NaCl product evidence.
+
+confidence_level: medium
+commercial_independence: manufacturer
+
+notes: >
+  Sprint 2 consulted 2026-07-14: shop.neilmedpac.com 177 mL back label image
+  (177mL-BACK.jpg — Deionized Water & Sodium Chloride, no %), directions-for-use
+  (aap-pac-english.pdf confirmed as APP brochure download, not product spec), and
+  re-checked piercing-aftercare + shop pages. Do not infer 0.9% NaCl from label.
+  APP cross-check (2026-07-14): sterile saline + water/NaCl + preservative-free +
+  spray application align with APP aftercare; **0.9% NaCl gap remains** vs APP
+  ingredient guidance.
+
+related_products:
+  - neilmed-piercing-aftercare-fine-mist

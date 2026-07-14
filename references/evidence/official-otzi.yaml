@@ -1,0 +1,59 @@
+source_id: official-otzi
+source_type: manufacturer-product-documentation
+publisher: Medical Body Art / OTZI by Easypiercing (Pharma & Beauty Group)
+
+publication_date: null
+last_review_date: null
+
+official_url: https://www.otzi.fr/en/nos-produits/otzi-piercing-en/otzi-by-easypiercing-saline-solution-spray-50ml-piercing-aftercare/
+
+evidence_summary: >
+  OTZI official product page for Easypiercing Saline Solution 50 mL lists ingredients
+  Aqua and Sodium Chloride, describes daily rinsing/hydration use with micro-particle
+  spray, and PAO 1 month after opening. SDS (UK) confirms aerosol presentation with
+  nitrogen propellant and pH 4.0–7.5.
+
+supported_claims:
+  - id: otzi-ingredients-aqua-nacl
+    claim: Official product page ingredients are Aqua (Water) and Sodium Chloride.
+  - id: otzi-daily-rinsing-use
+    claim: Product is designed for daily rinsing and hydration of piercings.
+  - id: otzi-micro-particle-spray
+    claim: Special diffuser sprays micro-particles for application.
+  - id: otzi-pao-1-month
+    claim: PAO (period after opening) is 1 month per official product page.
+  - id: otzi-sds-nitrogen-propellant
+    claim: SDS lists nitrogen (1–<5%) as aerosol propellant; product is classified as Aerosol 3 / pressurized container H229.
+  - id: otzi-sds-ph-range
+    claim: SDS states pH 4.0–7.5 for Solution Saline mixture.
+  - id: otzi-sds-external-use-context
+    claim: SDS identifies consumer/cosmetics personal care product use (PC39).
+
+unsupported_claims:
+  - id: otzi-sterile-wound-wash
+    claim: Product is sterile and labeled for wound washing equivalent to APP-preferred sterile saline wound wash.
+    reason: Official product page does not state sterility or wound-wash labeling; SDS section 3 mixture table in fetch listed propellant only — full saline composition table unresolved.
+  - id: otzi-nacl-0.9-percent
+    claim: Product contains 0.9% isotonic sodium chloride concentration.
+    reason: Official page lists Sodium Chloride without percentage; not verified.
+  - id: otzi-preservative-free-sterile
+    claim: Preservative-free and sterile product status.
+    reason: Not stated on official product page reviewed.
+  - id: otzi-healing-outcomes
+    claim: Product guarantees healing outcomes or infection prevention.
+    reason: Not stated; hydration/rinsing framing only.
+
+confidence_level: medium
+commercial_independence: manufacturer
+
+notes: >
+  Consulted 2026-07-14: OTZI product page and SDS PDF
+  (otzi.fr/wp-content/uploads/2023/05/210812-FDS-SOLUTION-SALINE-UK.pdf).
+  Treat as European professional aftercare saline rinse, not automatically equivalent
+  to US sterile wound-wash saline without sterility verification. Commerce record
+  category saline-spray (not sterile-saline-spray) aligns with current evidence gap.
+
+related_products:
+  - easypiercing-saline-solution-50ml
+
+sds_url: https://www.otzi.fr/wp-content/uploads/2023/05/210812-FDS-SOLUTION-SALINE-UK.pdf

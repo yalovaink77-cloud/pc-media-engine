@@ -1,0 +1,47 @@
+source_id: app-troubleshooting
+source_type: professional-association-guidance
+publisher: Association of Professional Piercers (APP)
+
+publication_date: null
+last_review_date: null
+
+official_url: https://safepiercing.org/troubleshooting/
+
+evidence_summary: >
+  APP troubleshooting guidance for piercees and healthcare professionals covers when
+  to seek medical care, normal vs concerning healing signs, inappropriate aftercare
+  products, and suggested saline rinsing frequency ranges for body and oral piercings.
+
+supported_claims:
+  - id: app-troubleshooting-inappropriate-aftercare-common
+    claim: Inappropriate aftercare is the most common cause of a distressed piercing.
+  - id: app-troubleshooting-avoid-harsh-products
+    claim: Alcohol, hydrogen peroxide, Betadine, Hibiclens, harsh soaps, and ointments are not appropriate for healing ear or body piercings.
+  - id: app-troubleshooting-overcleaning-irritates
+    claim: Over-cleaning and using strong products can irritate piercings and delay healing.
+  - id: app-troubleshooting-body-saline-frequency
+    claim: Rinsing with sterile wound wash saline 1–3 times a day is suggested for body piercings.
+  - id: app-troubleshooting-oral-rinse-frequency
+    claim: Rinsing with mild non-iodized sea salt and/or antimicrobial or antibacterial alcohol-free mouthwash 4–5 times a day is suggested for oral piercings.
+  - id: app-troubleshooting-when-see-doctor
+    claim: Seek a doctor immediately for severe redness/swelling/pain, thick green/yellow/gray malodorous discharge, red streaks, steroid use/chronic illness, symptoms lasting a week or worsening, or fever/chills/nausea/vomiting/dizziness/disorientation.
+  - id: app-troubleshooting-irritation-more-common-than-infection
+    claim: When piercings are properly performed and cared for, irritation or allergy are far more common than infection.
+  - id: app-troubleshooting-do-not-remove-infection
+    claim: Simply taking out jewelry may not resolve the problem; if infection is present, removal can lead to abscess formation per APP troubleshooting framing.
+
+unsupported_claims:
+  - id: app-troubleshooting-diagnosis
+    claim: APP confirms a piercing is infected based on symptoms alone.
+    reason: Document supports professional evaluation; does not replace clinical diagnosis.
+  - id: app-troubleshooting-product-ranking
+    claim: Any specific sterile saline product is superior to others.
+    reason: Not addressed on this page.
+
+confidence_level: high
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. Body saline frequency (1–3x/day) applies to body piercings;
+  oral guidance differs. Medical sections are high-caution; pair with clinician-facing
+  disclaimer in published content.

@@ -1,0 +1,55 @@
+source_id: mayo-clinic-piercings
+source_type: public-health-guidance
+publisher: Mayo Clinic
+
+publication_date: 2024-03-01
+last_review_date: null
+
+official_url: https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/piercings/art-20047317
+
+evidence_summary: >
+  Mayo Clinic patient guidance on piercings covers risks, professional piercing safety,
+  and aftercare including cleaning skin piercings with saline solution made for wound
+  cleaning or soap and water, avoiding harsh products, and seeking care if swelling/
+  redness/bleeding persist beyond a few days.
+
+supported_claims:
+  - id: mayo-clean-skin-piercings-saline
+    claim: For skin piercings, clean the area around the piercing twice a day using a saline solution made for wound cleaning or soap and water.
+  - id: mayo-avoid-harsh-cleaners
+    claim: Do not use hydrogen peroxide, iodine, or other harsh products to clean the piercing; they could injure pierced skin.
+  - id: mayo-do-not-swim-during-healing
+    claim: Stay out of pools, hot tubs, rivers, lakes, and other bodies of water while the piercing heals.
+  - id: mayo-leave-jewelry-during-healing
+    claim: Leave jewelry in place during healing; most piercings heal within about six weeks but some take months.
+  - id: mayo-seek-care-persistent-symptoms
+    claim: Contact healthcare professional if swelling, redness, and bleeding last longer than a few days.
+  - id: mayo-oral-mouthwash-aftercare
+    claim: Clean oral piercings with alcohol-free antiseptic mouthwash after meals and before bed; brush around jewelry daily.
+  - id: mayo-cites-app-aftercare
+    claim: Mayo references APP aftercare page in sources list.
+
+unsupported_claims:
+  - id: mayo-0.9-percent-requirement
+    claim: Mayo requires 0.9% sodium chloride specifically for piercing aftercare saline.
+    reason: Article references "saline solution made for wound cleaning" without specifying 0.9% on page reviewed.
+  - id: mayo-brand-recommendations
+    claim: Mayo recommends specific commercial sterile saline brands.
+    reason: Not stated.
+
+confidence_level: high
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. Article date shown March 1, 2024. Useful for general aftercare
+  and escalation framing; APP remains primary professional piercing source for
+  packaged sterile saline specificity.
+
+related_ingredients:
+  - sodium-chloride-0.9-percent
+
+related_problems:
+  - infection-concern
+  - swelling
+  - redness
+  - bleeding

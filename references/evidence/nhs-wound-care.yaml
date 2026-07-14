@@ -1,0 +1,46 @@
+source_id: nhs-wound-care
+source_type: public-health-guidance
+publisher: NHS Scotland (NHS Highland formulary via Right Decisions)
+
+publication_date: null
+last_review_date: null
+
+official_url: https://www.rightdecisions.scot.nhs.uk/tam-treatments-and-medicines-nhs-highland/formularies/ancillary-formularies/wound-management-guidelines-and-formulary-formularies/
+
+evidence_summary: >
+  NHS wound-management guidance accessed via NHS Scotland Right Decisions formulary
+  describes sterile sodium chloride 0.9% as an isotonic cleanser that does not impede
+  healing, with specific use cases where tap water is not recommended, and cautions
+  against antiseptic wound cleansers that may damage tissue.
+
+supported_claims:
+  - id: nhs-nacl-0.9-isotonic
+    claim: Sterile sodium chloride 0.9% is an isotonic solution that does not impede healing or cause allergic reactions per NHS wound cleansing guidance reviewed.
+  - id: nhs-saline-when-tap-water-not-recommended
+    claim: Sterile 0.9% sodium chloride should be used in situations where tap water is not recommended (per NHS Highland wound cleansing section reviewed).
+  - id: nhs-warm-irrigation-fluid
+    claim: Irrigation fluid should be warmed; cooling the wound inhibits cell mitosis per NHS guidance reviewed.
+  - id: nhs-avoid-antiseptic-cleansers-tissue-damage
+    claim: Antiseptic solutions may cause tissue damage and hinder healing and are unlikely to be effective for routine wound cleansing per NHS guidance reviewed.
+
+unsupported_claims:
+  - id: nhs-piercing-specific-protocol
+    claim: NHS provides piercing-specific sterile saline aftercare frequency protocol.
+    reason: Source is general wound cleansing guidance, not body-piercing-specific.
+  - id: nhs-saline-superior-to-tap-water-all-wounds
+    claim: Saline is superior to tap water for all wound cleansing contexts.
+    reason: Same NHS ecosystem documents note tap water can be appropriate in many wound contexts; piercing aftercare should not overgeneralize beyond cited scope.
+
+confidence_level: medium
+commercial_independence: independent
+
+notes: >
+  Consulted 2026-07-14. Original commerce reference ID `nhs-wound-care` did not map to
+  a single www.nhs.uk patient page verified in this pass. This record uses accessible
+  NHS Scotland formulary wound-cleansing guidance. A dedicated www.nhs.uk patient
+  wound-saline page was not verified; update if a canonical NHS.uk URL is identified.
+  For piercing content, pair with APP aftercare rather than substituting NHS wound
+  formulary for piercing-specific professional guidance.
+
+related_ingredients:
+  - sodium-chloride-0.9-percent
