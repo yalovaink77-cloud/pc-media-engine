@@ -1,0 +1,169 @@
+# WordPress publication package — Steri-Wash Saline Spray Review
+# Card ID: pc-review-steri-wash-saline
+# Sprint: Publishing 001 | Evidence boundary: 2026-07-14
+
+card_id: pc-review-steri-wash-saline
+content_type: product-review
+wordpress_status: draft
+publish_wave: 3
+
+wordpress_ready_title: 'Steri-Wash Saline Spray Review'
+seo_title: 'Steri-Wash Saline Spray Review: 4.25 oz Label Facts | PiercingConnect'
+meta_description: 'Independent Steri-Wash review: water + sodium chloride spray, no drugs or preservatives, and SKU-scoped 0.9% USP NaCl verified on the 4.25 oz label only—not extrapolated to all sizes.'
+slug: /reviews/steri-wash-saline-spray/
+canonical_url: https://piercingconnect.com/reviews/steri-wash-saline-spray/
+
+excerpt: |
+  Steri-Wash Sterile Saline Piercing Spray comes in 3 oz, 4.25 oz, and 8 oz sizes with official no-drugs/preservatives framing and water + sodium chloride ingredients. This review documents verified facts—including 0.9% USP NaCl on the 4.25 oz label only—and honest gaps vs APP guidance. Not a ranked best-of verdict.
+
+featured_image_brief:
+  subject: Steri-Wash sterile saline piercing spray can with size callout emphasis on 4.25 oz for concentration context
+  mood: Neutral product review; educational SKU-scoping visible if overlay used
+  composition: Single can, clean background; optional size comparison strip (3 / 4.25 / 8 oz) without ranking
+  text_overlay: >
+    Optional 4.25 oz label verified sublabel—must not imply line-wide 0.9%
+  avoid: >
+    Best saline badges, hospital endorsement implications, concentration claims for unrated SKUs
+  alt_text: Steri-Wash sterile saline piercing spray product review
+
+wordpress_categories:
+  - Product Reviews
+  - Sterile Saline
+wordpress_tags:
+  - Steri-Wash
+  - sterile saline spray
+  - piercing aftercare
+  - 0.9% USP NaCl
+  - wound wash
+
+affiliate_relevance: affiliate-review
+
+affiliate_disclosure_placement:
+  position: end_of_article
+  location: After Source Notes, before footer navigation
+  copy: |
+    We may earn a commission from qualifying purchases made through links on this page. Product inclusion, limitations, and the verdict above are independent of commission. Affiliate relationships do not create a ranking and do not remove evidence gaps (including unresolved 0.9% concentration for Steri-Wash sizes other than the verified 4.25 oz label).
+  notes: Consolidate to single bottom disclosure on WordPress import (remove duplicate top-of-page affiliate note from draft).
+
+cta_placement:
+  - section: Editorial Summary
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    copy: 'Start with category literacy before comparing SKUs.'
+    placement: After SKU-scoped evidence boundary paragraph
+  - section: Who May Consider It
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    placement: Closing line — especially for readers seeking label-verified 0.9% USP NaCl
+  - section: Alternatives
+    type: peer_review_links
+    targets:
+      - NeilMed Fine Mist Review
+      - Recovery Sterile Saline Wash Review
+      - H2Ocean Piercing Aftercare Spray Review
+    placement: Alternatives table — unranked
+  - section: Final Verdict
+    type: informed_decision
+    copy: 'Use with piercer guidance. No healing guarantee.'
+    placement: Verdict closing
+  - section: Affiliate link (if enabled)
+    type: commercial
+    placement: After Final Verdict — specify 4.25 oz SKU in link context when concentration is material
+
+internal_links:
+  in_cluster:
+    - anchor: Sterile Saline Complete Guide
+      card_id: pc-hub-sterile-saline-complete-guide
+      url: /guides/sterile-saline-for-piercing-aftercare/
+      context: Start here; Editorial Summary; Who May Consider It
+    - anchor: NeilMed Fine Mist Review
+      card_id: pc-review-neilmed-fine-mist
+      url: /reviews/neilmed-piercing-aftercare-fine-mist/
+      context: Alternatives table
+    - anchor: Recovery Sterile Saline Wash Review
+      card_id: pc-review-recovery-sterile-saline
+      url: /reviews/recovery-sterile-saline-wash/
+      context: Alternatives table; Final Verdict peer mention
+    - anchor: H2Ocean Piercing Aftercare Spray Review
+      card_id: pc-review-h2ocean-piercing-aftercare
+      url: /reviews/h2ocean-piercing-aftercare-spray/
+      context: Alternatives table (comparison peer)
+  spokes_pending:
+    - anchor: Common Aftercare Mistakes
+      card_id: pc-guide-common-aftercare-mistakes
+      url: pending
+    - anchor: Piercing Healing Timeline
+      card_id: pc-guide-piercing-healing-timeline
+      url: pending
+    - anchor: Piercing Bump Safe Care
+      card_id: pc-spoke-piercing-bump-safe-care
+      url: pending
+    - anchor: Infection vs. Irritation
+      card_id: pc-guide-infection-vs-irritation
+      url: pending
+  external:
+    - label: Steri-Wash (official storefront)
+      url: https://steri-wash.myshopify.com/pages/frontpage
+    - label: APP Suggested Aftercare
+      url: https://safepiercing.org/aftercare/
+
+faq_schema:
+  '@context': 'https://schema.org'
+  '@type': 'FAQPage'
+  mainEntity:
+    - '@type': 'Question'
+      name: 'Is Steri-Wash 0.9% sodium chloride?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Yes for the verified 4.25 oz back label (Purified Water, 0.9% USP NaCl; isotonic label wording). Not verified here for 3 oz or 8 oz. Check the can you buy. Do not rely on wholesale .09% marketing copy as proof.'
+    - '@type': 'Question'
+      name: 'How often should I use Steri-Wash?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP guidance does not give a fixed universal daily schedule for all piercings. Follow your piercer and the directions on the specific Steri-Wash SKU.'
+    - '@type': 'Question'
+      name: 'Is Steri-Wash the same as APP-preferred packaged sterile saline?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'It overlaps on packaged sterile saline, water + sodium chloride, no drugs/preservatives, and spray use. 0.9% is documented on the 4.25 oz label; full-line concentration match is unresolved. APP does not endorse brands.'
+    - '@type': 'Question'
+      name: 'Can I use homemade salt water instead of Steri-Wash?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP suggested aftercare no longer recommends DIY sea-salt mixes; they are commonly too salty and may over-dry the piercing. Prefer packaged sterile saline wound wash where available.'
+    - '@type': 'Question'
+      name: 'What if I have irritation or worry about infection?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Do not self-diagnose from an article. Contact a piercer or healthcare provider for concerning or worsening symptoms.'
+
+source_notes:
+  heading: 'Sources & References'
+  intro: 'Product facts and SKU-scoped concentration boundaries map to verified evidence records.'
+  records:
+    - source: 'Steri-Wash (official storefront)'
+      url: https://steri-wash.myshopify.com/pages/frontpage
+      role: 'Primary product facts; 4.25 oz label 0.9% / isotonic; line features; SKU-scoped unsupported claims'
+    - source: 'Association of Professional Piercers — Suggested Aftercare'
+      url: https://safepiercing.org/aftercare/
+      role: 'Professional saline / DIY / over-cleaning guidance; no brand endorsement; no universal schedule'
+    - source: 'NeilMed Piercing Aftercare (official) — alternative peer'
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+      role: 'Alternative peer; 0.9% unresolved'
+    - source: 'Recovery Sterile Saline Wash 7.4 oz (official) — alternative peer'
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+      role: 'Alternative peer; 7.4 oz SDS 0.9% synonym'
+    - source: 'H2Ocean Piercing Aftercare Spray (official) — comparison peer'
+      url: https://h2ocean.com/piercing-aftercare-spray/
+      role: 'Comparison peer only (not APP baseline)'
+    - source: 'Base Laboratories Piercing Aftercare Spray (official) — comparison peer'
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+      role: 'Comparison peer only (not APP baseline)'
+
+body_source: content-operations/production/drafts/steri-wash-saline-spray.md
+cms_strip_before_import:
+  - Card ID header block
+  - Top affiliate note (consolidated to bottom)
+  - Explicitly excluded claims section
+  - Draft metadata section
+  - Raw source_id parentheticals in body prose

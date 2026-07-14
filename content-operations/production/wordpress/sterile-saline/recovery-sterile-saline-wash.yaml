@@ -1,0 +1,173 @@
+# WordPress publication package — Recovery Sterile Saline Wash Review
+# Card ID: pc-review-recovery-sterile-saline
+# Sprint: Publishing 001 | Evidence boundary: 2026-07-14
+
+card_id: pc-review-recovery-sterile-saline
+content_type: product-review
+wordpress_status: draft
+publish_wave: 4
+primary_sku: Sterile Saline Wash 7.4 oz (MED-637)
+
+wordpress_ready_title: 'Recovery Sterile Saline Wash Review (7.4 oz)'
+seo_title: 'Recovery Sterile Saline Wash 7.4 oz Review | PiercingConnect'
+meta_description: 'Independent Recovery Sterile Saline Wash 7.4 oz review: drug-free/preservative-free claims, bag-on-valve spray, linked SDS/CoA/gamma docs, and 0.9% evidence via SDS synonym only—not Section 3 or CoA text.'
+slug: /reviews/recovery-sterile-saline-wash/
+canonical_url: https://piercingconnect.com/reviews/recovery-sterile-saline-wash/
+
+excerpt: |
+  Recovery Sterile Saline Wash 7.4 oz (MED-637) is a packaged sterile saline spray with official drug-free/preservative-free framing and linked SDS, CoA, and gamma documentation. This review covers verified facts—including 0.9% via the 7.4 oz SDS synonym Sterile Saline Wound Wash 0.9%—and documentation limits. Not a ranked best-of verdict.
+
+featured_image_brief:
+  subject: Recovery Sterile Saline Wash 7.4 oz can with subtle documentation motif (SDS/technical sheet icon—not readable text)
+  mood: Documentation-forward review; professional, not clinical-alarmist
+  composition: Product can with clean layout; optional 360° spray arc graphic
+  text_overlay: >
+    7.4 oz (MED-637) SKU callout; no healing promises
+  avoid: CoA/SDS readable text in image (may drift from verified record), 1.5 oz conflation, APP endorsement cues
+  alt_text: Recovery Sterile Saline Wash 7.4 oz MED-637 product review
+
+wordpress_categories:
+  - Product Reviews
+  - Sterile Saline
+wordpress_tags:
+  - Recovery Aftercare
+  - sterile saline wash
+  - MED-637
+  - piercing aftercare
+  - SDS documentation
+
+affiliate_relevance: affiliate-review
+
+affiliate_disclosure_placement:
+  position: end_of_article
+  location: After Source Notes, before footer navigation
+  copy: |
+    We may earn a commission from qualifying purchases made through links on this page. Product inclusion, limitations, and the verdict above are independent of commission. Affiliate relationships do not create a ranking and do not remove evidence gaps (including unverified CoA composition text and absence of an SDS Section 3 NaCl/water percentage table for MED-637).
+  notes: Consolidate to single bottom disclosure on WordPress import (remove duplicate top-of-page affiliate note from draft).
+
+cta_placement:
+  - section: Editorial Summary
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    placement: After evidence boundary paragraph (SDS synonym vs Section 3 / CoA limits)
+  - section: Who May Consider It
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    placement: Closing line — for readers wanting SDS-linked 0.9% documentation
+  - section: Alternatives
+    type: peer_review_links
+    targets:
+      - NeilMed Fine Mist Review
+      - Steri-Wash Saline Review
+      - H2Ocean Piercing Aftercare Spray Review
+    placement: Alternatives table — unranked
+  - section: Final Verdict
+    type: informed_decision
+    copy: 'Use with piercer guidance. No healing guarantee.'
+    placement: Verdict closing — note SDS-synonym basis for concentration
+  - section: Affiliate link (if enabled)
+    type: commercial
+    placement: After Final Verdict — link to 7.4 oz SKU specifically
+
+internal_links:
+  in_cluster:
+    - anchor: Sterile Saline Complete Guide
+      card_id: pc-hub-sterile-saline-complete-guide
+      url: /guides/sterile-saline-for-piercing-aftercare/
+      context: Start here; Editorial Summary; Who May Consider It
+    - anchor: NeilMed Fine Mist Review
+      card_id: pc-review-neilmed-fine-mist
+      url: /reviews/neilmed-piercing-aftercare-fine-mist/
+      context: Alternatives table; Final Verdict peer mention
+    - anchor: Steri-Wash Saline Review
+      card_id: pc-review-steri-wash-saline
+      url: /reviews/steri-wash-saline-spray/
+      context: Alternatives table; Final Verdict peer mention
+    - anchor: H2Ocean Piercing Aftercare Spray Review
+      card_id: pc-review-h2ocean-piercing-aftercare
+      url: /reviews/h2ocean-piercing-aftercare-spray/
+      context: Alternatives table (comparison peer)
+  spokes_pending:
+    - anchor: Common Aftercare Mistakes
+      card_id: pc-guide-common-aftercare-mistakes
+      url: pending
+    - anchor: Piercing Healing Timeline
+      card_id: pc-guide-piercing-healing-timeline
+      url: pending
+    - anchor: Piercing Bump Safe Care
+      card_id: pc-spoke-piercing-bump-safe-care
+      url: pending
+    - anchor: Infection vs. Irritation
+      card_id: pc-guide-infection-vs-irritation
+      url: pending
+  external:
+    - label: Recovery Sterile Saline Wash 7.4 oz (official)
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+    - label: APP Suggested Aftercare
+      url: https://safepiercing.org/aftercare/
+
+faq_schema:
+  '@context': 'https://schema.org'
+  '@type': 'FAQPage'
+  mainEntity:
+    - '@type': 'Question'
+      name: 'Does Recovery Sterile Saline Wash 7.4 oz contain 0.9% sodium chloride?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Official 7.4 oz SDS Section 1 lists the synonym Sterile Saline Wound Wash 0.9%. This review does not claim a quantitative Section 3 water/NaCl percentage table or verified CoA composition text.'
+    - '@type': 'Question'
+      name: 'How often should I use Recovery Sterile Saline Wash?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Official instructions: as often as needed or as directed by your piercer. APP guidance does not give a fixed universal daily schedule for all piercings.'
+    - '@type': 'Question'
+      name: 'Is the Purified Saline Wash MSDS the same document as the 7.4 oz Sterile Saline Wash SDS?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'No. Resources-page Purified Saline Wash MSDS covers 1.5 oz / 4 oz sizing and is a separate path from the 7.4 oz Sterile Saline Wash SDS linked on the MED-637 product page.'
+    - '@type': 'Question'
+      name: 'Is Recovery Sterile Saline Wash APP-endorsed?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'No. APP guidance is formulation-based and does not endorse brands. SDS wound-wash / 0.9% synonym is manufacturer documentation—not APP approval.'
+    - '@type': 'Question'
+      name: 'Can I use homemade salt water instead of Recovery?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP suggested aftercare no longer recommends DIY sea-salt mixes; they are commonly too salty and may over-dry the piercing. Prefer packaged sterile saline wound wash where available.'
+    - '@type': 'Question'
+      name: 'What if I have irritation or worry about infection?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Do not self-diagnose from an article. Contact a piercer or healthcare provider for concerning or worsening symptoms. Follow product IFU to discontinue and seek care if irritation develops.'
+
+source_notes:
+  heading: 'Sources & References'
+  intro: 'Product facts for MED-637 (7.4 oz) map to verified evidence records. Concentration is stated from the SDS synonym field only.'
+  records:
+    - source: 'Recovery Sterile Saline Wash 7.4 oz (official)'
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+      role: 'Primary 7.4 oz product, IFU, SDS/CoA/gamma links, 0.9% SDS synonym; excludes Section 3 quantitative table, CoA composition text, and healing guarantees'
+    - source: 'Association of Professional Piercers — Suggested Aftercare'
+      url: https://safepiercing.org/aftercare/
+      role: 'Professional saline / DIY / over-cleaning guidance; no brand endorsement; no universal schedule'
+    - source: 'NeilMed Piercing Aftercare (official) — alternative peer'
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+      role: 'Alternative peer; 0.9% unresolved'
+    - source: 'Steri-Wash (official) — alternative peer'
+      url: https://steri-wash.myshopify.com/pages/frontpage
+      role: 'Alternative peer; 0.9% scoped to 4.25 oz label'
+    - source: 'H2Ocean Piercing Aftercare Spray (official) — comparison peer'
+      url: https://h2ocean.com/piercing-aftercare-spray/
+      role: 'Comparison peer only (not APP baseline)'
+    - source: 'Base Laboratories Piercing Aftercare Spray (official) — comparison peer'
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+      role: 'Comparison peer only (not APP baseline)'
+
+body_source: content-operations/production/drafts/recovery-sterile-saline-wash.md
+cms_strip_before_import:
+  - Card ID header block
+  - Top affiliate note (consolidated to bottom)
+  - Explicitly excluded claims section
+  - Draft metadata section
+  - Raw source_id parentheticals in body prose

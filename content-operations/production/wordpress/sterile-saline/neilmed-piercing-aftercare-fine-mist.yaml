@@ -1,0 +1,165 @@
+# WordPress publication package — NeilMed Piercing Aftercare Fine Mist Review
+# Card ID: pc-review-neilmed-fine-mist
+# Sprint: Publishing 001 | Evidence boundary: 2026-07-14
+
+card_id: pc-review-neilmed-fine-mist
+content_type: product-review
+wordpress_status: draft
+publish_wave: 2
+
+wordpress_ready_title: 'NeilMed Piercing Aftercare Fine Mist Review'
+seo_title: 'NeilMed Piercing Aftercare Fine Mist Review (2026) | PiercingConnect'
+meta_description: 'Independent review of NeilMed Piercing Aftercare Fine Mist: verified water + sodium chloride formula, preservative-free sterile mist, label warnings, and the unresolved 0.9% concentration gap vs APP guidance.'
+slug: /reviews/neilmed-piercing-aftercare-fine-mist/
+canonical_url: https://piercingconnect.com/reviews/neilmed-piercing-aftercare-fine-mist/
+
+excerpt: |
+  NeilMed Piercing Aftercare Fine Mist is a preservative-free, vegan, sterile saline fine-mist spray with official support for water + sodium chloride on consulted materials. This review covers verified facts, APP alignment gaps—including unverified 0.9% concentration—and honest limitations. Not a ranked best-of verdict.
+
+featured_image_brief:
+  subject: NeilMed Piercing Aftercare Fine Mist can (177 mL or generic mist spray silhouette) with neutral review context
+  mood: Editorial product review—factual, not sponsored-looking
+  composition: Product at slight angle on clean surface; optional fine-mist graphic element
+  text_overlay: >
+    Review badge only—no star ratings or Best labels
+  avoid: Healing outcome imagery, infection photos, APP logo implying endorsement, concentration claims not on label
+  alt_text: NeilMed Piercing Aftercare Fine Mist sterile saline spray product review
+
+wordpress_categories:
+  - Product Reviews
+  - Sterile Saline
+wordpress_tags:
+  - NeilMed
+  - piercing aftercare spray
+  - sterile saline
+  - fine mist
+  - NeilCleanse
+
+affiliate_relevance: affiliate-review
+
+affiliate_disclosure_placement:
+  position: end_of_article
+  location: After Source Notes, before footer navigation
+  copy: |
+    We may earn a commission from qualifying purchases made through links on this page. Product inclusion, limitations, and the verdict above are independent of commission. Affiliate relationships do not create a ranking and do not remove evidence gaps (including unresolved 0.9% concentration for this NeilMed SKU).
+  notes: Consolidate to single bottom disclosure on WordPress import (remove duplicate top-of-page affiliate note from draft).
+
+cta_placement:
+  - section: Editorial Summary
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    copy: 'Start with category literacy on why 0.9% matters in professional guidance.'
+    placement: After evidence boundary paragraph
+  - section: Who May Consider It
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    placement: Closing line before escalation section
+  - section: Alternatives
+    type: peer_review_links
+    targets:
+      - Steri-Wash Saline Review
+      - Recovery Sterile Saline Wash Review
+      - H2Ocean Piercing Aftercare Spray Review
+    placement: Alternatives table — unranked, criteria-based
+  - section: Final Verdict
+    type: informed_decision
+    copy: 'Use with piercer guidance. No healing guarantee.'
+    placement: Verdict closing — no buy-now or urgency language
+  - section: Affiliate link (if enabled)
+    type: commercial
+    placement: After Final Verdict and before Related Guides — never in safety or escalation sections
+
+internal_links:
+  in_cluster:
+    - anchor: Sterile Saline Complete Guide
+      card_id: pc-hub-sterile-saline-complete-guide
+      url: /guides/sterile-saline-for-piercing-aftercare/
+      context: Start here; Editorial Summary; Who May Consider It
+    - anchor: Steri-Wash Saline Review
+      card_id: pc-review-steri-wash-saline
+      url: /reviews/steri-wash-saline-spray/
+      context: Alternatives table
+    - anchor: Recovery Sterile Saline Wash Review
+      card_id: pc-review-recovery-sterile-saline
+      url: /reviews/recovery-sterile-saline-wash/
+      context: Alternatives table; Final Verdict peer mention
+    - anchor: H2Ocean Piercing Aftercare Spray Review
+      card_id: pc-review-h2ocean-piercing-aftercare
+      url: /reviews/h2ocean-piercing-aftercare-spray/
+      context: Alternatives table (comparison peer)
+  spokes_pending:
+    - anchor: Common Aftercare Mistakes
+      card_id: pc-guide-common-aftercare-mistakes
+      url: pending
+    - anchor: Piercing Healing Timeline
+      card_id: pc-guide-piercing-healing-timeline
+      url: pending
+    - anchor: Infection vs. Irritation
+      card_id: pc-guide-infection-vs-irritation
+      url: pending
+  external:
+    - label: NeilMed Piercing Aftercare (official)
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+    - label: APP Suggested Aftercare
+      url: https://safepiercing.org/aftercare/
+
+faq_schema:
+  '@context': 'https://schema.org'
+  '@type': 'FAQPage'
+  mainEntity:
+    - '@type': 'Question'
+      name: 'Does NeilMed Piercing Aftercare Fine Mist contain 0.9% sodium chloride?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'That concentration is not verified on the official piercing-aftercare materials and 177 mL label consulted for this review. Check the physical label of the can you purchase; do not rely on this article to assert 0.9%.'
+    - '@type': 'Question'
+      name: 'How often should I use NeilMed Piercing Aftercare Fine Mist?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Official directions say apply as needed and to consult a healthcare professional for continued wound care management. No fixed daily schedule is stated on materials consulted. Follow your piercer and the label.'
+    - '@type': 'Question'
+      name: 'Is NeilMed Piercing Aftercare the same as APP-preferred packaged sterile saline?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'It overlaps on packaged sterile saline, water + sodium chloride, preservative-free framing, and spray use, but APP ingredient guidance calls for 0.9% sodium chloride on the wound-wash label—and that figure remains unresolved for this NeilMed SKU on consulted official materials. APP does not endorse brands.'
+    - '@type': 'Question'
+      name: 'Can I use homemade salt water instead of NeilMed?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP suggested aftercare no longer recommends DIY sea-salt mixes; they are commonly too salty and may over-dry the piercing. Prefer packaged sterile saline wound wash where available, and ask a local piercer if packaged saline is hard to find in your region.'
+    - '@type': 'Question'
+      name: 'What if I have irritation or worry about infection?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Do not self-diagnose from an article. Contact a piercer or healthcare provider for concerning or worsening symptoms.'
+
+source_notes:
+  heading: 'Sources & References'
+  intro: 'Product facts and boundaries in this review map to verified evidence records. Unsupported claims are excluded.'
+  records:
+    - source: 'NeilMed Piercing Aftercare (official)'
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+      role: 'Primary product facts, formula boundaries, IFU/label warnings, sizes; excludes unverified 0.9% concentration, drug-free label wording, healing guarantees, and universal frequency'
+    - source: 'Association of Professional Piercers — Suggested Aftercare'
+      url: https://safepiercing.org/aftercare/
+      role: 'Professional saline / DIY / over-cleaning guidance; no brand endorsement; no universal schedule'
+    - source: 'Steri-Wash (official) — alternative peer'
+      url: https://steri-wash.myshopify.com/pages/frontpage
+      role: 'Alternative peer; 0.9% scoped to 4.25 oz label only'
+    - source: 'Recovery Sterile Saline Wash 7.4 oz (official) — alternative peer'
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+      role: 'Alternative peer; 7.4 oz SDS 0.9% synonym'
+    - source: 'H2Ocean Piercing Aftercare Spray (official) — comparison peer'
+      url: https://h2ocean.com/piercing-aftercare-spray/
+      role: 'Comparison peer only (not APP baseline)'
+    - source: 'Base Laboratories Piercing Aftercare Spray (official) — comparison peer'
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+      role: 'Comparison peer only (not APP baseline)'
+
+body_source: content-operations/production/drafts/neilmed-piercing-aftercare-fine-mist.md
+cms_strip_before_import:
+  - Card ID header block
+  - Top affiliate note (consolidated to bottom)
+  - Explicitly excluded claims section
+  - Draft metadata section
+  - Raw source_id parentheticals in body prose

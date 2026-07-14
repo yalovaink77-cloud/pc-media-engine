@@ -1,0 +1,172 @@
+# WordPress publication package — H2Ocean Piercing Aftercare Spray Review
+# Card ID: pc-review-h2ocean-piercing-aftercare
+# Sprint: Publishing 001 | Evidence boundary: 2026-07-14
+# Cluster role: Comparison peer — not APP-aligned simple sterile 0.9% NaCl baseline
+
+card_id: pc-review-h2ocean-piercing-aftercare
+content_type: product-review
+wordpress_status: draft
+publish_wave: 5
+cluster_role: comparison_peer
+
+wordpress_ready_title: 'H2Ocean Piercing Aftercare Spray Review'
+seo_title: 'H2Ocean Piercing Aftercare Spray Review (Comparison Peer) | PiercingConnect'
+meta_description: 'Independent H2Ocean review: verified four-ingredient sea-salt/lysozyme formula, size options, and explicit limits—not verified sterile 0.9% NaCl wound wash or APP-baseline equivalent.'
+slug: /reviews/h2ocean-piercing-aftercare-spray/
+canonical_url: https://piercingconnect.com/reviews/h2ocean-piercing-aftercare-spray/
+
+excerpt: |
+  H2Ocean Piercing Aftercare Spray is a sea-salt and lysozyme aftercare spray with four verified ingredients on official materials. This review treats it as a comparison peer—not sterile 0.9% sodium chloride wound wash or APP-baseline equivalent—and documents manufacturer marketing boundaries. Not a ranked best-of verdict.
+
+featured_image_brief:
+  subject: H2Ocean Piercing Aftercare Spray bottle with ingredient-list graphic (water, sea salt, lysozyme, sodium citrate)
+  mood: Comparison-peer framing—distinct formula class, not baseline saline
+  composition: Product with four-ingredient callout chips; contrast optional with simple two-ingredient saline icon (educational, not competitive ranking)
+  text_overlay: >
+    Comparison peer—not vs winner
+  avoid: Sterile 0.9% NaCl implications, APP endorsement, healing outcome imagery, manufacturer 3–6× daily as headline
+  alt_text: H2Ocean Piercing Aftercare Spray sea salt lysozyme formula product review
+
+wordpress_categories:
+  - Product Reviews
+  - Sterile Saline
+wordpress_tags:
+  - H2Ocean
+  - sea salt spray
+  - lysozyme
+  - piercing aftercare
+  - comparison peer
+
+affiliate_relevance: affiliate-review
+
+affiliate_disclosure_placement:
+  position: end_of_article
+  location: After Source Notes, before footer navigation
+  copy: |
+    We may earn a commission from qualifying purchases made through links on this page. Product inclusion, limitations, and the verdict above are independent of commission. Affiliate relationships do not create a ranking and do not convert H2Ocean into an APP-aligned sterile 0.9% NaCl baseline product.
+  notes: Consolidate to single bottom disclosure on WordPress import (remove duplicate top-of-page affiliate note from draft).
+
+cta_placement:
+  - section: Editorial Summary
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    copy: 'Start with category literacy on APP-preferred packaged sterile 0.9% NaCl wound wash.'
+    placement: After critical evidence boundaries table
+  - section: Who May Consider It
+    type: hub_link
+    target: Sterile Saline Complete Guide
+    placement: First line — comparison peer understanding required
+  - section: Who May Consider It
+    type: baseline_peer_pointer
+    copy: "Readers who require verified sterile 0.9% sodium chloride wound-wash labeling should see NeilMed, Steri-Wash, and Recovery reviews—with each peer's evidence gaps noted."
+    placement: Closing negative positioning paragraph
+  - section: Alternatives
+    type: peer_review_links
+    targets:
+      - NeilMed Fine Mist Review
+      - Steri-Wash Saline Review
+      - Recovery Sterile Saline Wash Review
+    placement: Alternatives table — formula contrast, not ranking
+  - section: Final Verdict
+    type: informed_decision
+    copy: 'Use with piercer guidance. No healing guarantee.'
+    placement: Verdict closing
+
+internal_links:
+  in_cluster:
+    - anchor: Sterile Saline Complete Guide
+      card_id: pc-hub-sterile-saline-complete-guide
+      url: /guides/sterile-saline-for-piercing-aftercare/
+      context: Start here; Editorial Summary; Who May Consider It
+    - anchor: NeilMed Fine Mist Review
+      card_id: pc-review-neilmed-fine-mist
+      url: /reviews/neilmed-piercing-aftercare-fine-mist/
+      context: Alternatives table; baseline-peer pointer
+    - anchor: Steri-Wash Saline Review
+      card_id: pc-review-steri-wash-saline
+      url: /reviews/steri-wash-saline-spray/
+      context: Alternatives table; baseline-peer pointer
+    - anchor: Recovery Sterile Saline Wash Review
+      card_id: pc-review-recovery-sterile-saline
+      url: /reviews/recovery-sterile-saline-wash/
+      context: Alternatives table; baseline-peer pointer
+  spokes_pending:
+    - anchor: Common Aftercare Mistakes
+      card_id: pc-guide-common-aftercare-mistakes
+      url: pending
+      context: DIY salt / over-cleaning
+    - anchor: Piercing Healing Timeline
+      card_id: pc-guide-piercing-healing-timeline
+      url: pending
+    - anchor: Piercing Bump Safe Care
+      card_id: pc-spoke-piercing-bump-safe-care
+      url: pending
+    - anchor: Infection vs. Irritation
+      card_id: pc-guide-infection-vs-irritation
+      url: pending
+  external:
+    - label: H2Ocean Piercing Aftercare Spray (official)
+      url: https://h2ocean.com/piercing-aftercare-spray/
+    - label: APP Suggested Aftercare
+      url: https://safepiercing.org/aftercare/
+
+faq_schema:
+  '@context': 'https://schema.org'
+  '@type': 'FAQPage'
+  mainEntity:
+    - '@type': 'Question'
+      name: 'Is H2Ocean the same as sterile 0.9% sodium chloride wound wash?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Not verified. Official formula is purified water, sea salt, lysozyme, and sodium citrate. Sterile 0.9% NaCl isotonic saline labeling is not verified on official pages consulted for this review.'
+    - '@type': 'Question'
+      name: 'Does APP recommend or endorse H2Ocean?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: "APP does not endorse brands. APP encourages sterile saline labeled for wound wash with 0.9% sodium chloride (sometimes with purified water). H2Ocean's documented formula differs from that baseline."
+    - '@type': 'Question'
+      name: 'How often should I use H2Ocean Piercing Aftercare Spray?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Official shop meta copy recommends 3–6 times daily to remove discharge and debris—that is manufacturer marketing, not APP body-piercing schedule guidance. APP does not specify a fixed universal daily count and warns against over-cleaning. Follow your piercer and the product label.'
+    - '@type': 'Question'
+      name: 'Can I use homemade salt water instead of H2Ocean?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP suggested aftercare no longer recommends DIY sea-salt mixes; they are commonly too salty and may over-dry the piercing. Prefer packaged sterile saline wound wash where that is the piercer-recommended approach.'
+    - '@type': 'Question'
+      name: 'What if I have irritation or worry about infection?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Do not self-diagnose from an article. Contact a piercer or healthcare provider for concerning or worsening symptoms.'
+
+source_notes:
+  heading: 'Sources & References'
+  intro: 'Product facts for H2Ocean map to verified evidence records. This review documents a comparison peer—not APP-baseline equivalence.'
+  records:
+    - source: 'H2Ocean Piercing Aftercare Spray (official)'
+      url: https://h2ocean.com/piercing-aftercare-spray/
+      role: 'Primary product facts; four-ingredient formula; sizes; manufacturer frequency copy; excludes sterility/0.9%/APP-equivalence/healing guarantees and verified ingredient percentages'
+    - source: 'Association of Professional Piercers — Suggested Aftercare'
+      url: https://safepiercing.org/aftercare/
+      role: 'Professional saline / DIY / over-cleaning guidance; no brand endorsement; no universal schedule'
+    - source: 'NeilMed Piercing Aftercare (official) — baseline-peer contrast'
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+      role: 'Alternative / baseline-peer contrast; 0.9% unresolved'
+    - source: 'Steri-Wash (official) — baseline-peer contrast'
+      url: https://steri-wash.myshopify.com/pages/frontpage
+      role: 'Alternative / baseline-peer contrast; 0.9% scoped to 4.25 oz'
+    - source: 'Recovery Sterile Saline Wash 7.4 oz (official) — baseline-peer contrast'
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+      role: 'Alternative / baseline-peer contrast; 7.4 oz SDS 0.9% synonym'
+    - source: 'Base Laboratories Piercing Aftercare Spray (official) — fellow comparison peer'
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+      role: 'Fellow comparison peer (additive formula)'
+
+body_source: content-operations/production/drafts/h2ocean-piercing-aftercare.md
+cms_strip_before_import:
+  - Card ID header block
+  - Top affiliate note (consolidated to bottom)
+  - Explicitly excluded claims section
+  - Draft metadata section
+  - Raw source_id parentheticals in body prose

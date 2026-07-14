@@ -1,0 +1,179 @@
+# WordPress publication package — Sterile Saline Hub
+# Card ID: pc-hub-sterile-saline-complete-guide
+# Sprint: Publishing 001 | Evidence boundary: 2026-07-14
+
+card_id: pc-hub-sterile-saline-complete-guide
+content_type: hub-category
+wordpress_status: draft
+publish_wave: 1
+
+wordpress_ready_title: 'Sterile Saline for Piercing Aftercare: Complete Guide'
+seo_title: 'Sterile Saline for Piercing Aftercare: Complete Guide | PiercingConnect'
+meta_description: 'Learn what packaged sterile saline is, why 0.9% sodium chloride matters in professional guidance, how it compares to DIY salt mixes, what saline cannot do, and when to seek help—before choosing a product.'
+slug: /guides/sterile-saline-for-piercing-aftercare/
+canonical_url: https://piercingconnect.com/guides/sterile-saline-for-piercing-aftercare/
+
+excerpt: |
+  New to piercing aftercare? Packaged sterile saline and homemade salt water are not the same thing. This guide explains the category—what sterile saline is, why concentration and sterility matter, how it fits routine care, honest limits, and when to get professional help—before you read any product review.
+
+featured_image_brief:
+  subject: Packaged sterile saline wound-wash spray can beside a simple comparison graphic (DIY salt jar crossed out vs labeled wound wash)
+  mood: Calm, educational, clinical-neutral—not promotional
+  composition: Clean flat-lay or minimal product silhouette; no brand logos as hero; soft neutral background
+  text_overlay: Optional small label "Category guide" — no "best" or ranking language
+  avoid: Before/after healing photos, infection imagery, urgency cues, single-brand packaging as focal point
+  alt_text: 'Packaged sterile saline wound wash for piercing aftercare category guide'
+
+wordpress_categories:
+  - Aftercare Guides
+  - Product Education
+wordpress_tags:
+  - sterile saline
+  - piercing aftercare
+  - wound wash
+  - 0.9% sodium chloride
+  - APP aftercare
+
+affiliate_relevance: category-context
+
+affiliate_disclosure_placement:
+  position: end_of_article
+  location: After Source Notes, before footer navigation
+  copy: |
+    PiercingConnect may earn a commission from qualifying purchases made through links on this page when such links are present. This hub remains editorially independent: affiliate relationships do not decide which products are named as examples, and they do not create a ranking.
+  notes: No top-of-page disclosure on hub (category-context only). Commercial links—if any—appear only after education, limitations, and escalation sections.
+
+cta_placement:
+  - section: Related Guides and Reviews
+    type: secondary_internal_links
+    copy: 'Read product reviews after the education and limitations sections above. Reviews deepen product detail; they do not replace piercer guidance.'
+    placement: End of article, after comparison section
+  - section: How to Compare Packaged Sterile Saline Products
+    type: deep_dive_links
+    targets:
+      - NeilMed Fine Mist Review
+      - Steri-Wash Saline Review
+      - Recovery Sterile Saline Wash Review
+      - H2Ocean Piercing Aftercare Spray Review
+    placement: Inline after each category example bullet (NeilMed, Steri-Wash, Recovery, H2Ocean)
+  - section: When to Seek Professional Guidance
+    type: escalation_first
+    copy: Escalation links to symptom spokes before any shopping framing
+    placement: Before product comparison deep-dives in reader flow
+
+internal_links:
+  in_cluster:
+    - anchor: NeilMed Fine Mist Review
+      card_id: pc-review-neilmed-fine-mist
+      url: /reviews/neilmed-piercing-aftercare-fine-mist/
+      context: Category example deep dive; Related Guides table
+    - anchor: Steri-Wash Saline Review
+      card_id: pc-review-steri-wash-saline
+      url: /reviews/steri-wash-saline-spray/
+      context: Category example deep dive; Related Guides table
+    - anchor: Recovery Sterile Saline Wash Review
+      card_id: pc-review-recovery-sterile-saline
+      url: /reviews/recovery-sterile-saline-wash/
+      context: Category example (Recovery 7.4 oz); Related Guides table — add on publish
+    - anchor: H2Ocean Piercing Aftercare Spray Review
+      card_id: pc-review-h2ocean-piercing-aftercare
+      url: /reviews/h2ocean-piercing-aftercare-spray/
+      context: Comparison peer section; Related Guides table — add on publish
+  spokes_pending:
+    - anchor: Common Aftercare Mistakes
+      card_id: pc-guide-common-aftercare-mistakes
+      url: pending
+      context: DIY / over-cleaning cross-links
+    - anchor: Piercing Healing Timeline
+      card_id: pc-guide-piercing-healing-timeline
+      url: pending
+      context: Routine care context
+    - anchor: Sleeping With a New Piercing
+      card_id: pc-spoke-sleeping-with-new-piercing
+      url: pending
+    - anchor: Infection vs. Irritation
+      card_id: pc-guide-infection-vs-irritation
+      url: pending
+      context: Escalation section
+    - anchor: Piercing Bump Safe Care
+      card_id: pc-spoke-piercing-bump-safe-care
+      url: pending
+      context: Escalation section
+  external:
+    - label: APP Suggested Aftercare
+      url: https://safepiercing.org/aftercare/
+    - label: NeilMed Piercing Aftercare (manufacturer)
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+    - label: Steri-Wash storefront
+      url: https://steri-wash.myshopify.com/pages/frontpage
+    - label: Recovery Sterile Saline Wash 7.4 oz
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+    - label: H2Ocean Piercing Aftercare Spray
+      url: https://h2ocean.com/piercing-aftercare-spray/
+    - label: Base Laboratories Piercing Aftercare Spray
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+
+faq_schema:
+  '@context': 'https://schema.org'
+  '@type': 'FAQPage'
+  mainEntity:
+    - '@type': 'Question'
+      name: 'What is sterile saline for piercing aftercare?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'In piercing aftercare, packaged sterile saline usually means a ready-to-use sterile sodium chloride solution sold as a spray, mist, or wash—not something you measure and mix at home. Professional aftercare guidance from the Association of Professional Piercers (APP) strongly encourages use of a sterile saline labeled for wound wash, with ingredients listing 0.9% sodium chloride as the only ingredient (sometimes purified water is also listed). That is category guidance, not a product endorsement.'
+    - '@type': 'Question'
+      name: 'Why does 0.9% sodium chloride matter for wound-wash saline?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: '0.9% sodium chloride is the concentration APP aftercare guidance looks for on a wound-wash saline label. In plain language, that concentration is often described as isotonic—matched to fluid balance in body tissues—so the rinse is less likely to over-dry or over-salt the site the way a DIY mix can. Do not assume every product marketed as piercing saline has verified 0.9% on the label for the SKU you buy.'
+    - '@type': 'Question'
+      name: 'Can I use homemade salt water instead of packaged sterile saline?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'APP suggested aftercare no longer recommends mixing your own sea-salt solution. DIY mixes are commonly too salty and may over-dry the piercing and interfere with healing. If packaged sterile saline is not available in your region, APP guidance focuses on keeping the piercing clean via shower rinsing and checking with a local piercer for regional suggestions.'
+    - '@type': 'Question'
+      name: 'How often should I use sterile saline on a piercing?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'There is no fixed universal rinse schedule in APP body-piercing aftercare for all piercings. Product materials for category examples typically say apply as needed or as directed by a piercer or healthcare professional. Follow your piercer, the product label, and a healthcare provider when needed. APP also warns against over-cleaning.'
+    - '@type': 'Question'
+      name: 'Does sterile saline prevent infection or guarantee faster healing?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Verified professional guidance and manufacturer pages consulted for this cluster do not support claims that sterile saline prevents infection, guarantees faster healing, fixes poor placement or unsuitable jewelry, or works the same for every piercing, person, or stage of healing. Saline is a rinse category, not a cure-all.'
+    - '@type': 'Question'
+      name: 'When should I seek professional help for a piercing?'
+      acceptedAnswer:
+        '@type': 'Answer'
+        text: 'Contact your piercer or a healthcare provider if you notice concerning or worsening changes—for example increasing pain, swelling, or redness; unusual discharge, odor, heat, or fever; or jewelry that will not move normally or appears embedded. This guide does not diagnose infection, irritation, or other conditions.'
+
+source_notes:
+  heading: 'Sources & References'
+  intro: 'Claims in this guide are drawn from verified evidence records. Product examples use manufacturer and label documentation for specific SKUs where noted.'
+  records:
+    - source: 'Association of Professional Piercers — Suggested Aftercare for Body Piercings'
+      url: https://safepiercing.org/aftercare/
+      role: 'Professional category guidance: sterile saline wound wash, 0.9% sodium chloride ingredient framing, DIY and harsh-product caution, no brand endorsement, no universal frequency, no healing guarantee'
+    - source: 'NeilMed Piercing Aftercare (official)'
+      url: https://www.neilmedpac.com/usa/piercing-aftercare/
+      role: 'NeilMed example facts (water + sodium chloride, sterile/preservative-free/vegan framing, sizes, IFU warnings). Excludes unverified 0.9% concentration'
+    - source: 'Steri-Wash (official storefront)'
+      url: https://steri-wash.myshopify.com/pages/frontpage
+      role: 'Steri-Wash category example facts; 0.9% USP NaCl only for verified 4.25 oz label'
+    - source: 'Recovery Sterile Saline Wash 7.4 oz (official)'
+      url: https://recoveryaftercare.com/products/sterile-saline-wash-7-4oz
+      role: 'Recovery 7.4 oz example facts; 0.9% only via verified SDS synonym Sterile Saline Wound Wash 0.9%'
+    - source: 'H2Ocean Piercing Aftercare Spray (official)'
+      url: https://h2ocean.com/piercing-aftercare-spray/
+      role: 'Comparison peer ingredients (sea salt + lysozyme + citrate)—not APP-baseline equivalent'
+    - source: 'Base Laboratories Piercing Aftercare Spray (official)'
+      url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+      role: 'Comparison peer multi-additive formula—not APP-baseline equivalent'
+
+body_source: content-operations/production/drafts/sterile-saline-complete-guide.md
+cms_strip_before_import:
+  - Card ID header block
+  - Draft metadata section
+  - Raw source_id parentheticals in body prose
+  - Placeholder anchor links (#related-guides-and-reviews)
