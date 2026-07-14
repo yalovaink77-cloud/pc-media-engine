@@ -1,5 +1,4 @@
-import { mkdtemp, readFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type {
@@ -15,7 +14,7 @@ import type {
   PublishingValidationResult,
 } from '@pcme/publishing';
 import type { GeneratedContentArtifact } from '@pcme/shared';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { RESOLVED_AFFILIATE_DISCLOSURE } from '../commercial-attribution.js';
 import { PiercingConnectPilotError } from '../errors.js';
@@ -28,6 +27,15 @@ import {
   requirePilotWordPressForceDraft,
   resolvePilotPublishingTargetAdapter,
 } from '../wordpress-draft-safety.js';
+import {
+  cleanupPilotTestDirs,
+  createPilotCommerceFixtureRepo,
+  createPilotTestOutputDir,
+} from './helpers/create-pilot-commerce-fixture.js';
+
+afterEach(async () => {
+  await cleanupPilotTestDirs();
+});
 
 class StubWordPressAdapter implements PublishingTargetAdapter {
   readonly targetId = 'wordpress';
@@ -155,8 +163,12 @@ describe('prepareActiveArtifactForHandoff', () => {
 describe('runPiercingConnectPilotAcceptance', () => {
   it('runs the offline acceptance pipeline without network, publish, or live WordPress', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network blocked'));
+    const repoPath = await createPilotCommerceFixtureRepo();
+    const outputDir = await createPilotTestOutputDir('pcme-pilot-acceptance-');
     const result = await runPiercingConnectPilotAcceptance({
       fixedCreatedAt: '2026-07-12T12:00:00.000Z',
+      repoPath,
+      outputDir,
     });
 
     expect(result.published).toBe(false);
@@ -173,8 +185,12 @@ describe('runPiercingConnectPilotAcceptance', () => {
 
   it('rejects a wordpress adapter when forceDraft is false', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network blocked'));
+    const repoPath = await createPilotCommerceFixtureRepo();
+    const outputDir = await createPilotTestOutputDir('pcme-pilot-acceptance-force-draft-');
     const result = await runPiercingConnectPilotAcceptance({
       fixedCreatedAt: '2026-07-12T12:00:00.000Z',
+      repoPath,
+      outputDir,
       publishingTargetAdapter: new StubWordPressAdapter(),
       wordpressForceDraft: false,
     });
@@ -188,8 +204,12 @@ describe('runPiercingConnectPilotAcceptance', () => {
 
   it('accepts a wordpress adapter when forceDraft is true without network', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network blocked'));
+    const repoPath = await createPilotCommerceFixtureRepo();
+    const outputDir = await createPilotTestOutputDir('pcme-pilot-acceptance-wp-');
     const result = await runPiercingConnectPilotAcceptance({
       fixedCreatedAt: '2026-07-12T12:00:00.000Z',
+      repoPath,
+      outputDir,
       publishingTargetAdapter: new StubWordPressAdapter(),
       wordpressForceDraft: true,
     });
@@ -204,7 +224,8 @@ describe('runPiercingConnectPilotAcceptance', () => {
 
   it('prepares final active revision content before handoff and keeps prior artifact immutable', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network blocked'));
-    const outputDir = await mkdtemp(join(tmpdir(), 'pcme-pilot-handoff-prep-'));
+    const repoPath = await createPilotCommerceFixtureRepo();
+    const outputDir = await createPilotTestOutputDir('pcme-pilot-handoff-prep-');
     const unprepared = [
       '# NeilMed Piercing Aftercare Fine Mist',
       '',
@@ -222,6 +243,7 @@ describe('runPiercingConnectPilotAcceptance', () => {
 
     const result = await runPiercingConnectPilotAcceptance({
       fixedCreatedAt: '2026-07-12T12:00:00.000Z',
+      repoPath,
       outputDir,
       generationProvider: new UnpreparedRevisionProvider(unprepared),
     });
