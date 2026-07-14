@@ -1,0 +1,38 @@
+id: pc-review-steri-wash-saline
+title: 'Steri-Wash Saline Spray Review'
+content_type: product-review
+pillar: decision-support
+search_intent: validate-product
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: affiliate-review
+related_products:
+  - steri-wash-saline-spray
+related_articles:
+  - pc-hub-sterile-saline-complete-guide
+  - pc-review-neilmed-fine-mist
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-piercing-healing-timeline
+  - pc-spoke-piercing-bump-safe-care
+update_frequency: semiannual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: convert (informed consideration only).
+  Cluster: sterile-saline-sprays.
+  Problem served: reader comparing sterile saline spray peers within the same category after category education.
+  Do not publish distribution before pc-hub-sterile-saline-complete-guide is published.
+  Production blocked without verified commerce source record; do not invent formula, sizing, or outcome claims.
+  Neutral peer relationship to NeilMed review—no ranking for commission.
+  Affiliate: disclosure mandatory; limitations and who-should-seek-help required.
+  Platform adaptations: separate cards after canonical approval.
+content_class: commercial
+cluster: sterile-saline-sprays
+business_purpose: convert

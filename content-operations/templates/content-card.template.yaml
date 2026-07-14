@@ -1,0 +1,98 @@
+# PiercingConnect Content Card — Template
+# Copy this file when creating a new card. Replace placeholder values.
+# Schema: content-operations/schemas/content-card.schema.yaml
+# Workflow: content-operations/docs/workflow.md
+
+# --- Required fields ---
+
+id: pc-{content-class}-{slug}
+# Example: pc-review-neilmed-piercing-aftercare-fine-mist
+# Adaptation example: pc-social-neilmed-carousel-instagram
+
+title: '{Working or published title}'
+
+content_type: product-review
+# Options: hub-problem | spoke-problem | hub-category | product-review |
+#          comparison | decision-guide | educational-guide | faq | trust-page |
+#          news-update | social-adaptation | video-adaptation | pin-adaptation
+
+pillar: product-education
+# Options: aftercare-foundations | healing-complications | product-education |
+#          professional-guidance | decision-support
+
+search_intent: validate-product
+# Options: learn-basics | solve-problem | compare-options | validate-product |
+#          check-symptoms | seek-escalation | discover-category | stay-informed |
+#          share-reference
+
+evergreen: true
+# true = durable with scheduled review
+# false = news or time-bound social
+
+platforms:
+  - wordpress
+# Add as needed: instagram | youtube | facebook | x | pinterest
+
+affiliate_relevance: affiliate-review
+# Options: none | category-context | affiliate-review | affiliate-comparison |
+#          affiliate-adaptation | disclosure-only
+
+related_products:
+  - neilmed-piercing-aftercare-fine-mist
+# Commerce product IDs; empty array [] when none
+
+related_articles:
+  - pc-hub-sterile-saline-sprays
+  - pc-spoke-saline-vs-diy
+  - pc-guide-when-to-seek-help
+# Content card IDs for internal link graph
+
+update_frequency: semiannual
+# Options: none | on-change | monthly | quarterly | semiannual | annual
+
+priority: high
+# Options: critical | high | medium | low | deferred
+
+status: backlog
+# Options: backlog | production | human-review | scheduled | published |
+#          update-queue | retirement
+
+owner: editorial-lead
+# Accountable editor or role
+
+notes: |
+  Business purpose: convert (informed product consideration).
+  Cluster: sterile-saline-sprays.
+  Problem served: reader researching packaged sterile saline for early healing.
+  Source record required before production.
+  Do not publish before parent hub pc-hub-sterile-saline-sprays is published.
+  Platform adaptations: create separate cards after canonical approval.
+
+# --- Optional recommended fields ---
+
+content_class: commercial
+# Options: evergreen | commercial | news | social
+
+parent_id: null
+# Required for adaptations: canonical card id
+# Example: pc-review-neilmed-piercing-aftercare-fine-mist
+
+cluster: sterile-saline-sprays
+
+business_purpose: convert
+# Options: discover | educate | compare | convert | retain | maintain-trust
+
+canonical_url: null
+# Set when published, e.g. https://piercingconnect.com/reviews/neilmed-...
+
+scheduled_publish_date: null
+# YYYY-MM-DD when status is scheduled
+
+last_reviewed_date: null
+# YYYY-MM-DD after each human review
+
+next_review_due: null
+# YYYY-MM-DD calculated from update_frequency
+
+retirement_target_id: null
+# Successor card id when merging or redirecting

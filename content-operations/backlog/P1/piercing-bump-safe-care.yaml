@@ -1,0 +1,34 @@
+id: pc-spoke-piercing-bump-safe-care
+title: 'Piercing Bump Safe Care: Irritation Context Without Self-Diagnosis'
+content_type: spoke-problem
+pillar: healing-complications
+search_intent: check-symptoms
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: none
+related_products: []
+related_articles:
+  - pc-guide-infection-vs-irritation
+  - pc-guide-piercing-healing-timeline
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-titanium-vs-surgical-steel
+update_frequency: annual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: discover + maintain-trust.
+  Cluster: bump-irritation-explainers.
+  Problem served: reader wondering what a bump near a piercing may mean and what safe home boundaries look like.
+  Safety gate: informational only—do not diagnose infection, granuloma, or keloid; require escalation triggers and professional guidance.
+  No product claims; educational before any commercial path.
+  Platform adaptations: separate cards after canonical approval.
+content_class: evergreen
+cluster: bump-irritation-explainers
+business_purpose: discover

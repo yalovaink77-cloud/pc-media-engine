@@ -1,0 +1,38 @@
+id: pc-review-neilmed-fine-mist
+title: 'NeilMed Piercing Aftercare Fine Mist Review'
+content_type: product-review
+pillar: decision-support
+search_intent: validate-product
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: affiliate-review
+related_products:
+  - neilmed-piercing-aftercare-fine-mist
+related_articles:
+  - pc-hub-sterile-saline-complete-guide
+  - pc-review-steri-wash-saline
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-piercing-healing-timeline
+  - pc-guide-infection-vs-irritation
+update_frequency: semiannual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: convert (informed consideration only).
+  Cluster: sterile-saline-sprays.
+  Problem served: reader considering packaged sterile saline mist for early healing after reading category literacy.
+  Do not publish distribution before pc-hub-sterile-saline-complete-guide is published and interlinked.
+  Production requires verified product source record; no invented claims, prices, or healing guarantees.
+  Gold-standard article may seed draft; still requires human review and disclosure.
+  Affiliate: disclosure mandatory; limitations and escalation required in same article.
+  Platform adaptations: separate cards after canonical approval.
+content_class: commercial
+cluster: sterile-saline-sprays
+business_purpose: convert

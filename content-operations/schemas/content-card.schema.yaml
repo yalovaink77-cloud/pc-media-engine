@@ -1,0 +1,256 @@
+# PiercingConnect Content Card Schema
+# Version: 1.0
+#
+# Defines the structure for a single content operations card.
+# This schema is descriptive documentation for editors and future tooling.
+# Validation rules are expressed as comments and enum constraints below.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/content-card/v1'
+title: ContentCard
+description: Operational record for one PiercingConnect content asset through its full lifecycle.
+type: object
+required:
+  - id
+  - title
+  - content_type
+  - pillar
+  - search_intent
+  - evergreen
+  - platforms
+  - affiliate_relevance
+  - related_products
+  - related_articles
+  - update_frequency
+  - priority
+  - status
+  - owner
+  - notes
+
+properties:
+  id:
+    type: string
+    description: >
+      Globally unique card identifier. Stable across the asset lifetime.
+      Format: pc-{class}-{slug} or pc-{class}-{slug}-{platform} for adaptations.
+      Example: pc-review-neilmed-piercing-aftercare-fine-mist
+    pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    minLength: 8
+    maxLength: 120
+
+  title:
+    type: string
+    description: Working title or published headline.
+    minLength: 3
+    maxLength: 200
+
+  content_type:
+    type: string
+    description: Editorial and format classification.
+    enum:
+      - hub-problem # Problem cluster hub (evergreen)
+      - spoke-problem # Problem cluster spoke
+      - hub-category # Product category hub
+      - product-review # Single product review
+      - comparison # Neutral product comparison
+      - decision-guide # Situation-based fit guide
+      - educational-guide # Terminology, evidence literacy, myth correction
+      - faq # FAQ hub or consolidated Q&A
+      - trust-page # Disclosure, methodology, editorial standards
+      - news-update # Time-bound verified update
+      - social-adaptation # Platform-native derivative
+      - video-adaptation # Short or long-form video derivative
+      - pin-adaptation # Pinterest pin derivative
+
+  pillar:
+    type: string
+    description: Primary content pillar from the Evergreen Content Master Plan.
+    enum:
+      - aftercare-foundations
+      - healing-complications
+      - product-education
+      - professional-guidance
+      - decision-support
+
+  search_intent:
+    type: string
+    description: >
+      Primary reader or search goal this asset serves.
+      One primary intent per card; secondary intents go in notes.
+    enum:
+      - learn-basics # Foundational education
+      - solve-problem # Specific user problem
+      - compare-options # Evaluate alternatives
+      - validate-product # Assess one product fit
+      - check-symptoms # Normal vs. concerning (informational)
+      - seek-escalation # When to get professional help
+      - discover-category # Category literacy before purchase
+      - stay-informed # News or material update
+      - share-reference # Social save/share intent
+
+  evergreen:
+    type: boolean
+    description: >
+      true = durable asset intended to remain accurate indefinitely with scheduled review.
+      false = time-bound (news) or ephemeral (social campaign tied to dated event).
+
+  platforms:
+    type: array
+    description: Target publish surfaces for this card.
+    minItems: 1
+    uniqueItems: true
+    items:
+      type: string
+      enum:
+        - wordpress
+        - instagram
+        - youtube
+        - facebook
+        - x
+        - pinterest
+
+  affiliate_relevance:
+    type: string
+    description: >
+      Commercial relationship context. Does not determine editorial verdict.
+    enum:
+      - none # No affiliate links
+      - category-context # Category hub; light commercial framing
+      - affiliate-review # Product review with affiliate links
+      - affiliate-comparison # Comparison with affiliate links on peers
+      - affiliate-adaptation # Social/video linking to affiliate-bearing canonical
+      - disclosure-only # Trust or methodology page mentioning affiliate program
+
+  related_products:
+    type: array
+    description: >
+      Commerce knowledge product IDs referenced by this asset.
+      Empty array when no product is involved.
+    uniqueItems: true
+    items:
+      type: string
+      pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+    default: []
+
+  related_articles:
+    type: array
+    description: >
+      Content card IDs forming the internal link graph.
+      Canonical articles link to hubs; adaptations link to parent canonical id.
+    uniqueItems: true
+    items:
+      type: string
+      pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    default: []
+
+  update_frequency:
+    type: string
+    description: Scheduled editorial review cadence per Update Policy.
+    enum:
+      - none # Social ephemeral; no scheduled review
+      - on-change # Review only when source record changes
+      - monthly # News or high-volatility topics
+      - quarterly # Comparisons and decision guides
+      - semiannual # Product reviews and category hubs
+      - annual # Problem hubs and educational guides
+
+  priority:
+    type: string
+    description: Production queue priority aligned with Revenue Roadmap phases.
+    enum:
+      - critical # Blocks cluster or commercial path
+      - high # Phase A/B roadmap item
+      - medium # Phase C item
+      - low # Phase D or nice-to-have
+      - deferred # Approved but intentionally postponed
+
+  status:
+    type: string
+    description: Current lifecycle stage. See docs/workflow.md for transition rules.
+    enum:
+      - backlog
+      - production
+      - human-review
+      - scheduled
+      - published
+      - update-queue
+      - retirement
+
+  owner:
+    type: string
+    description: >
+      Accountable editor or role responsible for this card.
+      Use role names (e.g. editorial-lead) or editor handles consistently.
+    minLength: 2
+    maxLength: 80
+
+  notes:
+    type: string
+    description: >
+      Free-form operational context: business purpose, cluster assignment,
+      parent canonical id for adaptations, approval history pointers,
+      KPI targets, merge/redirect plans. Not a draft body.
+    maxLength: 4000
+    default: ''
+
+  # --- Optional extended fields (recommended, not required) ---
+
+  content_class:
+    type: string
+    description: High-level class for reporting and filtering.
+    enum:
+      - evergreen
+      - commercial
+      - news
+      - social
+
+  parent_id:
+    type: string
+    description: >
+      For adaptations: the canonical content card id this derives from.
+      Omit for canonical WordPress assets.
+    pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  cluster:
+    type: string
+    description: Problem or product cluster slug from Evergreen Content Master Plan.
+    maxLength: 80
+
+  business_purpose:
+    type: string
+    description: Measurable business role for this asset.
+    enum:
+      - discover
+      - educate
+      - compare
+      - convert
+      - retain
+      - maintain-trust
+
+  canonical_url:
+    type: string
+    description: Published WordPress URL when status is published or scheduled.
+    format: uri
+    maxLength: 500
+
+  scheduled_publish_date:
+    type: string
+    description: ISO 8601 date (YYYY-MM-DD) when status is scheduled.
+    format: date
+
+  last_reviewed_date:
+    type: string
+    description: ISO 8601 date of most recent human editorial review.
+    format: date
+
+  next_review_due:
+    type: string
+    description: ISO 8601 date calculated from update_frequency and last_reviewed_date.
+    format: date
+
+  retirement_target_id:
+    type: string
+    description: Successor card id or redirect target when status is retirement.
+    pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+additionalProperties: false

@@ -1,0 +1,38 @@
+id: pc-hub-sterile-saline-complete-guide
+title: 'Sterile Saline Complete Guide: Packaged Rinse Literacy for Piercing Aftercare'
+content_type: hub-category
+pillar: product-education
+search_intent: discover-category
+evergreen: true
+platforms:
+  - wordpress
+  - instagram
+  - pinterest
+  - facebook
+  - x
+  - youtube
+affiliate_relevance: category-context
+related_products:
+  - neilmed-piercing-aftercare-fine-mist
+  - steri-wash-saline-spray
+related_articles:
+  - pc-review-neilmed-fine-mist
+  - pc-review-steri-wash-saline
+  - pc-guide-common-aftercare-mistakes
+  - pc-guide-piercing-healing-timeline
+  - pc-spoke-sleeping-with-new-piercing
+update_frequency: semiannual
+priority: critical
+status: backlog
+owner: editorial-lead
+notes: |
+  Business purpose: educate (pre-commercial gateway).
+  Cluster: saline-category-literacy.
+  Problem served: reader needs to understand packaged sterile saline vs. DIY salt water before considering any product.
+  Publish before Tier 1 product reviews enter distribution.
+  Affiliate: category-context only—no ranking; link to reviews after education and limitations.
+  Do not invent concentration, brand, or outcome claims beyond verified source records at production time.
+  Platform adaptations: separate cards after canonical approval.
+content_class: evergreen
+cluster: saline-category-literacy
+business_purpose: educate
