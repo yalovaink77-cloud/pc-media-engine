@@ -13,7 +13,7 @@ required:
   - name
   - slug
   - brand_id
-  - program_id
+  - merchant_ids
   - status
   - verification
   - created_at
@@ -40,20 +40,27 @@ properties:
   brand_id:
     type: string
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Authoritative foreign key—product owns the brand relationship.
 
-  merchant_id:
-    type: string
-    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+  merchant_ids:
+    type: array
+    description: Authoritative foreign key(s)—product may map to one or more merchants (e.g. network vs direct).
+    minItems: 1
+    items:
+      type: string
+      pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
   program_id:
     type: string
     pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index—primary program used for link/commission lookup; not source of truth.
 
   network_id:
     type:
       - string
       - 'null'
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index—null when all linked merchants/programs are direct.
 
   sku:
     type: string

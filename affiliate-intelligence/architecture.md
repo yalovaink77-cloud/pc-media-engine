@@ -1,8 +1,8 @@
 # Affiliate Intelligence — Architecture
 
-**Version:** 0.1  
+**Version:** 0.3  
 **Status:** Foundation document  
-**Scope:** Repository layout, boundaries, and integration points
+**Scope:** Repository layout, boundaries, relationship authority, and integration points
 
 ---
 
@@ -42,17 +42,17 @@ Affiliate Intelligence is not a link shortener, not a live sync engine, and not 
 
 ## 3. Core entities
 
-| Entity | Role | Primary schema (Sprint 001) |
-|--------|------|-----------------------------|
+| Entity | Role | Schema |
+|--------|------|--------|
 | **Network** | Platform connecting publishers and merchants | `network.schema.yaml` |
 | **Brand** | Market-facing name readers recognize | `brand.schema.yaml` |
-| **Merchant** | Advertiser account within a network | _(Sprint 002)_ |
+| **Merchant** | Advertiser account within a network or direct channel | `merchant.schema.yaml` |
 | **Application** | Request/join workflow for a program | `application.schema.yaml` |
-| **Program** | Approved enrollment + terms snapshot | _(Sprint 002)_ |
-| **Product** | Linkable SKU / URL mapped to content cards | _(Sprint 003)_ |
-| **Commission** | Rate and structure history | _(Sprint 003)_ |
-| **Country** | Geo eligibility matrix | _(Sprint 003)_ |
-| **Payment** | Payout configuration (non-secret) | _(Sprint 004)_ |
+| **Program** | Approved enrollment + terms snapshot | `program.schema.yaml` |
+| **Product** | Linkable SKU / URL mapped to content cards | `product.schema.yaml` |
+| **Commission** | Rate and structure history | `commission.schema.yaml` |
+| **Country** | Geo eligibility matrix | `country.schema.yaml` |
+| **Payment** | Payout configuration (non-secret) | `payment.schema.yaml` |
 | **Policy** | Restrictions and compliance notes | _(Sprint 004)_ |
 
 ---
@@ -67,12 +67,83 @@ Affiliate Intelligence is not a link shortener, not a live sync engine, and not 
 | `app-` | `app-neilmed-2026-01` | `applications/` |
 | `prog-` | `prog-neilmed-shareasale` | `programs/` |
 | `prod-` | `prod-neilmed-fine-mist-177ml` | `products/` |
+| `pay-` | `pay-shareasale-default` | `payments/` |
+| `comm-` | `comm-neilmed-shareasale-2026-07` | `commissions/` |
 
-Content cards reference products via existing `related_products` IDs—Affiliate Intelligence `products/` records should declare a `content_product_id` or `card_id` crosswalk in Sprint 003.
+Content cards reference products via existing `related_products` IDs—Affiliate Intelligence `products/` records should declare a `content_product_id` or `card_id` crosswalk in a future sprint.
 
 ---
 
-## 5. Trust and editorial gates
+## 5. Direct programs convention
+
+**Direct brand programs have no intermediary network.** Represent this with:
+
+```yaml
+network_id: null
+```
+
+on `program`, `merchant` (when `channel_type: direct`), `application`, and denormalized `product.network_id` when applicable.
+
+**Do not use** a synthetic `net-direct` network ID. There is no direct-network entity; `null` is the canonical value.
+
+---
+
+## 6. Authoritative relationships
+
+Foreign keys on child records are **source of truth**. Reverse ID arrays on parent records are **denormalized indexes** for navigation and exports only.
+
+### Authority matrix
+
+| Record | Owns (authoritative) | Index-only fields (rebuild, never edit as truth) |
+|--------|----------------------|--------------------------------------------------|
+| **Program** | `brand_id`, `merchant_id`, `network_id` | — |
+| **Product** | `brand_id`, `merchant_ids` | `program_id`, `network_id` |
+| **Merchant** | `brand_id`, `network_id` (null when direct) | `program_ids`, `product_ids` |
+| **Brand** | — | `merchant_ids`, `program_ids` |
+| **Payment** | exactly one of `network_id` **or** `program_id` | `brand_id`, `merchant_id` |
+
+### Synchronization expectations
+
+When a child record is created, updated, or retired:
+
+1. **Write the authoritative record first** (e.g. `programs/{id}.yaml`).
+2. **Rebuild parent indexes** from a scan of child records—do not hand-edit index arrays in isolation.
+3. **Validate consistency** before export: every ID in an index must resolve to a record whose authoritative FK points back.
+
+Example: enrolling `prog-neilmed-shareasale` adds that ID to `brand-neilmed.program_ids` and `merchant-neilmed-shareasale.program_ids` only after the program file exists with matching `brand_id` and `merchant_id`.
+
+---
+
+## 7. Payment inheritance
+
+Payout terms follow a **default + override** model:
+
+```
+┌─────────────────────┐
+│  Network payment    │  scope_type: network, network_id set
+│  (default terms)    │
+└──────────┬──────────┘
+           │ applies to all programs on network
+           ▼
+┌─────────────────────┐     program.payment_id set?
+│  Program            │──── yes ──► Program payment override
+│  (enrollment)       │             scope_type: program, program_id set
+└─────────────────────┘
+           │
+           no override ──► inherit network default payment
+```
+
+**Rules:**
+
+1. Each active **network** should have one **network-scoped** payment record (`payments/` with `scope_type: network`).
+2. **Program-scoped** payment records are created **only** when payout terms explicitly differ from the network default.
+3. A program with no `payment_id` inherits resolved terms from its network’s default payment record.
+4. Direct programs (`network_id: null`) cannot inherit from a network—require an explicit program-scoped payment record or document terms inline in program notes until modeled.
+5. Payment schema enforces **exactly one** of `network_id` or `program_id` per record (mutually exclusive scope).
+
+---
+
+## 8. Trust and editorial gates
 
 Aligned with `cluster-portfolio.md`:
 
@@ -85,18 +156,19 @@ Aligned with `cluster-portfolio.md`:
 
 ---
 
-## 6. Storage format
+## 9. Storage format
 
 - **Human records:** YAML files, one record per file, named `{id}.yaml`
 - **Schemas:** JSON Schema draft 2020-12 in `schemas/`
+- **Templates:** Starters in `templates/` for each record type
 - **Exports:** Generated JSON/CSV in `exports/` (gitignored optional in future)
 - **Reports:** Markdown in `reports/`
 
-No database migration in Sprint 001—filesystem source of truth until volume warrants automation.
+No database migration—filesystem source of truth until volume warrants automation.
 
 ---
 
-## 7. Future integration (not built)
+## 10. Future integration (not built)
 
 | Consumer | Integration |
 |----------|-------------|
@@ -107,7 +179,7 @@ No database migration in Sprint 001—filesystem source of truth until volume wa
 
 ---
 
-## 8. Out of scope (Sprint 001)
+## 11. Out of scope
 
 - Live API sync with networks
 - Click tracking or attribution pixels
@@ -120,5 +192,5 @@ No database migration in Sprint 001—filesystem source of truth until volume wa
 
 | Field | Value |
 |-------|-------|
-| Version | 0.1 |
-| Sprint | Affiliate Intelligence 001 |
+| Version | 0.3 |
+| Sprint | Affiliate Intelligence 003 |

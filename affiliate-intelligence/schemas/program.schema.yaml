@@ -40,17 +40,19 @@ properties:
   brand_id:
     type: string
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Authoritative foreign key—program owns the brand relationship.
 
   merchant_id:
     type: string
     pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Authoritative foreign key—program owns the merchant relationship.
 
   network_id:
     type:
       - string
       - 'null'
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Null for direct brand programs with no intermediary network.
+    description: Authoritative foreign key; null for direct brand programs (no intermediary network).
 
   program_type:
     type: string
@@ -80,13 +82,14 @@ properties:
 
   commission_ids:
     type: array
-    description: Historical commission snapshots newest-first optional ordering in notes.
+    description: Denormalized index only. Authoritative link is commission.program_id.
     items:
       type: string
       pattern: '^comm-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
   product_ids:
     type: array
+    description: Denormalized index only. Authoritative link is product.merchant_ids + product.brand_id.
     items:
       type: string
       pattern: '^prod-[a-z0-9]+(?:-[a-z0-9]+)*$'
@@ -94,7 +97,9 @@ properties:
   payment_id:
     type: string
     pattern: '^pay-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Reference to programs/payments record for payout terms.
+    description: >
+      Optional program-level payment override. When absent, inherit from network payment
+      record referenced by network_id (see architecture.md payment inheritance).
 
   region_programs:
     type: array

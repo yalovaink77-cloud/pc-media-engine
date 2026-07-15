@@ -1,0 +1,45 @@
+# Template: Affiliate Application
+# Schema: affiliate-intelligence/schemas/application.schema.yaml
+# Copy to: affiliate-intelligence/applications/{id}.yaml
+# Direct brand programs: set network_id to null (not net-direct).
+
+id: app-{brand}-{channel}-{YYYY-MM}
+
+brand_id: brand-
+network_id: net- # null for direct brand programs
+merchant_id: merchant- # optional until merchant record exists
+
+status: draft # draft | submitted | pending | approved | rejected | withdrawn
+
+applied_at: YYYY-MM-DD
+decision_date: null
+
+program_id: prog- # populate when approved and program record created
+
+application_channel: network_portal # network_portal | brand_direct | email | other
+
+site_context:
+  site_url: https://piercingconnect.com
+  content_examples: []
+  pitch_summary: ''
+
+commission_offered:
+  commission_type: unknown # cpa | cps | cpc | hybrid | unknown
+  rate_description: ''
+  cookie_days: null
+
+rejection_reason: ''
+
+editorial_gate:
+  hub_published: false
+  review_draft_url: ''
+  editorial_lead_notified: false
+
+documents: []
+# - label: ''
+#   path: ''
+
+notes: ''
+
+created_at: ''
+updated_at: ''

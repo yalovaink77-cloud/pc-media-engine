@@ -40,6 +40,7 @@ properties:
   brand_id:
     type: string
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Authoritative foreign key—merchant owns the brand relationship.
 
   channel_type:
     type: string
@@ -53,7 +54,9 @@ properties:
       - string
       - 'null'
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Required when channel_type is network; null when direct-only.
+    description: >
+      Authoritative when channel_type is network; null for direct-only merchants.
+      Direct programs use program.network_id null—not a synthetic net-direct ID.
 
   external_merchant_id:
     type: string
@@ -61,12 +64,14 @@ properties:
 
   program_ids:
     type: array
+    description: Denormalized index only. Authoritative program→merchant link is program.merchant_id.
     items:
       type: string
       pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
   product_ids:
     type: array
+    description: Denormalized index only. Authoritative product→merchant link is product.merchant_ids.
     items:
       type: string
       pattern: '^prod-[a-z0-9]+(?:-[a-z0-9]+)*$'

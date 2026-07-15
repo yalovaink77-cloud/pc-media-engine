@@ -1,0 +1,40 @@
+# Template: Affiliate Network
+# Schema: affiliate-intelligence/schemas/network.schema.yaml
+# Copy to: affiliate-intelligence/networks/{id}.yaml
+# Do not store credentials, tax IDs, or banking details.
+
+id: net-{slug}
+name: ''
+slug: ''
+
+status: evaluating # evaluating | applied | active | paused | terminated
+
+website_url: ''
+
+publisher_account:
+  account_label: ''
+  publisher_id: ''
+  enrolled_at: YYYY-MM-DD
+
+default_cookie_days: null
+
+supported_countries: [] # ISO 3166-1 alpha-2, e.g. [US, CA]
+
+payout:
+  minimum_threshold_usd: null
+  payment_methods: [] # names only, e.g. paypal, ach
+  schedule_notes: ''
+
+policies:
+  tos_url: ''
+  piercing_content_notes: ''
+  last_reviewed: YYYY-MM-DD
+
+contacts: []
+# - role: affiliate support
+#   email: ''
+
+notes: ''
+
+created_at: ''
+updated_at: ''

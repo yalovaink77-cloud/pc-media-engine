@@ -9,7 +9,7 @@ slug: ''
 
 brand_id: brand-
 channel_type: network # network | direct
-network_id: net- # null when channel_type is direct
+network_id: null # net-{slug} when channel_type is network; null when direct
 
 external_merchant_id: ''
 

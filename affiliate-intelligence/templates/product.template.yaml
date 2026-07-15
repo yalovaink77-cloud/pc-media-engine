@@ -7,9 +7,10 @@ name: ''
 slug: ''
 
 brand_id: brand-
-merchant_id: merchant-
-program_id: prog-
-network_id: net- # null for direct
+merchant_ids:
+  - merchant- # authoritative; one product may map to multiple merchants
+program_id: prog- # denormalized index for link/commission lookup
+network_id: null # denormalized index; null when direct-only
 
 sku: ''
 gtin: ''

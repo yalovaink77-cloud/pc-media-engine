@@ -8,8 +8,8 @@ slug: ''
 
 brand_id: brand-
 merchant_id: merchant-
-network_id: net- # null for direct programs
-program_type: network # network | direct
+network_id: null # net-{slug} for network programs; null for direct (never net-direct)
+program_type: direct # network | direct
 
 application_id: app-
 status: pending # pending | active | paused | terminated
@@ -18,7 +18,7 @@ editorial_approved: false
 current_commission_id: comm-
 commission_ids: []
 product_ids: []
-payment_id: pay-
+payment_id: null # optional override; omit or null to inherit network default payment
 
 region_programs:
   - region_label: US

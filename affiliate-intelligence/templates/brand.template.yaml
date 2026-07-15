@@ -1,0 +1,38 @@
+# Template: Affiliate Brand
+# Schema: affiliate-intelligence/schemas/brand.schema.yaml
+# Copy to: affiliate-intelligence/brands/{id}.yaml
+# merchant_ids and program_ids are denormalized indexes—maintain via sync (see workflow.md).
+
+id: brand-{slug}
+name: ''
+slug: ''
+
+legal_name: ''
+
+status: prospect # prospect | active | paused | retired
+
+website_url: ''
+
+product_categories: [] # e.g. sterile-saline, piercing-aftercare
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids: [] # index only—authoritative link is merchant.brand_id
+program_ids: [] # index only—authoritative links are on program records
+
+editorial:
+  cluster_role: category-example # category-baseline | category-example | comparison-peer | out-of-cluster
+  review_status: none # none | planned | draft | published
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: ''
+
+created_at: ''
+updated_at: ''

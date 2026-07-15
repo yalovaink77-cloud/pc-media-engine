@@ -30,9 +30,11 @@ properties:
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
   network_id:
-    type: string
+    type:
+      - string
+      - 'null'
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Network used for this application. Use net-direct for direct brand programs if modeled.
+    description: Affiliate network ID when applying via a network; null for direct brand programs.
 
   merchant_id:
     type: string

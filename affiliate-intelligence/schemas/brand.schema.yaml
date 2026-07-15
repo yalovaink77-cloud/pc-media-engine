@@ -79,14 +79,18 @@ properties:
 
   merchant_ids:
     type: array
-    description: References to merchants/ in this repo (Sprint 002+).
+    description: >
+      Denormalized index only—not source of truth. Authoritative merchant link is
+      merchant.brand_id. Rebuild this list when merchant records change.
     items:
       type: string
       pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
   program_ids:
     type: array
-    description: References to active or historical programs/ records.
+    description: >
+      Denormalized index only—not source of truth. Authoritative program links are
+      program.brand_id, program.merchant_id, program.network_id. Rebuild on enroll/terminate.
     items:
       type: string
       pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'

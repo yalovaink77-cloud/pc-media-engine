@@ -1,7 +1,7 @@
 # Affiliate Intelligence
 
-**Version:** 0.1 (foundation)  
-**Status:** Scaffold — no data populated  
+**Version:** 0.3 (foundation)  
+**Status:** Scaffold — schemas and templates ready; no data populated  
 **Owner:** editorial-lead / revenue-ops
 
 Affiliate Intelligence is PiercingConnect’s **internal knowledge layer** for affiliate networks, merchant programs, brand relationships, commission terms, and commercial policy boundaries. It supports informed editorial decisions—it does not drive rankings or product verdicts.
@@ -44,21 +44,31 @@ This layer is subordinate to:
 
 ---
 
-## Schemas (Sprint 001)
+## Schemas
 
 | Schema | Record type |
 |--------|-------------|
 | `schemas/network.schema.yaml` | Affiliate network |
 | `schemas/brand.schema.yaml` | Brand |
 | `schemas/application.schema.yaml` | Program application |
+| `schemas/merchant.schema.yaml` | Merchant / advertiser account |
+| `schemas/program.schema.yaml` | Program enrollment |
+| `schemas/product.schema.yaml` | Product / SKU link target |
+| `schemas/commission.schema.yaml` | Commission snapshot |
+| `schemas/country.schema.yaml` | Geo eligibility |
+| `schemas/payment.schema.yaml` | Payout terms (network default or program override) |
 
-Additional schemas (future sprints): `program`, `merchant`, `product`, `commission`, `payment`.
+Templates for all record types live in `templates/`.
 
 ---
 
 ## Conventions
 
-- **IDs:** lowercase kebab-case slugs prefixed by type (`net-`, `brand-`, `app-`)
+- **IDs:** lowercase kebab-case slugs prefixed by type (`net-`, `brand-`, `app-`, `prog-`, etc.)
+- **Direct programs:** `network_id: null` — never use a synthetic `net-direct` ID
+- **Authoritative FKs:** program owns `brand_id`, `merchant_id`, `network_id`; product owns `brand_id`, `merchant_ids`
+- **Index arrays:** parent `*_ids` lists are denormalized—rebuild from child records (see `workflow.md`)
+- **Payment scope:** exactly one of `network_id` (default) or `program_id` (override) per payment record
 - **No secrets:** API keys, passwords, and full payment account numbers never stored here
 - **Snapshots:** Commission and terms fields are point-in-time; use `effective_date` and `supersedes`
 - **Editorial firewall:** `affiliate_relevance` on content cards is independent of commission rate
@@ -77,6 +87,6 @@ Additional schemas (future sprints): `program`, `merchant`, `product`, `commissi
 
 | Field | Value |
 |-------|-------|
-| Sprint | Affiliate Intelligence 001 |
+| Sprint | Affiliate Intelligence 003 |
 | Created | 2026-07-15 |
-| Next review | After Sprint 002 schema expansion |
+| Next review | After first brand/program records (Sprint 004) |

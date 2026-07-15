@@ -2,16 +2,21 @@
 # Schema: affiliate-intelligence/schemas/payment.schema.yaml
 # Copy to: affiliate-intelligence/payments/{id}.yaml
 # NEVER store tax IDs, banking details, API keys, or account numbers.
+#
+# Scope rule: set exactly ONE of network_id OR program_id (never both).
+# Network scope = default terms. Program scope = override only when different.
 
 id: pay-{scope}-{slug}
 name: ''
 
-scope_type: program # network | program
-network_id: net- # required when scope_type is network
-program_id: prog- # required when scope_type is program
+scope_type: network # network | program
 
-brand_id: brand-
-merchant_id: merchant-
+# --- set ONE scope field below ---
+network_id: net- # required when scope_type is network; omit entirely for program scope
+# program_id: prog- # required when scope_type is program; omit entirely for network scope
+
+brand_id: brand- # optional denormalized index
+merchant_id: merchant- # optional denormalized index
 
 payout_thresholds:
   - currency: USD

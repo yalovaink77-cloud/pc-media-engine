@@ -1,7 +1,8 @@
 # PiercingConnect Affiliate Intelligence — Payment Schema
-# Version: 0.2
+# Version: 0.3
 #
 # Payout terms snapshot—thresholds, methods, currencies. No banking or tax data.
+# Scope: exactly one of network_id (default terms) or program_id (override terms).
 
 $schema: 'https://json-schema.org/draft/2020-12/schema'
 $id: 'https://piercingconnect.com/schemas/affiliate-intelligence/payment/v1'
@@ -35,25 +36,29 @@ properties:
     enum:
       - network
       - program
-    description: Whether terms apply network-wide or to a specific program.
+    description: >
+      network = default payout terms for all programs on this network unless overridden.
+      program = explicit override when terms differ from the network default.
 
   network_id:
     type: string
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Set when scope_type is network.
+    description: Required when scope_type is network. Mutually exclusive with program_id.
 
   program_id:
     type: string
     pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Set when scope_type is program.
+    description: Required when scope_type is program. Mutually exclusive with network_id.
 
   brand_id:
     type: string
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index for lookup—not scope authority.
 
   merchant_id:
     type: string
     pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index for lookup—not scope authority.
 
   payout_thresholds:
     type: array
@@ -178,5 +183,26 @@ $defs:
         type: string
       notes:
         type: string
+
+allOf:
+  - oneOf:
+      - title: Network-scoped payment
+        required:
+          - network_id
+        properties:
+          scope_type:
+            const: network
+          network_id:
+            type: string
+          program_id: false
+      - title: Program-scoped payment override
+        required:
+          - program_id
+        properties:
+          scope_type:
+            const: program
+          program_id:
+            type: string
+          network_id: false
 
 additionalProperties: false
