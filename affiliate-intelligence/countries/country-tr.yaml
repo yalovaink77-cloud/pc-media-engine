@@ -8,34 +8,75 @@ region_groups:
 primary_currency: TRY
 supported_currencies:
   - TRY
+  - USD
+  - EUR
+  - GBP
 
 affiliate_notes:
-  disclosure_requirements_summary: 'Unresolved — pending live research on TR commercial disclosure requirements.'
-  common_network_availability: 'Unresolved — which seed networks accept TR publishers unknown.'
-  piercing_content_caution: 'Unresolved — review geo-specific network and brand restrictions before monetization.'
+  disclosure_requirements_summary: >
+    Unresolved for TR-specific commercial disclosure law. Amazon TR and network TOS require
+    clear affiliate disclosure on links and social posts. FTC-style rules apply on US-facing
+    programs—treat as editorial requirement regardless of local statute research gap.
+  common_network_availability: >
+    Sprint 006-B (2026-07-15): PayPal unavailable for Turkey-resident publishers (PayPal
+    Turkey suspension notice). Usable networks with confirmed non-PayPal payout paths:
+    Amazon TR, Awin (Payoneer), Impact (TRY wire), Partnerize (electronic transfer).
+    Conditional: FlexOffers, Sovrn (non-PayPal TR path unconfirmed), CJ, Rakuten (enrollment
+    unresolved). Unusable for TR payout: Skimlinks (PayPal-only outside US/EU/UK).
+    TR tax registration required for Amazon Türkiye Gelir Ortaklığı.
+  piercing_content_caution: >
+    No network-level piercing ban found in official docs reviewed. Avoid medical cure/treatment
+    claims; disclose affiliate links; confirm per-advertiser program terms before aftercare
+    monetization. Skimlinks does not monetize Amazon links and is unusable for TR payouts.
 
 related_program_ids: []
-related_network_ids: []
+related_network_ids:
+  - net-amazon-associates
+  - net-awin
+  - net-impact
+  - net-partnerize
+  - net-flexoffers
+  - net-sovrn-commerce
+  - net-cj-affiliate
+  - net-rakuten-advertising
+  - net-skimlinks
 
-traffic_requirements_notes: 'Unresolved — pending live research.'
+traffic_requirements_notes: >
+  Amazon TR: ~10 posts within 60 days; 3 qualifying sales within 180 days; social channels
+  require full profile URL and typically ≥500 organic followers (Facebook public pages/groups,
+  Instagram, Twitter/X, YouTube, Twitch). Awin: promotional space URL + description. Impact:
+  verified media property recommended; ~72 h marketplace review. Partnerize: per-advertiser
+  campaign approval. FlexOffers/Sovrn/CJ/Rakuten/Skimlinks: see eligibility report—do not
+  prioritize until TR payout path confirmed (Skimlinks TR payout unusable).
 
 restrictions:
   blocked_for_piercingconnect: false
   reason: ''
 
 verification:
-  status: unverified
-  official_source_url: ''
-  last_checked_at: 2026-07-15
-  evidence_confidence: low
+  status: partially_verified
+  source_type: public_documentation
+  confidence: medium
+  official_source_url: https://www.paypal.com/tr/webapps/mpp/country-worldwide
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/
+    - https://success.awin.com/articles/en_US/Knowledge/Payments-for-publishers-with-Turkish-Tax-Residency
+    - https://help.impact.com/other/reference-documentation/supported-currencies-and-timezones
+    - https://support.skimlinks.com/hc/en-us/articles/223835488-What-are-my-payment-options
+  last_checked: 2026-07-15
   checked_by: revenue-ops
-  notes: 'Stub record (Sprint 005). All affiliate_notes unresolved until research.'
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006-B: PayPal unavailable for TR residents. Usable payout networks: Amazon TR,
+    Awin, Impact (wire/TRY), Partnerize. Skimlinks reclassified unusable for TR payout.
+    FlexOffers and Sovrn remain conditional pending official non-PayPal TR confirmation.
 
-status: monitoring
+status: active
 
 notes: >
-  Primary PiercingConnect operating geography candidate. Network/program eligibility
-  and disclosure rules not yet researched.
+  Primary PiercingConnect operating geography. See
+  affiliate-intelligence/reports/turkey-network-eligibility.md for Sprint 006-B matrix.
+  Recommended first application: Amazon Türkiye Gelir Ortaklığı after TR tax registration.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

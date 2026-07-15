@@ -1,6 +1,6 @@
 # Affiliate Intelligence — Local Schema Validation Plan
 
-**Version:** 0.1  
+**Version:** 0.3  
 **Status:** Documentation only — no CI, no repo dependencies  
 **Scope:** Manual and optional local checks before creating or exporting records
 
@@ -91,6 +91,51 @@ For each record, verify:
 - [ ] Exactly one of `network_id` or `program_id` present (never both)
 - [ ] `scope_type` matches the set field
 
+### Verification block
+
+Shared schema: `schemas/verification.schema.yaml`. Embedded on records—not a standalone directory.
+
+#### Required fields (when `verification` is present)
+
+- `status`, `confidence`, `last_checked`
+
+#### Entity requirements
+
+| Entity | Required on record? | Typical `source_type` |
+|--------|----------------------|------------------------|
+| Network | Optional (backfill pending) | `official_network` |
+| Brand | Optional (backfill pending) | `official_brand` |
+| Program | **Yes** | `official_program` |
+| Merchant | **Yes** | `official_network` or `official_brand` |
+| Product | **Yes** | `official_program` |
+| Commission | **Yes** | `official_program` or `legal_terms` |
+| Payment | **Yes** | `official_network` or `legal_terms` |
+| Application | Optional | `official_program` or `support_confirmation` |
+| Policy | Optional (legacy fields allowed) | `legal_terms` or `public_documentation` |
+| Country | **Yes** | `public_documentation` or `official_network` |
+
+#### Checklist (when `verification:` is present)
+
+- [ ] `status` is one of: `verified`, `partially_verified`, `unverified`, `deprecated`
+- [ ] `confidence` is one of: `high`, `medium`, `low`
+- [ ] `last_checked` is ISO date (YYYY-MM-DD)—not `last_checked_at`
+- [ ] `source_type` set when `status` is `verified` or `partially_verified`
+- [ ] `official_source_url` is a public, non-login URL when present
+- [ ] `evidence_urls[]` lists additional supporting official URLs only
+- [ ] `review_due` is set for researched records (recommended: 90 days after `last_checked`)
+- [ ] No credentials, banking details, tax IDs, or API secrets in `notes`
+
+#### Legacy migration (invalid field names)
+
+| Legacy | Replacement |
+|--------|-------------|
+| `last_checked_at` | `last_checked` |
+| `evidence_confidence` | `confidence` |
+| `partial` | `partially_verified` |
+| `disputed`, `stale` | Remap to `partially_verified`, `verified`, or `deprecated` with notes |
+
+Policy records may still use top-level `official_source_url` and `last_reviewed` without `verification` until backfilled.
+
 ### Commission
 
 - [ ] `program_id` is authoritative; `brand_id` / `merchant_id` / `network_id` match program if present (index-only)
@@ -141,10 +186,27 @@ Before revenue-ops begins live program research:
 - [ ] Validation plan reviewed by revenue-ops and editorial-lead
 - [ ] Architecture authority matrix (§6) understood—FKs before indexes
 - [ ] Payment inheritance and network `default_payment_id` workflow understood
+- [ ] `verification.schema.yaml` reviewed; templates include verification block
 
 ---
 
-## 8. Future CI (deferred)
+## 9. Verification backfill (deferred)
+
+Records without `verification` blocks remain schema-valid where optional:
+
+| Directory | Backfill status |
+|-----------|-----------------|
+| `networks/` | Pending — research lives in `notes` / `policies.last_reviewed` |
+| `brands/` | Pending |
+| `policies/` | Legacy `official_source_url` + `last_reviewed` only |
+| `countries/` | Migrated (Sprint 006-B) |
+| `payments/` | Migrated (Sprint 006-B) |
+
+When backfilling a network, prefer moving payout evidence to `payments/` verification and linking via `default_payment_id`.
+
+---
+
+## 10. Future CI (deferred)
 
 When record volume justifies automation:
 
@@ -160,5 +222,5 @@ When record volume justifies automation:
 
 | Field | Value |
 |-------|-------|
-| Version | 0.1 |
-| Sprint | Affiliate Intelligence 004 |
+| Version | 0.3 |
+| Sprint | Affiliate Intelligence — verification standard |

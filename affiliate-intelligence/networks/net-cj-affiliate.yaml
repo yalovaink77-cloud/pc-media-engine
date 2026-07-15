@@ -2,7 +2,7 @@ id: net-cj-affiliate
 name: CJ Affiliate
 slug: cj-affiliate
 
-status: evaluating
+status: monitoring
 
 website_url: https://www.cj.com/
 
@@ -15,21 +15,44 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: null
+
 payout:
   minimum_threshold_usd: null
   payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  schedule_notes: >
+    UNRESOLVED for Turkey enrollment—official publisher payment help requires logged-in
+    Support Center. Junction articles cite USD 50 direct deposit minimum and Payoneer for
+    global publishers but are not TR-specific eligibility proof.
 
 policies:
-  tos_url: https://www.cj.com/legal/publisher-terms
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://www.cj.com/legal/publisher-service-agreement
+  piercing_content_notes: unresolved
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: partially_verified
+  source_type: official_network
+  confidence: medium
+  official_source_url: https://www.cj.com/legal/publisher-service-agreement
+  evidence_urls:
+    - https://signup.cj.com/member/signup/publisher/
+    - https://public.cj.com/signup/publisher
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006: TR enrollment uncertain; signup pages errored during research. No payment record.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): UNCERTAIN for Turkey-based publisher signup. Signup forms expose
+  a Country field; explicit Turkey eligibility statement not found in accessible official
+  help during research. Publisher signup pages returned application errors when fetched.
+  Application URLs: https://signup.cj.com/member/signup/publisher/ ;
+  https://public.cj.com/signup/publisher (Country field present; pages errored during research).
+  Non-US publishers may use W-8BEN tax forms per signup references—details unresolved here.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

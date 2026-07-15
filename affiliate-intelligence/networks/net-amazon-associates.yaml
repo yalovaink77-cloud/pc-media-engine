@@ -2,9 +2,9 @@ id: net-amazon-associates
 name: Amazon Associates
 slug: amazon-associates
 
-status: evaluating
+status: active
 
-website_url: https://affiliate-program.amazon.com/
+website_url: https://gelirortakligi.amazon.com.tr/
 
 publisher_account:
   account_label: ''
@@ -13,23 +13,66 @@ publisher_account:
 
 default_cookie_days: null
 
-supported_countries: []
+supported_countries:
+  - TR
+
+default_payment_id: pay-amazon-associates-tr-default
 
 payout:
   minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research. Authoritative terms will live in payments/ when enrolled.'
+  payment_methods:
+    - direct-deposit
+    - amazon-gift-card
+    - cheque
+  schedule_notes: >
+    TRY 100 minimum (direct deposit/gift card); ~60 days after month-end when threshold met.
+    Display-only—see pay-amazon-associates-tr-default.
 
 policies:
-  tos_url: https://affiliate-program.amazon.com/help/operating/policies/
-  piercing_content_notes: 'Unresolved — review operating agreement for piercing/aftercare content before enrollment.'
-  last_reviewed: null
+  tos_url: https://gelirortakligi.amazon.com.tr/help/operating/agreement
+  piercing_content_notes: >
+    No piercing-specific ban found in official participation requirements. Unsuitable sites
+    include violence, illegal activity, IP violations, and misleading content per US policy
+    mirror. Aftercare editorial must avoid medical cure/treatment claims beyond product facts;
+    FTC/Amazon disclosure required on affiliate links.
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: partially_verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/help/operating/agreement
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/help/node/topic/GJCKWFEECYW25FGJ
+    - https://gelirortakligi.amazon.com.tr/
+    - https://affiliate-program.amazon.com/welcome/info4
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006/006-B TR publisher path researched. Payout verification on
+    pay-amazon-associates-tr-default. US portal alternate enrollment payout terms not fully documented.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms, PiercingConnect enrollment status.
+  Sprint 006 (2026-07-15): Turkey publisher eligibility confirmed for Amazon Türkiye Gelir
+  Ortaklığı—TR tax-registered individuals, sole proprietors, or businesses required; non-tax
+  exempt individuals cannot participate. US Associates portal also lists Turkey as signup
+  country; PC default path is TR portal when tax-resident in Turkey.
+  Application URLs: https://gelirortakligi.amazon.com.tr/ (TR tax residents);
+  https://affiliate-program.amazon.com/welcome/info4 (Turkey listed on US portal).
+  Traffic/site: original public content; websites need ~10 posts within 60 days; 3 qualifying
+  sales within 180 days trigger application review; social requires full profile URL and
+  typically ≥500 organic followers (Facebook public pages/groups, Instagram, Twitter/X,
+  YouTube, Twitch only).
+  Tax: tax interview required; manual or automatic invoicing per TR tax status; withholding
+  rules documented in TR billing help—do not store tax IDs here.
+  Cookie/commission rates: not documented in this sprint (no guessing).
+  Sprint 006-B (2026-07-15): Keep marketplace-specific—TR tax residents use Amazon Türkiye
+  Gelir Ortaklığı and TRY payout terms, not assumed US Associates banking. Tax verification
+  remains a hard prerequisite (TR tax registration + tax interview). PayPal is not an Amazon
+  TR payout method and is unavailable to Turkey-resident publishers generally.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

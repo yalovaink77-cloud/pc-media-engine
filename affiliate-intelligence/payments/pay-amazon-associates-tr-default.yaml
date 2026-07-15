@@ -1,0 +1,53 @@
+id: pay-amazon-associates-tr-default
+name: Amazon Associates Türkiye — default payout (TR tax residents)
+
+scope_type: network
+network_id: net-amazon-associates
+
+payout_thresholds:
+  - currency: TRY
+    minimum_amount: 100
+    country_codes: [TR]
+    notes: >
+      Direct deposit or Amazon.com gift card threshold. Cheque threshold is 1000 TRY
+      per Amazon Türkiye help—PC default path unresolved.
+  - currency: TRY
+    minimum_amount: 1000
+    country_codes: [TR]
+    notes: Cheque payment method threshold only—not default path.
+
+payment_methods:
+  - direct-deposit
+  - amazon-gift-card
+  - cheque
+
+supported_currencies:
+  - TRY
+
+payout_schedule: >
+  Monthly when balance meets threshold; paid approximately 60 days after month-end
+  (e.g. January earnings paid late March). Tax information required before payout.
+
+verification:
+  status: verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/help/node/topic/GJCKWFEECYW25FGJ
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Minimum thresholds from Amazon Türkiye help. Applies when enrolling via
+    gelirortakligi.amazon.com.tr as TR tax-registered publisher.
+
+status: active
+effective_date: 2026-07-15
+
+notes: >
+  TR tax-resident publishers use Amazon Türkiye Gelir Ortaklığı portal. US Associates
+  portal also lists Turkey as signup country; payout terms for that enrollment path
+  not fully documented here—use TR portal terms when tax-resident in Turkey.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

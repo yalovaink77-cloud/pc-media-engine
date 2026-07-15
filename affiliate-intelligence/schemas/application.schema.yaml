@@ -1,5 +1,5 @@
 # PiercingConnect Affiliate Intelligence — Application Schema
-# Version: 0.1
+# Version: 0.2
 #
 # Defines an affiliate program application lifecycle record.
 
@@ -138,6 +138,12 @@ properties:
 
   notes:
     type: string
+
+  verification:
+    $ref: 'verification.schema.yaml'
+    description: >
+      Evidence for application requirements, eligibility checks, or decision terms.
+      Optional until first application records are created.
 
   created_at:
     type: string

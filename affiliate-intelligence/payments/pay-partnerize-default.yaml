@@ -1,0 +1,47 @@
+id: pay-partnerize-default
+name: Partnerize — default partner payout
+
+scope_type: network
+network_id: net-partnerize
+
+payout_thresholds:
+  - currency: GBP
+    minimum_amount: 20
+  - currency: USD
+    minimum_amount: 30
+  - currency: EUR
+    minimum_amount: 30
+    notes: Other currency thresholds available on request per publisher terms.
+
+payment_methods:
+  - electronic-transfer
+
+supported_currencies:
+  - GBP
+  - USD
+  - EUR
+
+payout_schedule: >
+  Funds available within one UK working day after advertiser funds clear and partner
+  provides payment/tax details. Below-threshold amounts roll forward monthly.
+
+verification:
+  status: verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://partnerize.com/wp-content/uploads/2025/04/20250331-Partnerize-Publisher-Terms-and-Conditions-1.8.-UK-Entity-min.pdf
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Türkiye selectable in Partnerize signup country lists.
+
+status: active
+effective_date: 2026-07-15
+
+notes: >
+  Partnerize marketing cites 60 currencies / 215 countries—exact TRY threshold
+  matrix unresolved (available on request per terms).
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

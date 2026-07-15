@@ -1,0 +1,51 @@
+id: pay-skimlinks-default
+name: Skimlinks — default publisher payout
+
+scope_type: network
+network_id: net-skimlinks
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 65
+  - currency: EUR
+    minimum_amount: 55
+  - currency: GBP
+    minimum_amount: 50
+
+payment_methods:
+  - paypal
+
+supported_currencies:
+  - USD
+  - EUR
+  - GBP
+
+payout_schedule: >
+  End of month when cleared balance exceeds threshold and merchants have paid Skimlinks.
+  Commissions take at least 92 days from transaction to clear.
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://support.skimlinks.com/hc/en-us/articles/223835488-What-are-my-payment-options
+  evidence_urls:
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006-B: TR payout path unusable. Outside US/EU/UK, Skimlinks is PayPal-only.
+    PayPal Turkey notice: customers cannot send or receive money. Conclusion verified with
+    high confidence; network enrollment may still be open but payout is blocked for TR residents.
+
+status: unknown
+effective_date: 2026-07-15
+
+notes: >
+  Sprint 006-B: Do not treat as a viable TR payout record. Direct deposit available only to
+  US/EU/UK (and JP per payment options article) bank accounts—Turkey not included. Site
+  approval mechanics unchanged; payout path blocked for TR residents.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

@@ -1,5 +1,5 @@
 # PiercingConnect Affiliate Intelligence — Policy Schema
-# Version: 0.1
+# Version: 0.2
 #
 # Disclosure templates, network TOS summaries, brand restrictions, and
 # PiercingConnect commercial rules. No secrets or legal advice—pointers and copy only.
@@ -89,12 +89,22 @@ properties:
   official_source_url:
     type: string
     format: uri
-    description: Network TOS, brand guideline, or FTC reference URL.
+    description: >
+      Legacy quick link to network TOS, brand guideline, or FTC reference URL.
+      Prefer verification.official_source_url on new records; keep in sync when both present.
 
   last_reviewed:
     type: string
     format: date
-    description: Date PiercingConnect last reviewed this policy against source.
+    description: >
+      Legacy review date. Prefer verification.last_checked on new records; keep in sync
+      when both present.
+
+  verification:
+    $ref: 'verification.schema.yaml'
+    description: >
+      Authoritative provenance for policy claims. Optional on legacy records that only
+      use top-level official_source_url and last_reviewed.
 
   related_policy_ids:
     type: array

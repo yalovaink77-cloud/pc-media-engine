@@ -2,7 +2,7 @@ id: net-impact
 name: Impact
 slug: impact
 
-status: evaluating
+status: active
 
 website_url: https://impact.com/
 
@@ -15,21 +15,55 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-impact-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 10
+  payment_methods:
+    - bank-transfer
+    - wire
+  schedule_notes: >
+    Autopay min USD 10 equivalent. TR path: international wire/EFT (TRY/Turkey listed in
+    official currencies). PayPal listed by Impact but unavailable to TR residents—do not use.
+    Display-only—see pay-impact-default.
 
 policies:
-  tos_url: https://impact.com/publisher-terms/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://impact.com/legal/partner-program-agreement/
+  piercing_content_notes: >
+    Marketplace review for authenticity/compliance; no piercing-specific rule found.
+    Brand-level eligibility filters apply (location, followers, etc.).
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://help.impact.com/other/reference-documentation/supported-currencies-and-timezones
+  evidence_urls:
+    - https://impact.com/legal/partner-program-agreement/
+    - https://help.impact.com/partner/what-would-you-like-to-learn-about/platform-features/finance/payments-withdrawals-and-balance/withdraw-funds-to-your-bank-account
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+    - https://app.impact.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Payout verification on pay-impact-default. TR wire/TRY path confirmed Sprint 006-B.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Turkey listed in impact.com partner signup country selectors.
+  Marketplace application reviewed within ~72 hours; verified media property recommended.
+  Application URL: https://app.impact.com/
+  Application cost: free.
+  Tax/payment prerequisites required before payout per help docs—forms not stored here.
+  Cookie/commission rates: per-brand contracts only—not network defaults.
+  Sprint 006-B (2026-07-15): Usable for TR via non-PayPal wire. Official Supported Currencies
+  lists TRY with bank account location Turkey and TRY under wire-supported currencies
+  (https://help.impact.com/other/reference-documentation/supported-currencies-and-timezones).
+  PayPal method exists platform-wide but is unavailable for Turkey-resident publishers per
+  PayPal Turkey suspension notice.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

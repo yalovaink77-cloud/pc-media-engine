@@ -15,21 +15,54 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-sovrn-commerce-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 25
+  payment_methods:
+    - ach
+    - check
+    - echeck
+    - wire
+  schedule_notes: >
+    NET 90 from month-end. PayPal listed but unavailable to Turkey-resident publishers.
+    Wire/check/ACH documented network-wide; TR-specific non-PayPal confirmation missing.
+    Display-only—see pay-sovrn-commerce-default.
 
 policies:
-  tos_url: https://www.sovrn.com/terms/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://knowledge.sovrn.com/kb/general-guide-for-getting-started-with-commerce
+  piercing_content_notes: >
+    Campaign manual review after clicks generated; must demonstrate legitimate traffic sources.
+    Social and web campaigns require approval per property.
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: partially_verified
+  source_type: official_network
+  confidence: medium
+  official_source_url: https://knowledge.sovrn.com/kb/payments-in-commerce
+  evidence_urls:
+    - https://knowledge.sovrn.com/kb/general-guide-for-getting-started-with-commerce
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+    - https://platform.sovrn.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Payout verification on pay-sovrn-commerce-default. TR non-PayPal path unconfirmed Sprint 006-B.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Free account signup (email or Google). Turkey publisher eligibility
+  not explicitly stated in official KB—no country block found. Requires approved campaign +
+  Commerce installation + generated clicks before review (~5 business days cited).
+  Application URL: https://platform.sovrn.com/
+  Application cost: free.
+  Sprint 006-B (2026-07-15): CONDITIONAL for TR. Commerce payments KB lists PayPal with
+  country-availability check (PayPal unavailable in Turkey per PayPal TR notice). ACH/check/wire
+  also referenced, but no official confirmation that a non-PayPal method pays Turkey-resident
+  publishers—do not treat as usable until confirmed.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

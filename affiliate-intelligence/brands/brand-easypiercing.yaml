@@ -12,8 +12,7 @@ product_categories:
 
 content_crosswalk:
   content_card_ids: []
-  evidence_record_ids:
-    - official-otzi
+  evidence_record_ids: []
 
 merchant_ids: []
 program_ids: []
@@ -28,11 +27,23 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  confidence: low
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. No official brand website URL on file. Affiliate program and product
+    evidence unresolved. official-otzi crosswalk removed Sprint 006—do not restore without
+    dedicated EasyPiercing evidence.
+
 notes: >
-  Name-only peer in sterile-saline hub—no dedicated content card. Evidence via
-  official-otzi (OTZI by Easypiercing 50 mL SKU). Official brand website URL
-  unresolved. Affiliate program unresolved. Sterility and 0.9% concentration
-  unresolved.
+  Name-only peer in sterile-saline hub—no dedicated content card. Official brand website URL
+  unresolved. Affiliate program unresolved. Sterility and 0.9% concentration unresolved.
+  SPRINT 006 FLAG: Prior evidence crosswalk to official-otzi removed— that record documents
+  OTZI by Easypiercing (brand-otzi), not a standalone EasyPiercing publisher identity.
+  Do not reuse official-otzi here until dedicated EasyPiercing evidence exists.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T16:30:00Z'

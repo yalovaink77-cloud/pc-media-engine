@@ -31,6 +31,17 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  source_type: official_brand
+  confidence: low
+  official_source_url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. Brand identity URL only—affiliate program unresolved.
+
 notes: >
   Hub comparison peer only—no dedicated review content card. Referenced in sterile-saline
   hub and peer review alternates tables. Legal entity name unresolved. Affiliate program

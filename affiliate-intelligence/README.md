@@ -1,7 +1,7 @@
 # Affiliate Intelligence
 
-**Version:** 0.4 (foundation)  
-**Status:** Data model complete — ready for disclosure stub and live research  
+**Version:** 0.5 (foundation)  
+**Status:** Verification standard applied — ready for network/brand backfill  
 **Owner:** editorial-lead / revenue-ops
 
 Affiliate Intelligence is PiercingConnect’s **internal knowledge layer** for affiliate networks, merchant programs, brand relationships, commission terms, and commercial policy boundaries. It supports informed editorial decisions—it does not drive rankings or product verdicts.
@@ -40,6 +40,7 @@ This layer is subordinate to:
 | `reports/` | Generated audit and performance reports (future) |
 | `templates/` | YAML/MD templates for new records |
 | `schemas/` | JSON Schema definitions for record types |
+| `schemas/verification.schema.yaml` | Shared commercial evidence block (embedded in records) |
 | `exports/` | Machine exports (CSV/JSON) for external tools |
 
 ---
@@ -48,6 +49,7 @@ This layer is subordinate to:
 
 | Schema | Record type |
 |--------|-------------|
+| `schemas/verification.schema.yaml` | Shared `verification` block (all commercial entities) |
 | `schemas/network.schema.yaml` | Affiliate network |
 | `schemas/brand.schema.yaml` | Brand |
 | `schemas/application.schema.yaml` | Program application |
@@ -74,6 +76,7 @@ Templates for all record types live in `templates/`.
 - **Index arrays:** parent `*_ids` lists are denormalized—rebuild from child records (see `workflow.md`)
 - **Payment scope:** exactly one of `network_id` (default) or `program_id` (override) per payment record
 - **Commission:** `program_id` authoritative; `brand_id`, `merchant_id`, `network_id` index-only
+- **Verification:** shared block on all commercial entities—`status`, `source_type`, `confidence`, `official_source_url`, `evidence_urls`, `last_checked`, `checked_by`, `review_due`, `notes` (see `verification.schema.yaml`)
 - **No secrets:** API keys, passwords, and full payment account numbers never stored here
 - **Snapshots:** Commission and terms fields are point-in-time; use `effective_date` and `supersedes`
 - **Editorial firewall:** `affiliate_relevance` on content cards is independent of commission rate
@@ -93,6 +96,6 @@ Templates for all record types live in `templates/`.
 
 | Field | Value |
 |-------|-------|
-| Sprint | Affiliate Intelligence 004 |
+| Sprint | Affiliate Intelligence — verification standard |
 | Created | 2026-07-15 |
-| Next review | After global disclosure stub and first brand records |
+| Next review | After network/brand verification backfill |

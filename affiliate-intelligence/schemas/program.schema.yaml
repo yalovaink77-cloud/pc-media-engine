@@ -173,36 +173,7 @@ properties:
 
 $defs:
   verification:
-    type: object
-    required:
-      - status
-      - last_checked_at
-      - evidence_confidence
-    properties:
-      status:
-        type: string
-        enum:
-          - unverified
-          - partial
-          - verified
-          - stale
-          - disputed
-      official_source_url:
-        type: string
-        format: uri
-      last_checked_at:
-        type: string
-        format: date
-      evidence_confidence:
-        type: string
-        enum:
-          - low
-          - medium
-          - high
-      checked_by:
-        type: string
-      notes:
-        type: string
+    $ref: 'verification.schema.yaml'
 
   countryRestrictions:
     type: object

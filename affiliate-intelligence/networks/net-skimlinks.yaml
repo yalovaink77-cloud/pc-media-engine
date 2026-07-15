@@ -15,21 +15,51 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-skimlinks-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 65
+  payment_methods:
+    - paypal
+  schedule_notes: >
+    USD 65 / EUR 55 / GBP 50 cleared balance. Outside US/EU/UK bank regions: PayPal only
+    per Skimlinks help. PayPal unavailable to Turkey-resident publishers—TR payout path unusable.
 
 policies:
   tos_url: https://skimlinks.com/terms-of-service/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  piercing_content_notes: >
+    Manual publisher review; site must have original commerce-relevant content. Geographic
+    coverage prioritizes regions with highest merchant coverage—approval not guaranteed from TR.
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://support.skimlinks.com/hc/en-us/articles/223835488-What-are-my-payment-options
+  evidence_urls:
+    - https://skimlinks.com/terms-of-service/
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+    - https://signup.skimlinks.com/en
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Payout verification on pay-skimlinks-default. TR payout path unusable (PayPal-only) Sprint 006-B.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Signup open; manual site approval typically 48–72 hours.
+  Application URL: https://signup.skimlinks.com/en
+  Application cost: free.
+  Does not work with Amazon links per Skimlinks FAQ—relevant for sterile-saline Amazon paths.
+  Sprint 006-B (2026-07-15): UNUSABLE for Turkey-resident publisher payout. Skimlinks payment
+  options: Direct Deposit or PayPal only for US/EU/UK (or JP) bank accounts; outside those
+  regions PayPal only
+  (https://support.skimlinks.com/hc/en-us/articles/223835488-What-are-my-payment-options).
+  PayPal Turkey notice: no send/receive money for Turkey customers
+  (https://www.paypal.com/tr/webapps/mpp/country-worldwide). No official non-PayPal TR path.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

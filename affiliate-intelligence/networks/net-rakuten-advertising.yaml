@@ -2,7 +2,7 @@ id: net-rakuten-advertising
 name: Rakuten Advertising
 slug: rakuten-advertising
 
-status: evaluating
+status: monitoring
 
 website_url: https://rakutenadvertising.com/
 
@@ -15,21 +15,47 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: null
+
 payout:
   minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  payment_methods:
+    - paypal
+    - direct-deposit
+    - check
+  schedule_notes: >
+    UNRESOLVED for Turkey-resident publisher default network. Official help documents
+    50-unit minimums per regional network (US/UK/CA/AU/EUR) but not a Turkey-specific
+    network mapping.
 
 policies:
-  tos_url: https://rakutenadvertising.com/legal-notices/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://rakutenadvertising.com/legal-notices/publisher-membership-agreement/
+  piercing_content_notes: >
+    Open network without upfront publisher screening; advertiser-specific approval criteria.
+    Tax declaration required before payments.
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: partially_verified
+  source_type: official_network
+  confidence: medium
+  official_source_url: https://rakutenadvertising.com/legal-notices/publisher-membership-agreement/
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006: TR regional network payout mapping unresolved. No payment record.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Signup allows country selection for commission receipt; free
+  membership. Turkey appears on Brazil Network eligible publisher country list only—
+  does not confirm US/UK network payout path for TR-resident publishers.
+  Traffic: website URL, monthly visitors/page views, description requested at signup.
+  Application URL: https://rakutenadvertising.com/ (publisher signup via site).
+  Payment record deferred until PC confirms which Rakuten regional network applies from TR.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

@@ -1,7 +1,7 @@
 # Affiliate Intelligence — Architecture
 
-**Version:** 0.4  
-**Status:** Foundation document — ready for first records after disclosure stub  
+**Version:** 0.5  
+**Status:** Foundation document — verification standard applied  
 **Scope:** Repository layout, boundaries, relationship authority, and integration points
 
 ---
@@ -54,6 +54,7 @@ Affiliate Intelligence is not a link shortener, not a live sync engine, and not 
 | **Country** | Geo eligibility matrix | `country.schema.yaml` |
 | **Payment** | Payout configuration (non-secret) | `payment.schema.yaml` |
 | **Policy** | Disclosure templates, TOS summaries, commercial rules | `policy.schema.yaml` |
+| **Verification** | Shared evidence block (embedded—not a standalone record type) | `verification.schema.yaml` |
 
 ---
 
@@ -170,16 +171,71 @@ Payout terms follow a **default + override** model:
 
 ---
 
-## 8. Policies and disclosure
+## 8. Commercial verification
 
-- **`policies/`** holds disclosure templates, network compliance summaries, brand restrictions, and PiercingConnect commercial rules.
-- Programs reference disclosure via `disclosure.template_id` → `policy-{slug}` ID.
-- Policy records are operational guidance and copy—**not legal advice**. Use `official_source_url` for external TOS references.
-- Network inline `policies.tos_url` is a quick link; formal compliance tracking may also use scoped `policy-*` records.
+All commercial claims (eligibility, payout, commission, restrictions, disclosure sources) carry provenance in a **shared `verification` block** defined by `schemas/verification.schema.yaml`.
+
+### Structure
+
+```yaml
+verification:
+  status: verified | partially_verified | unverified | deprecated
+  source_type: official_program | official_network | official_brand | merchant_email | support_confirmation | legal_terms | public_documentation
+  confidence: high | medium | low
+  official_source_url: ''      # primary public URL
+  evidence_urls: []            # additional official URLs
+  last_checked: YYYY-MM-DD
+  checked_by: revenue-ops      # role label only
+  review_due: YYYY-MM-DD
+  notes: ''
+```
+
+**Required fields:** `status`, `confidence`, `last_checked`.
+
+### Entity coverage
+
+| Entity | Schema | `verification` on record |
+|--------|--------|----------------------------|
+| Network | `network.schema.yaml` | Optional until backfilled |
+| Brand | `brand.schema.yaml` | Optional until backfilled |
+| Program | `program.schema.yaml` | **Required** |
+| Merchant | `merchant.schema.yaml` | **Required** |
+| Product | `product.schema.yaml` | **Required** |
+| Commission | `commission.schema.yaml` | **Required** |
+| Payment | `payment.schema.yaml` | **Required** |
+| Application | `application.schema.yaml` | Optional until first applications |
+| Policy | `policy.schema.yaml` | Optional; legacy `official_source_url` / `last_reviewed` retained |
+| Country | `country.schema.yaml` | **Required** (geo eligibility) |
+
+### Rules
+
+1. **Official sources only** for `verified` / `partially_verified`—never guess commission rates, cookie periods, or approval likelihood.
+2. **No secrets** in `notes` or URLs—login pages, account dashboards, and credential-bearing links are invalid evidence.
+3. **`review_due`** recommended at 90 days after `last_checked` for live-researched records.
+4. **Payment records** hold authoritative payout verification; network inline `payout` and `policies.last_reviewed` are display or quick-link metadata only.
+5. **Policy legacy fields:** top-level `official_source_url` and `last_reviewed` remain valid on existing records; new policy work should populate `verification` and keep legacy fields in sync when both exist.
+
+### Status semantics
+
+| Status | Use when |
+|--------|----------|
+| `verified` | Official source(s) fully support the claim |
+| `partially_verified` | Some official evidence; gaps remain (e.g. TR wire confirmed, enrollment unconfirmed) |
+| `unverified` | Stub or not yet checked against official sources |
+| `deprecated` | Superseded record—do not use for decisions |
 
 ---
 
-## 9. Trust and editorial gates
+## 9. Policies and disclosure
+
+- **`policies/`** holds disclosure templates, network compliance summaries, brand restrictions, and PiercingConnect commercial rules.
+- Programs reference disclosure via `disclosure.template_id` → `policy-{slug}` ID.
+- Policy records are operational guidance and copy—**not legal advice**. Prefer `verification.official_source_url` for external TOS references; legacy top-level `official_source_url` remains on older records.
+- Network inline `policies.tos_url` is a quick link; formal compliance tracking may also use scoped `policy-*` records with `verification` blocks.
+
+---
+
+## 10. Trust and editorial gates
 
 Aligned with `cluster-portfolio.md`:
 
@@ -192,7 +248,7 @@ Aligned with `cluster-portfolio.md`:
 
 ---
 
-## 10. Storage format
+## 11. Storage format
 
 - **Human records:** YAML files, one record per file, named `{id}.yaml`
 - **Schemas:** JSON Schema draft 2020-12 in `schemas/`
@@ -205,7 +261,7 @@ No database migration—filesystem source of truth until volume warrants automat
 
 ---
 
-## 11. Future integration (not built)
+## 12. Future integration (not built)
 
 | Consumer | Integration |
 |----------|-------------|
@@ -216,7 +272,7 @@ No database migration—filesystem source of truth until volume warrants automat
 
 ---
 
-## 12. Out of scope
+## 13. Out of scope
 
 - Live API sync with networks
 - Click tracking or attribution pixels
@@ -230,5 +286,5 @@ No database migration—filesystem source of truth until volume warrants automat
 
 | Field | Value |
 |-------|-------|
-| Version | 0.4 |
-| Sprint | Affiliate Intelligence 004 |
+| Version | 0.5 |
+| Sprint | Affiliate Intelligence — verification standard |

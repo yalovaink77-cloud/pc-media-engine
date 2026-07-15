@@ -30,10 +30,23 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  source_type: official_brand
+  confidence: low
+  official_source_url: https://www.otzi.fr/en/nos-produits/otzi-piercing-en/otzi-by-easypiercing-saline-solution-spray-50ml-piercing-aftercare/
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. Brand/product page URL only—affiliate program and geo limits unresolved.
+
 notes: >
-  OTZI by Easypiercing product line. Evidence record official-otzi covers Easypiercing
-  Saline Solution 50 mL SKU. No dedicated content card. Relationship to brand-easypiercing
-  unresolved for affiliate enrollment. EU/FR commercial context likely—geo limits unknown.
+  OTZI by Easypiercing product line. Evidence record official-otzi is authoritative for
+  Easypiercing Saline Solution 50 mL SKU on otzi.fr. No dedicated content card.
+  brand-easypiercing previously pointed at official-otzi—removed Sprint 006 as unverified
+  crosswalk; keep evidence on brand-otzi only. EU/FR commercial context likely—geo limits
+  unknown.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T16:30:00Z'

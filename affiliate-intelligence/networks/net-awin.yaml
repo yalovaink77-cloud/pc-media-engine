@@ -2,7 +2,7 @@ id: net-awin
 name: Awin
 slug: awin
 
-status: evaluating
+status: active
 
 website_url: https://www.awin.com/
 
@@ -15,21 +15,56 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-awin-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 20
+  payment_methods:
+    - payoneer
+    - sepa
+    - bacs
+    - ach
+    - domestic-transfer
+  schedule_notes: >
+    Paid 1st/15th when threshold met. TR publishers typically Payoneer + invoice to Awin Ltd.
+    Display-only—see pay-awin-default.
 
 policies:
   tos_url: https://www.awin.com/gb/legal/publisher-terms-and-conditions
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  piercing_content_notes: >
+    Network-level piercing ban not found. Advertiser programs commonly prohibit medical/health
+    cure claims and require FTC-style disclosure—apply per-program terms before aftercare links.
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://www.awin.com/gb/legal/publisher-terms-and-conditions
+  evidence_urls:
+    - https://success.awin.com/articles/en_US/Knowledge/What-are-the-payment-thresholds
+    - https://success.awin.com/articles/en_US/Knowledge/Payments-for-publishers-with-Turkish-Tax-Residency
+    - https://ui.awin.com/publisher-signup/en/awin/step1
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Payout verification on pay-awin-default. TR tax residency / Payoneer workflow confirmed
+    Sprint 006-B.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Turkey tax residency explicitly supported—dedicated payment workflow
+  with invoice to Awin Ltd and Payoneer (Payments for publishers with Turkish Tax Residency).
+  If tax residency country not listed in Awin Tax Details, services unavailable per FAQ.
+  Application URL: https://ui.awin.com/publisher-signup/en/awin/step1
+  Application cost: USD 1 refundable security deposit per Awin publisher marketing pages
+  (invitation code may waive—unverified for PC).
+  Traffic: promotional space URL + description required; social profiles may be listed.
+  Supported operating countries for merchants vary by program—not network-wide list.
+  Sprint 006-B (2026-07-15): Remains confirmed usable for TR via official Turkish tax
+  residency / Payoneer documentation. No PayPal dependency for the TR workflow.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

@@ -1,0 +1,74 @@
+id: pay-awin-default
+name: Awin — default publisher payout
+
+scope_type: network
+network_id: net-awin
+
+payout_thresholds:
+  - currency: GBP
+    minimum_amount: 20
+    notes: Publisher-set minimum; default if unset is 50 GBP.
+  - currency: EUR
+    minimum_amount: 20
+    notes: Publisher-set minimum; default if unset is 50 EUR.
+  - currency: USD
+    minimum_amount: 20
+    notes: Publisher-set minimum; default if unset is 50 USD.
+  - currency: TRY
+    minimum_amount: null
+    country_codes: [TR]
+    notes: >
+      For other currencies, threshold equivalent to USD 20 per Awin help.
+      Exact TRY amount unresolved—set in account.
+
+payment_methods:
+  - payoneer
+  - sepa
+  - bacs
+  - ach
+  - domestic-transfer
+  - international-wire
+
+supported_currencies:
+  - GBP
+  - EUR
+  - USD
+  - TRY
+  - CHF
+  - AUD
+  - CAD
+  - PLN
+  - SEK
+  - NOK
+  - DKK
+  - BRL
+  - MXN
+
+payout_schedule: >
+  Payable balance paid on 1st or 15th of month when threshold met by prior 15th or
+  month-end. TR tax-resident publishers invoice Awin Ltd and typically receive via
+  Payoneer within 14 days of invoice receipt.
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://success.awin.com/articles/en_US/Knowledge/What-are-the-payment-thresholds
+  evidence_urls:
+    - https://success.awin.com/articles/en_US/Knowledge/Payments-for-publishers-with-Turkish-Tax-Residency
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    TR-specific invoicing and Payoneer requirement documented at Turkish Tax Residency
+    payment article.
+
+status: active
+effective_date: 2026-07-15
+
+notes: >
+  Turkish tax-resident publishers must issue invoice to Awin Ltd referencing payment
+  notification PDF. Do not store banking or tax IDs in this record.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

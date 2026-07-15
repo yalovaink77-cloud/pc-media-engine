@@ -1,0 +1,82 @@
+# PiercingConnect Affiliate Intelligence — Verification Block
+# Version: 0.2
+#
+# Shared commercial evidence metadata. Used by:
+#   network, brand, program, merchant, product, commission, payment, application, policy
+# Also used by country (geo eligibility) records.
+#
+# Never store credentials, banking details, tax IDs, or API secrets in verification notes.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/verification/v1'
+title: AffiliateVerification
+description: Provenance and freshness metadata for a factual claim in an affiliate record.
+type: object
+required:
+  - status
+  - confidence
+  - last_checked
+
+properties:
+  status:
+    type: string
+    enum:
+      - verified
+      - partially_verified
+      - unverified
+      - deprecated
+    description: >
+      verified = claim supported by official source(s).
+      partially_verified = mixed or incomplete official evidence.
+      unverified = stub or not yet checked.
+      deprecated = superseded; do not use for decisions.
+
+  source_type:
+    type: string
+    enum:
+      - official_program
+      - official_network
+      - official_brand
+      - merchant_email
+      - support_confirmation
+      - legal_terms
+      - public_documentation
+    description: Primary evidence class for official_source_url.
+
+  confidence:
+    type: string
+    enum:
+      - high
+      - medium
+      - low
+
+  official_source_url:
+    type: string
+    format: uri
+    description: Primary authoritative URL—not login or account-specific pages.
+
+  evidence_urls:
+    type: array
+    items:
+      type: string
+      format: uri
+    description: Additional supporting official URLs (TOS, help articles, notices).
+
+  last_checked:
+    type: string
+    format: date
+    description: Date evidence was last reviewed against official sources.
+
+  checked_by:
+    type: string
+    description: Role label (e.g. revenue-ops)—not personal credentials.
+
+  review_due:
+    type: string
+    format: date
+    description: Recommended re-check date before treating evidence as current.
+
+  notes:
+    type: string
+
+additionalProperties: false

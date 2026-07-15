@@ -1,0 +1,50 @@
+id: pay-flexoffers-default
+name: FlexOffers — default publisher payout
+
+scope_type: network
+network_id: net-flexoffers
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 25
+    notes: Check, eCheck thresholds per publisher terms. PayPal threshold same but unusable for TR.
+  - currency: USD
+    minimum_amount: 1000
+    notes: Wire transfer threshold only. TR availability of wire unresolved.
+
+payment_methods:
+  - check
+  - echeck
+  - wire
+
+supported_currencies:
+  - USD
+
+payout_schedule: >
+  NET 60—commissions earned in month M processed end of M+2; issued 1st–7th of M+3.
+  PayPal non-US resident fee schedule in terms is not a TR path (PayPal suspended in Turkey).
+
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: medium
+  official_source_url: https://www.flexoffers.com/terms-and-conditions/
+  evidence_urls:
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006-B: Conditional. Terms list wire/eCheck/check for Non-US publishers and PayPal.
+    PayPal unavailable to TR. No official confirmation that wire/eCheck/check pay Turkey-resident
+    publishers.
+
+status: unknown
+effective_date: 2026-07-15
+
+notes: >
+  Network publisher registration is free per terms. Per-advertiser approval separate.
+  Do not classify as usable for TR until non-PayPal method confirmed for Turkey.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

@@ -31,6 +31,17 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  source_type: official_brand
+  confidence: low
+  official_source_url: https://steri-wash.myshopify.com/pages/frontpage
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. Brand identity URL only—affiliate program unresolved.
+
 notes: >
   Sterile-saline cluster category example. Review draft exists (WP post 444).
   Legal entity name unresolved. Affiliate program unresolved. 0.9% verified on

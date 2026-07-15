@@ -1,6 +1,6 @@
 # Affiliate Intelligence — Workflow
 
-**Version:** 0.4  
+**Version:** 0.5  
 **Status:** Operational playbook  
 **Scope:** Lifecycle from discovery to link placement, index sync, payment resolution, and validation
 
@@ -17,6 +17,7 @@ No automation yet—this documents the intended human process.
 5. **Authoritative FKs first** — write child records, then rebuild parent index arrays
 6. **Payment defaults** — network `default_payment_id` is authoritative; program payment only when terms differ
 7. **Per-pairing program links** — product program linkage only via `merchant_program_links`, never a single top-level `program_id`
+8. **Verify commercially** — populate `verification` blocks from official sources; set `review_due` on researched records
 
 ---
 
@@ -48,6 +49,7 @@ Discover → Apply → Enroll → Map → Review → Place → Audit → Refresh
 - Log network options (direct vs network) in application notes
 - For direct programs, plan for `network_id: null`—never `net-direct`
 - Ensure a global disclosure policy exists in `policies/` before first enrollment (`policy-disclosure-default`)
+- When researching a network, create or update `payments/` with `verification` first, then set network `default_payment_id` and sync display `payout`
 
 ### Apply
 
@@ -61,6 +63,7 @@ Discover → Apply → Enroll → Map → Review → Place → Audit → Refresh
 - On approval, create `programs/` record with authoritative FKs:
   - `brand_id`, `merchant_id`, `network_id` (null when direct)
 - Capture **terms snapshot**: commission type, rate band, cookie window, geo
+- Set `verification` on program record from official program/network documentation
 - Set `disclosure.template_id` to an active `policy-*` record
 - Set `editorial_approved: false` until editorial sign-off
 - **Sync indexes:** rebuild `brand.merchant_ids`, `brand.program_ids`, `merchant.program_ids` from child records
@@ -105,6 +108,7 @@ Quarterly:
 - Retire programs with status `paused` or `terminated`
 - Rebuild all index arrays and validate FK consistency (`validation.md`)
 - Sync network inline `payout` from `default_payment_id` if drifted
+- Re-check records where `verification.review_due` has passed; update `last_checked` or downgrade `status` if sources changed
 - Export summary to `reports/` and `exports/`
 
 ### Refresh
@@ -230,5 +234,5 @@ _(See prior sprint notes in git history.)_
 
 | Field | Value |
 |-------|-------|
-| Version | 0.4 |
-| Sprint | Affiliate Intelligence 004 |
+| Version | 0.5 |
+| Sprint | Affiliate Intelligence — verification standard |

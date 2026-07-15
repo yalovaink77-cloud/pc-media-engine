@@ -22,7 +22,18 @@ template_text: '' # disclosure copy for programs referencing this policy
 body_markdown: ''
 
 official_source_url: ''
-last_reviewed: YYYY-MM-DD
+last_reviewed: YYYY-MM-DD # legacy—prefer verification.last_checked on new records
+
+verification:
+  status: unverified # verified | partially_verified | unverified | deprecated
+  source_type: public_documentation # official_program | official_network | official_brand | merchant_email | support_confirmation | legal_terms | public_documentation
+  confidence: low # high | medium | low
+  official_source_url: ''
+  evidence_urls: []
+  last_checked: YYYY-MM-DD
+  checked_by: revenue-ops
+  review_due: YYYY-MM-DD
+  notes: ''
 
 related_policy_ids: []
 supersedes: policy-

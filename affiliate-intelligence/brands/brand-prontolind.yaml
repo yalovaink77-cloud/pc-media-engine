@@ -27,6 +27,16 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  confidence: low
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 placeholder. No official URL, content card, or evidence record in-repo.
+    All commercial fields pending live research.
+
 notes: >
   Placeholder brand stub for sterile-saline cluster expansion. No content card,
   evidence record, or official URL in-repo. All commercial fields unresolved

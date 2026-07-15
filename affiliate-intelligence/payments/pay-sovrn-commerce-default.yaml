@@ -1,0 +1,50 @@
+id: pay-sovrn-commerce-default
+name: Sovrn Commerce — default publisher payout
+
+scope_type: network
+network_id: net-sovrn-commerce
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 25
+    notes: ACH, check, eCheck. PayPal same threshold but unusable for TR.
+  - currency: USD
+    minimum_amount: 50
+    notes: Wire transfer threshold. TR availability of wire unresolved.
+
+payment_methods:
+  - ach
+  - check
+  - echeck
+  - wire
+
+supported_currencies:
+  - USD
+
+payout_schedule: >
+  NET 90 from end of month commissions were earned (e.g. January earnings paid end of April).
+
+verification:
+  status: partially_verified
+  source_type: official_network
+  confidence: medium
+  official_source_url: https://knowledge.sovrn.com/kb/payments-in-commerce
+  evidence_urls:
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006-B: Conditional. Commerce KB lists PayPal with country-availability check
+    (unavailable in Turkey per PayPal TR notice). ACH/check/wire also referenced; no official
+    confirmation a non-PayPal method pays Turkey-resident publishers.
+
+status: unknown
+effective_date: 2026-07-15
+
+notes: >
+  Account creation free. Campaign approval required before monetization.
+  Do not classify as usable for TR until non-PayPal method confirmed for Turkey.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

@@ -1,5 +1,5 @@
 # PiercingConnect Affiliate Intelligence — Payment Schema
-# Version: 0.3
+# Version: 0.4
 #
 # Payout terms snapshot—thresholds, methods, currencies. No banking or tax data.
 # Scope: exactly one of network_id (default terms) or program_id (override terms).
@@ -153,36 +153,7 @@ properties:
 
 $defs:
   verification:
-    type: object
-    required:
-      - status
-      - last_checked_at
-      - evidence_confidence
-    properties:
-      status:
-        type: string
-        enum:
-          - unverified
-          - partial
-          - verified
-          - stale
-          - disputed
-      official_source_url:
-        type: string
-        format: uri
-      last_checked_at:
-        type: string
-        format: date
-      evidence_confidence:
-        type: string
-        enum:
-          - low
-          - medium
-          - high
-      checked_by:
-        type: string
-      notes:
-        type: string
+    $ref: 'verification.schema.yaml'
 
 allOf:
   - oneOf:

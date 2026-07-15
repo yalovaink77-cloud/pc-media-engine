@@ -15,21 +15,50 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-flexoffers-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 25
+  payment_methods:
+    - echeck
+    - check
+    - wire
+  schedule_notes: >
+    NET 60. PayPal listed in terms but unavailable to Turkey-resident publishers.
+    Wire/eCheck/check exist for Non-US residents—TR country eligibility for those methods
+    not officially confirmed. See pay-flexoffers-default.
 
 policies:
-  tos_url: https://www.flexoffers.com/publisher-terms/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://www.flexoffers.com/terms-and-conditions/
+  piercing_content_notes: unresolved
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: medium
+  official_source_url: https://www.flexoffers.com/terms-and-conditions/
+  evidence_urls:
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+    - https://publisherprobeta.flexoffers.com/signup/accountInfo
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Payout verification on pay-flexoffers-default. TR non-PayPal path unconfirmed Sprint 006-B.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Publisher registration open globally via signup wizard; Turkey
+  publisher eligibility not explicitly confirmed in terms—confirm country during signup.
+  Application URL: https://publisherprobeta.flexoffers.com/signup/accountInfo
+  Network approval separate from per-advertiser program approval. Application cost: free.
+  Two-factor SMS verification required per terms.
+  Sprint 006-B (2026-07-15): CONDITIONAL for TR. PayPal non-US fee schedule in terms is
+  irrelevant for TR residents (PayPal suspended in Turkey). Wire/eCheck/check exist for
+  Non-US publishers in terms, but no official statement that those methods pay Turkey-resident
+  publishers—do not treat as usable until confirmed at account setup or Support.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

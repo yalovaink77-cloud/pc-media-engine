@@ -2,7 +2,7 @@ id: net-partnerize
 name: Partnerize
 slug: partnerize
 
-status: evaluating
+status: active
 
 website_url: https://partnerize.com/
 
@@ -15,21 +15,40 @@ default_cookie_days: null
 
 supported_countries: []
 
+default_payment_id: pay-partnerize-default
+
 payout:
-  minimum_threshold_usd: null
-  payment_methods: []
-  schedule_notes: 'Unresolved — pending live research.'
+  minimum_threshold_usd: 30
+  payment_methods:
+    - electronic-transfer
+  schedule_notes: >
+    GBP 20 / USD 30 / EUR 30 monthly aggregate minimum per publisher terms. Display-only.
 
 policies:
-  tos_url: https://partnerize.com/resources/publisher-terms/
-  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
-  last_reviewed: null
+  tos_url: https://partnerize.com/wp-content/uploads/2025/04/20250331-Partnerize-Publisher-Terms-and-Conditions-1.8.-UK-Entity-min.pdf
+  piercing_content_notes: unresolved
+  last_reviewed: 2026-07-15
 
 contacts: []
 
+verification:
+  status: verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://partnerize.com/wp-content/uploads/2025/04/20250331-Partnerize-Publisher-Terms-and-Conditions-1.8.-UK-Entity-min.pdf
+  evidence_urls:
+    - https://console.partnerize.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Payout verification on pay-partnerize-default. Türkiye selectable at signup Sprint 006.
+
 notes: >
-  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
-  default_cookie_days, supported_countries, payout terms.
+  Sprint 006 (2026-07-15): Türkiye selectable in Partnerize campaign signup country lists.
+  Application URL: https://console.partnerize.com/
+  Per-advertiser campaign approval required. Marketing claims 60 currencies / 215 countries
+  for payouts—exact TRY threshold matrix unresolved (on request per terms).
+  Application cost: free. Tax/payment details required before commission release.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T16:00:00Z'

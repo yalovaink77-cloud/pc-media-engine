@@ -42,11 +42,14 @@ content_opportunities:
   x: { allowed: null, restrictions: '', notes: '' }
 
 verification:
-  status: unverified # unverified | partial | verified | stale | disputed
+  status: unverified # verified | partially_verified | unverified | deprecated
+  source_type: public_documentation # official_program | official_network | official_brand | merchant_email | support_confirmation | legal_terms | public_documentation
+  confidence: low # high | medium | low
   official_source_url: ''
-  last_checked_at: YYYY-MM-DD
-  evidence_confidence: low # low | medium | high
+  evidence_urls: []
+  last_checked: YYYY-MM-DD
   checked_by: revenue-ops
+  review_due: YYYY-MM-DD
   notes: ''
 
 status: prospect # prospect | evaluating | active | paused | terminated

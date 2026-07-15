@@ -1,5 +1,5 @@
 # PiercingConnect Affiliate Intelligence — Network Schema
-# Version: 0.2
+# Version: 0.3
 #
 # Defines an affiliate network platform (e.g. ShareASale, Amazon Associates).
 # Authoritative payout terms live in payments/; inline payout is display-only.
@@ -129,6 +129,12 @@ properties:
   notes:
     type: string
     description: Internal operational notes.
+
+  verification:
+    $ref: 'verification.schema.yaml'
+    description: >
+      Commercial evidence for enrollment, eligibility, and payout claims. Optional on
+      existing records until backfilled; required for new network research exports.
 
   created_at:
     type: string

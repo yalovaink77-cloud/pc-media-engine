@@ -31,6 +31,17 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  source_type: official_brand
+  confidence: low
+  official_source_url: https://h2ocean.com/piercing-aftercare-spray/
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. Brand identity URL only—affiliate program unresolved.
+
 notes: >
   Comparison peer—not APP-aligned sterile 0.9% NaCl baseline. Review draft exists
   (WP post 446). Legal entity name unresolved. Affiliate program unresolved.

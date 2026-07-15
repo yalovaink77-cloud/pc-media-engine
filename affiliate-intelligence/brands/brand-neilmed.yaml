@@ -31,6 +31,17 @@ restrictions:
   prohibited_claims: []
   geographic_limits: []
 
+verification:
+  status: unverified
+  source_type: official_brand
+  confidence: low
+  official_source_url: https://www.neilmedpac.com/usa/piercing-aftercare/
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  notes: >
+    Sprint 005 stub. Brand identity URL only—affiliate program and merchant enrollment unresolved.
+
 notes: >
   Sterile-saline cluster category example. Review draft exists (WP post 443).
   Affiliate channel (Amazon, direct, network) unresolved. 0.9% concentration

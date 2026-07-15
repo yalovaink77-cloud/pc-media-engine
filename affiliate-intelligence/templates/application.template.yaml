@@ -41,5 +41,16 @@ documents: []
 
 notes: ''
 
+verification:
+  status: unverified # verified | partially_verified | unverified | deprecated
+  source_type: official_program # official_program | official_network | official_brand | merchant_email | support_confirmation | legal_terms | public_documentation
+  confidence: low # high | medium | low
+  official_source_url: ''
+  evidence_urls: []
+  last_checked: YYYY-MM-DD
+  checked_by: revenue-ops
+  review_due: YYYY-MM-DD
+  notes: ''
+
 created_at: ''
 updated_at: ''

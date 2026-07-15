@@ -1,5 +1,5 @@
 # PiercingConnect Affiliate Intelligence — Brand Schema
-# Version: 0.1
+# Version: 0.2
 #
 # Defines a consumer-facing brand entity linked to merchants and content.
 # A brand may appear in multiple networks via separate merchant records.
@@ -135,6 +135,12 @@ properties:
 
   notes:
     type: string
+
+  verification:
+    $ref: 'verification.schema.yaml'
+    description: >
+      Commercial evidence for brand identity, program availability, and restrictions.
+      Optional on existing records until backfilled.
 
   created_at:
     type: string

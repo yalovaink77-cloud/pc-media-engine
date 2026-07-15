@@ -1,0 +1,55 @@
+id: pay-impact-default
+name: Impact — default partner payout
+
+scope_type: network
+network_id: net-impact
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 10
+    notes: Minimum withdrawal threshold; currency equivalent applies.
+  - currency: TRY
+    minimum_amount: null
+    country_codes: [TR]
+    notes: >
+      TRY is a wire-supported currency with Turkey as supported bank account location per
+      Impact Supported Currencies. Exact TRY autopay minimum equivalent unresolved—USD 10
+      baseline applies in account currency.
+
+payment_methods:
+  - bank-transfer
+  - wire
+
+supported_currencies:
+  - USD
+  - TRY
+
+payout_schedule: >
+  Autopay on balance threshold (min USD 10) processed Tuesday/Thursday following
+  trigger, or fixed day 1st/15th when balance exceeds minimum. Tax forms required
+  before payout. International wire/EFT when impact.com does not hold a local account.
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://help.impact.com/other/reference-documentation/supported-currencies-and-timezones
+  evidence_urls:
+    - https://help.impact.com/partner/what-would-you-like-to-learn-about/platform-features/finance/payments-withdrawals-and-balance/withdraw-funds-to-your-bank-account
+    - https://www.paypal.com/tr/webapps/mpp/country-worldwide
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006-B: Non-PayPal TR path confirmed via TRY + Turkey bank location under wire.
+    PayPal is a platform method but unavailable for Turkey-resident publishers.
+
+status: active
+effective_date: 2026-07-15
+
+notes: >
+  Turkey in impact.com partner signup country lists. Use bank wire/EFT only for TR-resident
+  publishers. Do not store banking or tax IDs here.
+
+created_at: '2026-07-15T16:00:00Z'
+updated_at: '2026-07-15T17:00:00Z'

@@ -30,6 +30,19 @@ body_markdown: |
 official_source_url: https://www.ftc.gov/business-guidance/resources/disclosures-101-social-media-influencers
 last_reviewed: 2026-07-15
 
+verification:
+  status: partially_verified
+  source_type: public_documentation
+  confidence: medium
+  official_source_url: https://www.ftc.gov/business-guidance/resources/disclosures-101-social-media-influencers
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 005 stub with FTC reference. Legal review and locale-specific variants (TR/EU)
+    unresolved—do not treat as legal advice. Legacy top-level fields kept in sync.
+
 related_policy_ids: []
 
 status: active
