@@ -1,0 +1,163 @@
+# PiercingConnect Affiliate Intelligence — Policy Schema
+# Version: 0.1
+#
+# Disclosure templates, network TOS summaries, brand restrictions, and
+# PiercingConnect commercial rules. No secrets or legal advice—pointers and copy only.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/policy/v1'
+title: AffiliatePolicy
+description: Commercial, disclosure, or compliance policy record referenced by programs and editorial workflows.
+type: object
+required:
+  - id
+  - name
+  - slug
+  - policy_type
+  - scope_level
+  - status
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^policy-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - policy-disclosure-default
+      - policy-shareasale-piercing-content
+      - policy-piercingconnect-commercial
+
+  name:
+    type: string
+    description: Human-readable policy title.
+    minLength: 2
+    maxLength: 160
+
+  slug:
+    type: string
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  policy_type:
+    type: string
+    enum:
+      - disclosure
+      - network_compliance
+      - brand_restriction
+      - editorial_commercial
+      - geo_restriction
+      - other
+    description: Primary classification for lookup and workflow routing.
+
+  scope_level:
+    type: string
+    enum:
+      - global
+      - network
+      - brand
+      - program
+    description: Broadest entity this policy applies to.
+
+  network_id:
+    type: string
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Required when scope_level is network.
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Required when scope_level is brand.
+
+  program_id:
+    type: string
+    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Required when scope_level is program.
+
+  summary:
+    type: string
+    description: One-paragraph summary for editors and revenue-ops.
+    maxLength: 1000
+
+  template_text:
+    type: string
+    description: Copy-paste disclosure or notice text when policy_type is disclosure.
+
+  body_markdown:
+    type: string
+    description: Longer policy notes in Markdown—operational guidance only.
+
+  official_source_url:
+    type: string
+    format: uri
+    description: Network TOS, brand guideline, or FTC reference URL.
+
+  last_reviewed:
+    type: string
+    format: date
+    description: Date PiercingConnect last reviewed this policy against source.
+
+  related_policy_ids:
+    type: array
+    description: Other policy records that extend or supersede this one.
+    items:
+      type: string
+      pattern: '^policy-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  supersedes:
+    type: string
+    pattern: '^policy-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Prior policy record this version replaces.
+
+  content_crosswalk:
+    type: object
+    description: Editorial assets governed by this policy.
+    properties:
+      content_card_ids:
+        type: array
+        items:
+          type: string
+          pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  status:
+    type: string
+    enum:
+      - draft
+      - active
+      - retired
+
+  notes:
+    type: string
+    description: Internal notes—not legal advice.
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+allOf:
+  - if:
+      properties:
+        scope_level:
+          const: network
+    then:
+      required:
+        - network_id
+  - if:
+      properties:
+        scope_level:
+          const: brand
+    then:
+      required:
+        - brand_id
+  - if:
+      properties:
+        scope_level:
+          const: program
+    then:
+      required:
+        - program_id
+
+additionalProperties: false

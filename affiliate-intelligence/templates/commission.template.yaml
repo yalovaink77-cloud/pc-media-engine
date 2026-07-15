@@ -4,10 +4,11 @@
 # Create new file when terms change; link via supersedes.
 
 id: comm-{program}-{effective-date}
-program_id: prog-
-brand_id: brand-
-merchant_id: merchant-
-network_id: net-
+program_id: prog- # authoritative
+
+brand_id: brand- # index only—derive from program.brand_id
+merchant_id: merchant- # index only—derive from program.merchant_id
+network_id: net- # index only—derive from program.network_id; null when direct
 
 commission_type: unknown # cpa | cps | cpc | cpl | flat | tiered | hybrid | unknown
 rate_description: ''

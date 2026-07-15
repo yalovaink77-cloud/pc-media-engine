@@ -1,8 +1,8 @@
 # PiercingConnect Affiliate Intelligence — Network Schema
-# Version: 0.1
+# Version: 0.2
 #
 # Defines an affiliate network platform (e.g. ShareASale, Amazon Associates).
-# Descriptive documentation for editors and future tooling.
+# Authoritative payout terms live in payments/; inline payout is display-only.
 
 $schema: 'https://json-schema.org/draft/2020-12/schema'
 $id: 'https://piercingconnect.com/schemas/affiliate-intelligence/network/v1'
@@ -78,9 +78,18 @@ properties:
       type: string
       pattern: '^[A-Z]{2}$'
 
+  default_payment_id:
+    type: string
+    pattern: '^pay-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: >
+      Authoritative FK to network-scoped payment record (payments/ with scope_type: network
+      and matching network_id). Programs inherit via this unless program.payment_id overrides.
+
   payout:
     type: object
-    description: Payout summary—no bank or tax identifiers.
+    description: >
+      Display-only denormalized summary for quick reference. Sync from default_payment_id
+      record—never treat as source of truth when a payment record exists.
     properties:
       minimum_threshold_usd:
         type: number

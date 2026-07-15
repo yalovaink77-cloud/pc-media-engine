@@ -1,7 +1,8 @@
 # PiercingConnect Affiliate Intelligence — Commission Schema
-# Version: 0.2
+# Version: 0.3
 #
 # Point-in-time commission and attribution terms snapshot.
+# program_id is authoritative; brand_id, merchant_id, network_id are index-only.
 
 $schema: 'https://json-schema.org/draft/2020-12/schema'
 $id: 'https://piercingconnect.com/schemas/affiliate-intelligence/commission/v1'
@@ -27,20 +28,24 @@ properties:
   program_id:
     type: string
     pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Authoritative foreign key—commission belongs to this program.
 
   brand_id:
     type: string
     pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index only—derive from program.brand_id. Rebuild on sync.
 
   merchant_id:
     type: string
     pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index only—derive from program.merchant_id. Rebuild on sync.
 
   network_id:
     type:
       - string
       - 'null'
     pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Denormalized index only—derive from program.network_id. Rebuild on sync.
 
   commission_type:
     type: string

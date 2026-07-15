@@ -1,7 +1,8 @@
 # PiercingConnect Affiliate Intelligence — Product Schema
-# Version: 0.2
+# Version: 0.4
 #
 # Linkable SKU or product target mapped to programs and content cards.
+# Program linkage is per merchant/program pairing—not a single top-level program_id.
 
 $schema: 'https://json-schema.org/draft/2020-12/schema'
 $id: 'https://piercingconnect.com/schemas/affiliate-intelligence/product/v1'
@@ -14,6 +15,7 @@ required:
   - slug
   - brand_id
   - merchant_ids
+  - merchant_program_links
   - status
   - verification
   - created_at
@@ -44,23 +46,39 @@ properties:
 
   merchant_ids:
     type: array
-    description: Authoritative foreign key(s)—product may map to one or more merchants (e.g. network vs direct).
+    description: Authoritative merchant relationship(s)—product may map to one or more merchants.
     minItems: 1
     items:
       type: string
       pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
 
-  program_id:
-    type: string
-    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Denormalized index—primary program used for link/commission lookup; not source of truth.
-
-  network_id:
-    type:
-      - string
-      - 'null'
-    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
-    description: Denormalized index—null when all linked merchants/programs are direct.
+  merchant_program_links:
+    type: array
+    description: >
+      Authoritative affiliate program linkage per merchant. One object per merchant/program
+      pairing used for monetization. Every merchant_id here must appear in merchant_ids;
+      every program_id must reference a program whose merchant_id matches.
+    minItems: 1
+    items:
+      type: object
+      required:
+        - merchant_id
+        - program_id
+      properties:
+        merchant_id:
+          type: string
+          pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+        program_id:
+          type: string
+          pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - broken
+        notes:
+          type: string
 
   sku:
     type: string
@@ -72,12 +90,17 @@ properties:
 
   content_crosswalk:
     type: object
+    description: Editorial crosswalk—uses content_card_ids consistently with brand records.
     properties:
-      content_card_id:
-        type: string
-        pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
-      evidence_record_id:
-        type: string
+      content_card_ids:
+        type: array
+        items:
+          type: string
+          pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+      evidence_record_ids:
+        type: array
+        items:
+          type: string
       wordpress_canonical_url:
         type: string
         format: uri
@@ -89,12 +112,14 @@ properties:
 
   region_links:
     type: array
-    description: Regional affiliate or deep links—templates only, no credentials.
+    description: Regional affiliate or deep links tied to a merchant/program pairing.
     minItems: 1
     items:
       type: object
       required:
         - country_codes
+        - merchant_id
+        - program_id
       properties:
         country_codes:
           type: array
@@ -102,6 +127,14 @@ properties:
           items:
             type: string
             pattern: '^[A-Z]{2}$'
+        merchant_id:
+          type: string
+          pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+          description: Must match a merchant_program_links entry.
+        program_id:
+          type: string
+          pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+          description: Must match the program_id paired with merchant_id in merchant_program_links.
         affiliate_url:
           type: string
           format: uri

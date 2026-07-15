@@ -1,8 +1,8 @@
 # Affiliate Intelligence — Workflow
 
-**Version:** 0.3  
+**Version:** 0.4  
 **Status:** Operational playbook  
-**Scope:** Lifecycle from discovery to link placement, index sync, and payment resolution
+**Scope:** Lifecycle from discovery to link placement, index sync, payment resolution, and validation
 
 No automation yet—this documents the intended human process.
 
@@ -15,7 +15,8 @@ No automation yet—this documents the intended human process.
 3. **Snapshot terms** — commission changes create new records; do not overwrite history
 4. **Disclose always** — no link without matching disclosure on canonical URL
 5. **Authoritative FKs first** — write child records, then rebuild parent index arrays
-6. **Payment defaults** — network payment is default; program payment only when terms differ
+6. **Payment defaults** — network `default_payment_id` is authoritative; program payment only when terms differ
+7. **Per-pairing program links** — product program linkage only via `merchant_program_links`, never a single top-level `program_id`
 
 ---
 
@@ -46,6 +47,7 @@ Discover → Apply → Enroll → Map → Review → Place → Audit → Refresh
 - Check `brands/` for existing entity; create stub from `templates/brand.template.yaml` if missing
 - Log network options (direct vs network) in application notes
 - For direct programs, plan for `network_id: null`—never `net-direct`
+- Ensure a global disclosure policy exists in `policies/` before first enrollment (`policy-disclosure-default`)
 
 ### Apply
 
@@ -59,19 +61,22 @@ Discover → Apply → Enroll → Map → Review → Place → Audit → Refresh
 - On approval, create `programs/` record with authoritative FKs:
   - `brand_id`, `merchant_id`, `network_id` (null when direct)
 - Capture **terms snapshot**: commission type, rate band, cookie window, geo
+- Set `disclosure.template_id` to an active `policy-*` record
 - Set `editorial_approved: false` until editorial sign-off
 - **Sync indexes:** rebuild `brand.merchant_ids`, `brand.program_ids`, `merchant.program_ids` from child records
 - **Payment:** if network program and terms match network default, leave `payment_id` empty; create program-scoped payment only when terms differ (see §5)
+- **Commission:** create `commissions/` snapshot with authoritative `program_id`; index fields optional
 
 ### Map
 
 - Create `products/` entry per SKU with authoritative FKs:
   - `brand_id`, `merchant_ids` (one or more)
-- Optional denormalized indexes: `program_id`, `network_id`
-- Include:
-  - `affiliate_url` or link template (no credentials)
-  - `content_card_id` / `evidence_record_id` crosswalk
-  - `countries` allowed
+  - `merchant_program_links[]` — one `{ merchant_id, program_id }` per affiliate pairing
+- **Do not** set a top-level `program_id`
+- Include in `content_crosswalk`:
+  - `content_card_ids[]` (not singular `content_card_id`)
+  - `evidence_record_ids[]`
+- **`region_links`:** each link must specify `merchant_id` + `program_id` matching a `merchant_program_links` entry
 - **Sync indexes:** rebuild `merchant.product_ids`, `brand.merchant_ids`, `program.product_ids`
 
 ### Review (editorial gate)
@@ -79,10 +84,11 @@ Discover → Apply → Enroll → Map → Review → Place → Audit → Refresh
 Checklist before `editorial_approved: true`:
 
 - [ ] Content card published or publish-approved as draft
-- [ ] Evidence record exists for product claims
+- [ ] Evidence record exists for product claims (`evidence_record_ids`)
 - [ ] Limitations section present on review
-- [ ] Disclosure copy matches `policies/` template
+- [ ] Disclosure copy matches `policies/{disclosure.template_id}.yaml`
 - [ ] No ranking language tied to commission
+- [ ] Product `merchant_program_links` validated per `validation.md` §5
 
 ### Place
 
@@ -97,14 +103,16 @@ Quarterly:
 - Verify links resolve (HTTP 200/301)
 - Compare live commission to last snapshot
 - Retire programs with status `paused` or `terminated`
-- Rebuild all index arrays and validate FK consistency
+- Rebuild all index arrays and validate FK consistency (`validation.md`)
+- Sync network inline `payout` from `default_payment_id` if drifted
 - Export summary to `reports/` and `exports/`
 
 ### Refresh
 
 - New commission → new file in `commissions/` with `supersedes` pointer
 - Update `programs/` `current_commission_id`
-- Notify editorial if terms materially affect disclosure
+- Rebuild commission index fields from program if populated
+- Notify editorial if terms materially affect disclosure or policy records
 
 ---
 
@@ -119,7 +127,7 @@ Reverse ID lists (`brand.merchant_ids`, `brand.program_ids`, `merchant.program_i
 | Merchant created/updated/retired | `brand.merchant_ids` |
 | Program enrolled/terminated | `brand.program_ids`, `merchant.program_ids` |
 | Product mapped/retired | `merchant.product_ids`, `program.product_ids`, `brand.merchant_ids` |
-| Commission snapshot added | `program.commission_ids` |
+| Commission snapshot added | `program.commission_ids`; optional comm index FKs from program |
 
 **Procedure:**
 
@@ -136,8 +144,7 @@ When answering “what are the payout terms for program X?”:
 
 ```
 1. If program.payment_id is set → load that payment record (must be program-scoped).
-2. Else if program.network_id is set → load network default payment
-   (payments/ where scope_type: network and network_id matches).
+2. Else if program.network_id is set → load network.default_payment_id payment record.
 3. Else (direct program) → load program-scoped payment for program_id,
    or treat as unmodeled until explicit payment record exists.
 ```
@@ -146,7 +153,7 @@ When answering “what are the payout terms for program X?”:
 
 | Situation | Action |
 |-----------|--------|
-| New network enrollment | Create one network-scoped payment (`network_id` only) |
+| New network enrollment | Create network-scoped payment; set `network.default_payment_id`; sync inline `payout` summary |
 | Program terms = network default | Do not create program payment; omit `program.payment_id` |
 | Program terms differ | Create program-scoped payment (`program_id` only); set `program.payment_id` |
 | Direct program | Create program-scoped payment (no network default to inherit) |
@@ -155,7 +162,20 @@ Schema validation requires **exactly one** of `network_id` or `program_id` on ea
 
 ---
 
-## 6. Status enums (cross-schema)
+## 6. Local validation
+
+Before creating records or starting live research, follow **`validation.md`**:
+
+- YAML syntax check
+- ID prefix spot-check
+- Cross-reference checklist (§5)
+- Pre–live-research readiness gate (§7)
+
+No CI automation in Sprint 004—manual and optional user-local JSON Schema only.
+
+---
+
+## 7. Status enums (cross-schema)
 
 ### Application (`application.schema.yaml`)
 
@@ -169,40 +189,40 @@ Schema validation requires **exactly one** of `network_id` or `program_id` on ea
 
 `inactive` → `active` → `broken` → `retired`
 
+### Policy (`policy.schema.yaml`)
+
+`draft` → `active` → `retired`
+
 ---
 
-## 7. Roles
+## 8. Roles
 
 | Role | Responsibilities |
 |------|------------------|
-| **revenue-ops** | networks, applications, programs, commissions, payments, exports, index sync |
-| **editorial-lead** | editorial_approved gate, disclosure alignment |
+| **revenue-ops** | networks, applications, programs, commissions, payments, policies, exports, index sync |
+| **editorial-lead** | editorial_approved gate, disclosure alignment, policy review |
 | **content producer** | content card `related_products`, no raw affiliate URLs in drafts |
 | **publisher** | WordPress placement after gates pass |
 
 ---
 
-## 8. Sprint exit criteria
+## 9. Sprint exit criteria
 
-### Sprint 001 ✓
+### Sprint 001–003 ✓
 
-- [x] Directory structure created
-- [x] Core schemas: network, brand, application
-- [x] Architecture and workflow documented
+_(See prior sprint notes in git history.)_
 
-### Sprint 002 ✓
+### Sprint 004 ✓
 
-- [x] Schemas: merchant, program, product, commission, country, payment
-- [x] Templates for Sprint 002 record types
-
-### Sprint 003 ✓
-
-- [x] Direct programs: `network_id: null` (no `net-direct`)
-- [x] Payment inheritance documented; scope validation in schema
-- [x] Authoritative FK direction and index sync documented
-- [x] Templates: network, brand, application
+- [x] Policy entity schema and template
+- [x] `content_card_ids` standardized across schemas/templates/docs
+- [x] Multi-merchant product rules; removed ambiguous top-level `program_id`
+- [x] Network `default_payment_id`; inline `payout` display-only
+- [x] Commission index fields documented
+- [x] Local validation plan (`validation.md`)
+- [ ] Global disclosure policy stub record (pre-research)
 - [ ] First sterile-saline brand stubs (deferred)
-- [ ] Schema validation tooling wired in CI (future)
+- [ ] CI schema validation (future)
 
 ---
 
@@ -210,5 +230,5 @@ Schema validation requires **exactly one** of `network_id` or `program_id` on ea
 
 | Field | Value |
 |-------|-------|
-| Version | 0.3 |
-| Sprint | Affiliate Intelligence 003 |
+| Version | 0.4 |
+| Sprint | Affiliate Intelligence 004 |

@@ -89,7 +89,9 @@ properties:
 
   product_ids:
     type: array
-    description: Denormalized index only. Authoritative link is product.merchant_ids + product.brand_id.
+    description: >
+      Denormalized index only. Authoritative links are product.merchant_program_links
+      and product.merchant_ids.
     items:
       type: string
       pattern: '^prod-[a-z0-9]+(?:-[a-z0-9]+)*$'
@@ -149,7 +151,8 @@ properties:
     properties:
       template_id:
         type: string
-        description: Reference to policies/disclosure template slug.
+        pattern: '^policy-[a-z0-9]+(?:-[a-z0-9]+)*$'
+        description: Reference to policies/{id}.yaml disclosure record.
       custom_copy:
         type: string
         description: Program-specific disclosure addendum if required.

@@ -1,0 +1,38 @@
+# Template: Affiliate Policy
+# Schema: affiliate-intelligence/schemas/policy.schema.yaml
+# Copy to: affiliate-intelligence/policies/{id}.yaml
+# Operational guidance and disclosure copy only—not legal advice.
+
+id: policy-{slug}
+name: ''
+slug: ''
+
+policy_type: disclosure # disclosure | network_compliance | brand_restriction | editorial_commercial | geo_restriction | other
+scope_level: global # global | network | brand | program
+
+# Set scope FK when scope_level is not global:
+# network_id: net-
+# brand_id: brand-
+# program_id: prog-
+
+summary: ''
+
+template_text: '' # disclosure copy for programs referencing this policy
+
+body_markdown: ''
+
+official_source_url: ''
+last_reviewed: YYYY-MM-DD
+
+related_policy_ids: []
+supersedes: policy-
+
+content_crosswalk:
+  content_card_ids: []
+
+status: draft # draft | active | retired
+
+notes: ''
+
+created_at: ''
+updated_at: ''

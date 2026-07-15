@@ -1,6 +1,8 @@
 # Template: Affiliate Product
 # Schema: affiliate-intelligence/schemas/product.schema.yaml
 # Copy to: affiliate-intelligence/products/{id}.yaml
+#
+# Program linkage is per merchant/program pairing—no top-level program_id.
 
 id: prod-{brand}-{sku-slug}
 name: ''
@@ -9,21 +11,27 @@ slug: ''
 brand_id: brand-
 merchant_ids:
   - merchant- # authoritative; one product may map to multiple merchants
-program_id: prog- # denormalized index for link/commission lookup
-network_id: null # denormalized index; null when direct-only
+
+merchant_program_links:
+  - merchant_id: merchant-
+    program_id: prog-
+    status: active # active | inactive | broken
+    notes: ''
 
 sku: ''
 gtin: ''
 
 content_crosswalk:
-  content_card_id: pc-
-  evidence_record_id: ''
+  content_card_ids: [] # pc- prefixed IDs, consistent with brand records
+  evidence_record_ids: []
   wordpress_canonical_url: ''
 
 official_product_url: ''
 
 region_links:
   - country_codes: [US]
+    merchant_id: merchant- # must match a merchant_program_links entry
+    program_id: prog- # must match paired program_id for that merchant
     affiliate_url: ''
     retailer_name: ''
     link_type: direct-brand # direct-brand | network-deep-link | amazon-asin | other

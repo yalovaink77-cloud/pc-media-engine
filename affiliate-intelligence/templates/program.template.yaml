@@ -49,7 +49,7 @@ content_opportunities:
   x: { allowed: null, restrictions: '', notes: '' }
 
 disclosure:
-  template_id: ''
+  template_id: policy-disclosure-default
   custom_copy: ''
 
 verification:
