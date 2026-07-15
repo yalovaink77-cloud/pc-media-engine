@@ -1,0 +1,132 @@
+# PiercingConnect Affiliate Intelligence — Network Schema
+# Version: 0.1
+#
+# Defines an affiliate network platform (e.g. ShareASale, Amazon Associates).
+# Descriptive documentation for editors and future tooling.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/network/v1'
+title: AffiliateNetwork
+description: Affiliate network or platform through which PiercingConnect enrolls in merchant programs.
+type: object
+required:
+  - id
+  - name
+  - slug
+  - status
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    description: Stable network identifier.
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - net-shareasale
+      - net-amazon-associates
+
+  name:
+    type: string
+    description: Human-readable network name.
+    minLength: 2
+    maxLength: 120
+
+  slug:
+    type: string
+    description: URL-safe slug matching id without prefix.
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  status:
+    type: string
+    description: PiercingConnect relationship with this network.
+    enum:
+      - evaluating
+      - applied
+      - active
+      - paused
+      - terminated
+
+  website_url:
+    type: string
+    format: uri
+    description: Official network publisher portal URL.
+
+  publisher_account:
+    type: object
+    description: Non-secret account metadata only.
+    properties:
+      account_label:
+        type: string
+        description: Internal label (e.g. "PC main account")—not login email unless intentional.
+      publisher_id:
+        type: string
+        description: Network-assigned publisher ID if enrolled.
+      enrolled_at:
+        type: string
+        format: date
+
+  default_cookie_days:
+    type: integer
+    minimum: 0
+    description: Typical attribution window in days, if network-wide default exists.
+
+  supported_countries:
+    type: array
+    description: ISO 3166-1 alpha-2 codes where PiercingConnect may use this network.
+    items:
+      type: string
+      pattern: '^[A-Z]{2}$'
+
+  payout:
+    type: object
+    description: Payout summary—no bank or tax identifiers.
+    properties:
+      minimum_threshold_usd:
+        type: number
+        minimum: 0
+      payment_methods:
+        type: array
+        items:
+          type: string
+      schedule_notes:
+        type: string
+
+  policies:
+    type: object
+    properties:
+      tos_url:
+        type: string
+        format: uri
+      piercing_content_notes:
+        type: string
+        description: PiercingConnect-specific compliance notes for this network.
+      last_reviewed:
+        type: string
+        format: date
+
+  contacts:
+    type: array
+    description: Support or AM contacts (business email only).
+    items:
+      type: object
+      properties:
+        role:
+          type: string
+        email:
+          type: string
+          format: email
+
+  notes:
+    type: string
+    description: Internal operational notes.
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+additionalProperties: false

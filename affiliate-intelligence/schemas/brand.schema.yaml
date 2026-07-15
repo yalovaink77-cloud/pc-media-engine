@@ -1,0 +1,143 @@
+# PiercingConnect Affiliate Intelligence — Brand Schema
+# Version: 0.1
+#
+# Defines a consumer-facing brand entity linked to merchants and content.
+# A brand may appear in multiple networks via separate merchant records.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/brand/v1'
+title: AffiliateBrand
+description: Market-facing brand tracked for affiliate program enrollment and content mapping.
+type: object
+required:
+  - id
+  - name
+  - slug
+  - status
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    description: Stable brand identifier.
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - brand-neilmed
+      - brand-h2ocean
+
+  name:
+    type: string
+    description: Primary brand name as shown to readers.
+    minLength: 2
+    maxLength: 120
+
+  slug:
+    type: string
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  legal_name:
+    type: string
+    description: Optional legal entity name for contracts.
+
+  status:
+    type: string
+    description: Editorial and commercial tracking status.
+    enum:
+      - prospect
+      - active
+      - paused
+      - retired
+
+  website_url:
+    type: string
+    format: uri
+    description: Official brand consumer or corporate site.
+
+  product_categories:
+    type: array
+    description: PiercingConnect category tags for cluster mapping.
+    items:
+      type: string
+    examples:
+      - sterile-saline
+      - piercing-aftercare
+
+  content_crosswalk:
+    type: object
+    description: Links to editorial assets—no affiliate URLs here.
+    properties:
+      content_card_ids:
+        type: array
+        items:
+          type: string
+          pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+      evidence_record_ids:
+        type: array
+        items:
+          type: string
+
+  merchant_ids:
+    type: array
+    description: References to merchants/ in this repo (Sprint 002+).
+    items:
+      type: string
+      pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  program_ids:
+    type: array
+    description: References to active or historical programs/ records.
+    items:
+      type: string
+      pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  editorial:
+    type: object
+    description: Editorial boundaries independent of commission.
+    properties:
+      cluster_role:
+        type: string
+        enum:
+          - category-baseline
+          - category-example
+          - comparison-peer
+          - out-of-cluster
+      review_status:
+        type: string
+        enum:
+          - none
+          - planned
+          - draft
+          - published
+      limitations_on_file:
+        type: boolean
+        description: True when published review includes limitations section.
+
+  restrictions:
+    type: object
+    properties:
+      brand_guidelines_url:
+        type: string
+        format: uri
+      prohibited_claims:
+        type: array
+        items:
+          type: string
+      geographic_limits:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+additionalProperties: false

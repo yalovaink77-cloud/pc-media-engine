@@ -1,0 +1,148 @@
+# PiercingConnect Affiliate Intelligence — Application Schema
+# Version: 0.1
+#
+# Defines an affiliate program application lifecycle record.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/application/v1'
+title: AffiliateApplication
+description: Record of applying to join a merchant program via a network or direct brand program.
+type: object
+required:
+  - id
+  - brand_id
+  - network_id
+  - status
+  - applied_at
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    description: Stable application identifier.
+    pattern: '^app-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - app-neilmed-shareasale-2026-07
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  network_id:
+    type: string
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Network used for this application. Use net-direct for direct brand programs if modeled.
+
+  merchant_id:
+    type: string
+    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Optional merchant record once known (Sprint 002).
+
+  status:
+    type: string
+    enum:
+      - draft
+      - submitted
+      - pending
+      - approved
+      - rejected
+      - withdrawn
+
+  applied_at:
+    type: string
+    format: date
+    description: Date application submitted to network or brand.
+
+  decision_date:
+    type: string
+    format: date
+    description: Date approval or rejection received.
+
+  program_id:
+    type: string
+    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Populated when approved and program record created (Sprint 002).
+
+  application_channel:
+    type: string
+    enum:
+      - network_portal
+      - brand_direct
+      - email
+      - other
+
+  site_context:
+    type: object
+    description: What was submitted—URLs and descriptions only.
+    properties:
+      site_url:
+        type: string
+        format: uri
+      content_examples:
+        type: array
+        items:
+          type: string
+          format: uri
+      pitch_summary:
+        type: string
+        maxLength: 2000
+
+  commission_offered:
+    type: object
+    description: Terms communicated at application time—snapshot only.
+    properties:
+      commission_type:
+        type: string
+        enum:
+          - cpa
+          - cps
+          - cpc
+          - hybrid
+          - unknown
+      rate_description:
+        type: string
+        description: Human-readable (e.g. "8% CPS")—not a live API value.
+      cookie_days:
+        type: integer
+        minimum: 0
+
+  rejection_reason:
+    type: string
+    description: Internal summary if status is rejected.
+
+  editorial_gate:
+    type: object
+    description: Editorial readiness at time of application.
+    properties:
+      hub_published:
+        type: boolean
+      review_draft_url:
+        type: string
+        format: uri
+      editorial_lead_notified:
+        type: boolean
+
+  documents:
+    type: array
+    description: Paths to supporting files in repo (no external secrets).
+    items:
+      type: object
+      properties:
+        label:
+          type: string
+        path:
+          type: string
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+additionalProperties: false
