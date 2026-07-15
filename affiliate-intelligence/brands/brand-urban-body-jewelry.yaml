@@ -1,0 +1,54 @@
+id: brand-urban-body-jewelry
+name: Urban Body Jewelry
+slug: urban-body-jewelry
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.urbanbodyjewelry.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - plugs-tunnels
+  - stretching-kits
+  - aftercare
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-urban-body-jewelry-direct
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: verified
+  source_type: official_brand
+  confidence: high
+  official_source_url: https://www.urbanbodyjewelry.com/products/rep-cards
+  evidence_urls:
+    - https://www.urbanbodyjewelry.com/pages/refer
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Rep-card and refer-a-friend customer programs only. /pages/affiliate-program 404.
+    Not a traditional CPS affiliate program.
+
+notes: >
+  Sprint 007 discovery. Rep program rewards gift cards after 5 tracked referrals—not
+  suitable for publisher monetization pipeline.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

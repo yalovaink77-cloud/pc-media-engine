@@ -1,0 +1,54 @@
+id: app-oufer-awin-2026-07
+brand_id: brand-oufer
+network_id: net-awin
+merchant_id: merchant-oufer-awin
+
+status: draft
+
+applied_at: 2026-07-15
+decision_date: null
+
+program_id: prog-oufer-awin-global
+
+application_channel: network_portal
+
+site_context:
+  site_url: https://piercingconnect.com
+  content_examples: []
+  pitch_summary: >
+    PiercingConnect body-jewelry editorial content. Join OUFER program after Awin publisher
+    account approved. 15% CPS, 45-day cookie, worldwide shipping.
+
+commission_offered:
+  commission_type: cps
+  rate_description: 15% per Awin merchant profile 91941.
+  cookie_days: 45
+
+rejection_reason: ''
+
+editorial_gate:
+  hub_published: false
+  review_draft_url: ''
+  editorial_lead_notified: false
+
+documents: []
+
+notes: >
+  Ready-to-apply stub—NOT submitted. Prerequisite: Awin publisher account (USD 1 refundable
+  deposit per Awin marketing). Join URL:
+  https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+  evidence_urls:
+    - https://ui.awin.com/merchant-profile/91941
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: TR payout via Awin Payoneer path (pay-awin-default).
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

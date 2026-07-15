@@ -1,0 +1,55 @@
+id: merchant-tulsa-body-jewelry-direct
+name: Tulsa Body Jewelry (direct storefront)
+slug: tulsa-body-jewelry-direct
+
+brand_id: brand-tulsa-body-jewelry
+channel_type: direct
+network_id: null
+external_merchant_id: ''
+
+program_ids: []
+product_ids: []
+
+storefront_urls:
+  - url: https://tulsabodyjewelry.com/
+    country_codes: [US]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Brick-and-mortar Tulsa OK + e-commerce. Free shipping over $25.
+
+application_eligibility:
+  open_to_new_publishers: false
+  traffic_requirements: ''
+  content_requirements: []
+  prohibited_traffic: []
+  notes: TBJ Rewards customer loyalty only; no affiliate application on official site.
+
+content_opportunities:
+  wordpress: { allowed: false, restrictions: 'No affiliate program on official site.', notes: '' }
+  youtube: { allowed: false, restrictions: '', notes: '' }
+  instagram: { allowed: false, restrictions: '', notes: '' }
+  facebook: { allowed: false, restrictions: '', notes: '' }
+  pinterest: { allowed: false, restrictions: '', notes: '' }
+  x: { allowed: false, restrictions: '', notes: '' }
+
+verification:
+  status: verified
+  source_type: official_brand
+  confidence: medium
+  official_source_url: https://tulsabodyjewelry.com/pages/loyalty-program
+  evidence_urls:
+    - https://tulsabodyjewelry.com/pages/questions
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Third-party aggregator affiliate listings excluded per research rules.
+
+status: terminated
+
+notes: Not revenue-capable via verified official affiliate path.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

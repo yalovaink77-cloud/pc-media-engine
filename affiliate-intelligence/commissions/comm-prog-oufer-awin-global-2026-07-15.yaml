@@ -1,0 +1,37 @@
+id: comm-prog-oufer-awin-global-2026-07-15
+program_id: prog-oufer-awin-global
+
+brand_id: brand-oufer
+merchant_id: merchant-oufer-awin
+network_id: net-awin
+
+commission_type: cps
+rate_description: 15% commission per sale (Awin merchant profile).
+rate_percent: 15
+rate_flat_amount: null
+currency: USD
+
+cookie_days: 45
+
+country_codes: []
+
+effective_date: 2026-07-15
+end_date: null
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/91941
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Brand page may claim up to 17%—not verified in Sprint 007; Awin profile states 15%.
+    Extra rewards for royal/contributing publishers mentioned without specific rates.
+
+notes: AOV $35+ cited on Awin profile (merchant marketing claim, not commission term).
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

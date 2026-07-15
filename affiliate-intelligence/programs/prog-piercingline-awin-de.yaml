@@ -1,0 +1,69 @@
+id: prog-piercingline-awin-de
+name: Piercingline — Awin DE
+slug: piercingline-awin-de
+
+brand_id: brand-piercingline
+merchant_id: merchant-piercingline-awin
+network_id: net-awin
+program_type: network
+
+application_id: app-piercingline-awin-2026-07
+status: pending
+editorial_approved: false
+
+current_commission_id: comm-prog-piercingline-awin-de-2026-07-15
+commission_ids:
+  - comm-prog-piercingline-awin-de-2026-07-15
+product_ids: []
+
+region_programs:
+  - region_label: DE
+    country_codes: [DE]
+    program_portal_url: https://ui.awin.com/merchant-profile/18471
+    link_base_url: ''
+    currency: EUR
+    notes: German Awin advertiser; EN storefront available.
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Website thematic fit required; publisher payout via Awin TR path.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Website with piercing/body-jewelry thematic alignment.
+  content_requirements:
+    - Website publishers per merchant FAQ
+  prohibited_traffic: []
+  notes: >
+    Apply: https://ui.awin.com/publisher-signup/de/awin?advertiser=18471
+
+content_opportunities:
+  wordpress:
+    { allowed: true, restrictions: 'Off-topic sites may be rejected.', notes: Merchant FAQ. }
+  youtube: { allowed: null, restrictions: '', notes: Not documented on merchant affiliate page. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://piercingline.com/en/service/affiliate-partner-program/
+  evidence_urls:
+    - https://ui.awin.com/merchant-profile/18471
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: 12% standard / 8% voucher; 30-day cookie per merchant page.
+
+notes: Inherits payout from pay-awin-default via net-awin.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

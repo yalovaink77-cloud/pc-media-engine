@@ -1,0 +1,54 @@
+id: app-piercingline-awin-2026-07
+brand_id: brand-piercingline
+network_id: net-awin
+merchant_id: merchant-piercingline-awin
+
+status: draft
+
+applied_at: 2026-07-15
+decision_date: null
+
+program_id: prog-piercingline-awin-de
+
+application_channel: network_portal
+
+site_context:
+  site_url: https://piercingconnect.com
+  content_examples: []
+  pitch_summary: >
+    PiercingConnect piercing jewelry and aftercare editorial. Thematic website fit for
+    Piercingline Awin DE program. 12% standard CPS, 30-day cookie.
+
+commission_offered:
+  commission_type: tiered
+  rate_description: 12% standard; 8% voucher partners per merchant page.
+  cookie_days: 30
+
+rejection_reason: ''
+
+editorial_gate:
+  hub_published: false
+  review_draft_url: ''
+  editorial_lead_notified: false
+
+documents: []
+
+notes: >
+  Ready-to-apply stub—NOT submitted. Prerequisite: Awin publisher account. Join URL:
+  https://ui.awin.com/publisher-signup/de/awin?advertiser=18471
+  Merchant may reject off-topic registrations per FAQ.
+
+verification:
+  status: verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://piercingline.com/en/service/affiliate-partner-program/
+  evidence_urls:
+    - https://ui.awin.com/publisher-signup/de/awin?advertiser=18471
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: TR payout via Awin Payoneer path.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

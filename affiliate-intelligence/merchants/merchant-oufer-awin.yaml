@@ -1,0 +1,70 @@
+id: merchant-oufer-awin
+name: OUFER BODY JEWELRY (Awin)
+slug: oufer-awin
+
+brand_id: brand-oufer
+channel_type: network
+network_id: net-awin
+external_merchant_id: '91941'
+
+program_ids:
+  - prog-oufer-awin-global
+product_ids: []
+
+storefront_urls:
+  - url: https://www.ouferbodyjewelry.com/
+    country_codes: [US, GB, DE, FR, TR]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: >
+    Worldwide shipping cited on Awin profile. Per-country storefront restrictions unresolved.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Awin publisher account required before program join.
+  content_requirements: []
+  prohibited_traffic: []
+  notes: >
+    Join URL: https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+
+content_opportunities:
+  wordpress:
+    {
+      allowed: true,
+      restrictions: '',
+      notes: Website publishers welcomed per brand marketing on Awin (re-check brand page).,
+    }
+  youtube:
+    {
+      allowed: null,
+      restrictions: '',
+      notes: Brand page mentions YouTube—re-verify on ouferbodyjewelry.com affiliates page.,
+    }
+  instagram: { allowed: null, restrictions: '', notes: Brand page mentions Instagram—re-verify. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Brand page mentions Pinterest—re-verify. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/91941
+  evidence_urls:
+    - https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Commission 15%, cookie 45 days per Awin profile. AOV $35+ merchant claim.
+
+status: evaluating
+
+notes: >
+  Turkey publisher eligibility via Awin TR tax residency / Payoneer (net-awin, pay-awin-default).
+  Product categories: cartilage, nose, tongue, nipple, navel jewelry; gold, titanium, steel, silicone.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

@@ -1,0 +1,55 @@
+id: brand-bodyartforms
+name: Bodyartforms
+slug: bodyartforms
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.bodyartforms.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - plugs-tunnels
+  - septum-jewelry
+  - aftercare
+  - stretching-tools
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-bodyartforms-direct
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: verified
+  source_type: official_brand
+  confidence: medium
+  official_source_url: https://bodyartforms.com/faqs.asp
+  evidence_urls:
+    - https://www.bodyartforms.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Official FAQ documents customer account/review points program only. No affiliate program
+    page found (/affiliate.asp 404). Absence of publisher program on official site.
+
+notes: >
+  Sprint 007 discovery. No revenue affiliate path identified. Customer loyalty via reviews
+  only. Free USA shipping at $50 per homepage.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

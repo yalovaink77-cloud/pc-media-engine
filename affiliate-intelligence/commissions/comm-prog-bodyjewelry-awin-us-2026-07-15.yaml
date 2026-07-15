@@ -1,0 +1,35 @@
+id: comm-prog-bodyjewelry-awin-us-2026-07-15
+program_id: prog-bodyjewelry-awin-us
+
+brand_id: brand-bodyjewelry
+merchant_id: merchant-bodyjewelry-awin
+network_id: net-awin
+
+commission_type: tiered
+rate_description: 15% standard commission; 20% VIP affiliate tier per Awin profile.
+rate_percent: null
+rate_flat_amount: null
+currency: USD
+
+cookie_days: 45
+
+country_codes: []
+
+effective_date: 2026-07-15
+end_date: null
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/63864
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: VIP tier qualification criteria not documented on public Awin profile.
+
+notes: ''
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

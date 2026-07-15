@@ -1,0 +1,65 @@
+id: prog-freshtrends-direct-us
+name: FreshTrends — direct (UpPromote)
+slug: freshtrends-direct-us
+
+brand_id: brand-freshtrends
+merchant_id: merchant-freshtrends-direct
+network_id: null
+program_type: direct
+
+status: pending
+editorial_approved: false
+
+commission_ids: []
+product_ids: []
+
+region_programs:
+  - region_label: US
+    country_codes: [US]
+    program_portal_url: https://af.uppromote.com/freshtrends/register
+    link_base_url: ''
+    currency: USD
+    notes: Program activity unconfirmed.
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Unresolved.
+
+application_eligibility:
+  open_to_new_publishers: null
+  traffic_requirements: ''
+  content_requirements: []
+  prohibited_traffic: []
+  notes: Do not apply until terms and TR payout confirmed.
+
+content_opportunities:
+  wordpress: { allowed: null, restrictions: '', notes: Unresolved. }
+  youtube: { allowed: null, restrictions: '', notes: Unresolved. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: partially_verified
+  source_type: public_documentation
+  confidence: low
+  official_source_url: https://af.uppromote.com/freshtrends/register
+  evidence_urls:
+    - https://www.flexoffers.com/affiliate-programs/freshtrends-com-body-jewelry-affiliate-program/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    FlexOffers states program not currently offered. Historical FlexOffers copy cited 12% and
+    60-day cookie—not treated as current terms. No commission record created.
+
+notes: Conditional/unverified—no application stub.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

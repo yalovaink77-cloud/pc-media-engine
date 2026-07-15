@@ -1,0 +1,59 @@
+id: merchant-painful-pleasures-direct
+name: Painful Pleasures (direct)
+slug: painful-pleasures-direct
+
+brand_id: brand-painful-pleasures
+channel_type: direct
+network_id: null
+external_merchant_id: ''
+
+program_ids:
+  - prog-painful-pleasures-direct-us
+product_ids: []
+
+storefront_urls:
+  - url: https://www.painfulpleasures.com/
+    country_codes: [US]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: [US]
+  blocked_country_codes: []
+  notes: Affiliate discount codes usable by US customers only per official FAQ.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Social profiles linked during application.
+  content_requirements:
+    - Link social profiles showing community reach
+  prohibited_traffic: []
+  notes: Application via official affiliate page form.
+
+content_opportunities:
+  wordpress: { allowed: true, restrictions: '', notes: Official page lists "your site". }
+  youtube:
+    { allowed: null, restrictions: '', notes: Reels mentioned; YouTube not explicitly listed. }
+  instagram: { allowed: true, restrictions: '', notes: Reels, DMs, stories explicitly welcomed. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+verification:
+  status: verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://www.painfulpleasures.com/pages/affiliate
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Up to 10% commission; PayPal monthly payout; cookie duration not documented.
+
+status: prospect
+
+notes: >
+  Verified program but unusable for Turkey-resident publishers (PayPal-only payout).
+  Free shipping on orders $99+ per site header.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

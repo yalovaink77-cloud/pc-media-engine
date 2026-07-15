@@ -29,7 +29,12 @@ affiliate_notes:
     claims; disclose affiliate links; confirm per-advertiser program terms before aftercare
     monetization. Skimlinks does not monetize Amazon links and is unusable for TR payouts.
 
-related_program_ids: []
+related_program_ids:
+  - prog-amazon-associates-tr
+  - prog-oufer-awin-global
+  - prog-bodyjewelry-awin-us
+  - prog-piercingline-awin-de
+  - prog-aliexpress-direct-global
 related_network_ids:
   - net-amazon-associates
   - net-awin
@@ -76,7 +81,8 @@ status: active
 notes: >
   Primary PiercingConnect operating geography. See
   affiliate-intelligence/reports/turkey-network-eligibility.md for Sprint 006-B matrix.
+  Sprint 007: Piercing merchant discovery—TR-usable programs indexed in related_program_ids.
   Recommended first application: Amazon Türkiye Gelir Ortaklığı after TR tax registration.
 
 created_at: '2026-07-15T14:00:00Z'
-updated_at: '2026-07-15T17:00:00Z'
+updated_at: '2026-07-15T18:30:00Z'

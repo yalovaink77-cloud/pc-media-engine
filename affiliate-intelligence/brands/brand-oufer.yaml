@@ -1,0 +1,57 @@
+id: brand-oufer
+name: OUFER Body Jewelry
+slug: oufer
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.ouferbodyjewelry.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - cartilage-jewelry
+  - nose-jewelry
+  - belly-jewelry
+  - nipple-jewelry
+  - tongue-jewelry
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-oufer-awin
+program_ids:
+  - prog-oufer-awin-global
+
+editorial:
+  cluster_role: category-example
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/91941
+  evidence_urls:
+    - https://www.ouferbodyjewelry.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Affiliate terms verified via Awin merchant profile. Brand affiliates page timed out
+    during Sprint 007 fetch—re-check for social/platform guidance.
+
+notes: >
+  Sprint 007 discovery. Awin advertiser ID 91941. Ships worldwide per Awin profile.
+  AOV $35+ cited on Awin profile (merchant marketing claim).
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

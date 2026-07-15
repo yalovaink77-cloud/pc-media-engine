@@ -1,0 +1,55 @@
+id: brand-amazon
+name: Amazon
+slug: amazon
+
+legal_name: ''
+
+status: active
+
+website_url: https://gelirortakligi.amazon.com.tr/
+
+product_categories:
+  - marketplace-general
+  - body-piercing-jewelry
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-amazon-associates-tr
+program_ids:
+  - prog-amazon-associates-tr
+
+editorial:
+  cluster_role: category-baseline
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: https://gelirortakligi.amazon.com.tr/help/operating/agreement
+  prohibited_claims: []
+  geographic_limits:
+    - TR tax registration required for Türkiye Gelir Ortaklığı
+
+verification:
+  status: partially_verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/help/operating/agreement
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Network and payout records from Sprint 006/006-B. Piercing SKU commission rates not
+    documented in this sprint.
+
+notes: >
+  Marketplace brand stub for Amazon Associates TR program linkage. Not a piercing merchant
+  brand—enables program/merchant FK integrity.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

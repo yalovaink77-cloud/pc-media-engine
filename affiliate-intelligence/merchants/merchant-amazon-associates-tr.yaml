@@ -1,0 +1,87 @@
+id: merchant-amazon-associates-tr
+name: Amazon Associates Türkiye
+slug: amazon-associates-tr
+
+brand_id: brand-amazon
+channel_type: network
+network_id: net-amazon-associates
+external_merchant_id: ''
+
+program_ids:
+  - prog-amazon-associates-tr
+product_ids: []
+
+storefront_urls:
+  - url: https://www.amazon.com.tr/
+    country_codes: [TR]
+    label: official-marketplace
+
+country_restrictions:
+  allowed_country_codes: [TR]
+  blocked_country_codes: []
+  notes: TR tax-registered individuals, sole proprietors, or businesses required.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: >
+    Original public content; websites need ~10 posts within 60 days; 3 qualifying sales within
+    180 days; social requires full profile URL and typically ≥500 organic followers.
+  content_requirements:
+    - Original content meeting Amazon participation requirements
+    - FTC-style disclosure on affiliate links
+  prohibited_traffic: []
+  notes: >
+    Application URL: https://gelirortakligi.amazon.com.tr/
+
+content_opportunities:
+  wordpress:
+    {
+      allowed: true,
+      restrictions: 'Must meet site content volume gates.',
+      notes: Primary PiercingConnect channel.,
+    }
+  youtube:
+    {
+      allowed: true,
+      restrictions: '≥500 organic followers; full channel URL required.',
+      notes: Per Sprint 006 Amazon TR notes.,
+    }
+  instagram:
+    { allowed: true, restrictions: '≥500 organic followers; full profile URL required.', notes: '' }
+  facebook: { allowed: true, restrictions: 'Public pages/groups only; ≥500 followers.', notes: '' }
+  pinterest:
+    {
+      allowed: null,
+      restrictions: 'Not listed in Sprint 006 Amazon social list.',
+      notes: Verify in current Amazon TR policy.,
+    }
+  x:
+    {
+      allowed: true,
+      restrictions: '≥500 organic followers; full profile URL required.',
+      notes: Twitter/X per Sprint 006 notes.,
+    }
+
+verification:
+  status: partially_verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/help/operating/agreement
+    - https://gelirortakligi.amazon.com.tr/help/node/topic/GJCKWFEECYW25FGJ
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Sprint 006/006-B network record. Piercing jewelry commission rates and cookie duration
+    per-product—not documented in Sprint 007.
+
+status: evaluating
+
+notes: >
+  First-priority Turkey-usable marketplace program. TRY payout via direct deposit/gift card
+  (pay-amazon-associates-tr-default).
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

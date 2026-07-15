@@ -1,0 +1,57 @@
+id: merchant-bodyartforms-direct
+name: Bodyartforms (direct storefront)
+slug: bodyartforms-direct
+
+brand_id: brand-bodyartforms
+channel_type: direct
+network_id: null
+external_merchant_id: ''
+
+program_ids: []
+product_ids: []
+
+storefront_urls:
+  - url: https://www.bodyartforms.com/
+    country_codes: [US]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Free USA shipping at $50 per homepage; international shipping policy not verified.
+
+application_eligibility:
+  open_to_new_publishers: false
+  traffic_requirements: ''
+  content_requirements: []
+  prohibited_traffic: []
+  notes: No publisher affiliate program identified on official site.
+
+content_opportunities:
+  wordpress: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+  youtube: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+  instagram: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+  facebook: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+  pinterest: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+  x: { allowed: false, restrictions: 'No affiliate program.', notes: '' }
+
+verification:
+  status: verified
+  source_type: official_brand
+  confidence: medium
+  official_source_url: https://bodyartforms.com/faqs.asp
+  evidence_urls:
+    - https://www.bodyartforms.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Customer review-points loyalty only; /affiliate.asp returns 404.
+
+status: terminated
+
+notes: >
+  Not revenue-capable via affiliate. Price examples on site (e.g. $5.95–$47.95) are SKU-level,
+  not an official average range statement.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

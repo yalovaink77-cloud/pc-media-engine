@@ -1,0 +1,75 @@
+id: prog-amazon-associates-tr
+name: Amazon Associates Türkiye
+slug: amazon-associates-tr
+
+brand_id: brand-amazon
+merchant_id: merchant-amazon-associates-tr
+network_id: net-amazon-associates
+program_type: network
+
+application_id: app-amazon-associates-tr-2026-07
+status: pending
+editorial_approved: false
+
+commission_ids: []
+product_ids: []
+
+region_programs:
+  - region_label: TR
+    country_codes: [TR]
+    program_portal_url: https://gelirortakligi.amazon.com.tr/
+    link_base_url: ''
+    currency: TRY
+    notes: TR tax registration required.
+
+country_restrictions:
+  allowed_country_codes: [TR]
+  blocked_country_codes: []
+  notes: TR tax-registered publishers only.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Site/social gates per Amazon TR participation requirements.
+  content_requirements:
+    - Original public content
+    - Disclosure on affiliate links
+  prohibited_traffic: []
+  notes: >
+    Apply: https://gelirortakligi.amazon.com.tr/
+
+content_opportunities:
+  wordpress:
+    {
+      allowed: true,
+      restrictions: '~10 posts within 60 days for websites.',
+      notes: Primary channel.,
+    }
+  youtube: { allowed: true, restrictions: '≥500 organic followers.', notes: '' }
+  instagram: { allowed: true, restrictions: '≥500 organic followers.', notes: '' }
+  facebook: { allowed: true, restrictions: 'Public pages/groups; ≥500 followers.', notes: '' }
+  pinterest: { allowed: null, restrictions: 'Not in Sprint 006 social list—verify.', notes: '' }
+  x: { allowed: true, restrictions: '≥500 organic followers.', notes: '' }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: partially_verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/help/operating/agreement
+    - https://gelirortakligi.amazon.com.tr/help/node/topic/GJCKWFEECYW25FGJ
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Commission rates and cookie duration per-product category—not documented in Sprint 007.
+    No commission snapshot created.
+
+notes: Inherits pay-amazon-associates-tr-default via net-amazon-associates.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

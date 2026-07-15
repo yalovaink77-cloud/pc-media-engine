@@ -1,0 +1,52 @@
+id: brand-tulsa-body-jewelry
+name: Tulsa Body Jewelry
+slug: tulsa-body-jewelry
+
+legal_name: Tulsa Body Jewelry, LLC
+
+status: prospect
+
+website_url: https://tulsabodyjewelry.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - plugs-tunnels
+  - stretching-supplies
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-tulsa-body-jewelry-direct
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: verified
+  source_type: official_brand
+  confidence: medium
+  official_source_url: https://tulsabodyjewelry.com/pages/loyalty-program
+  evidence_urls:
+    - https://tulsabodyjewelry.com/pages/questions
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    TBJ Rewards customer loyalty program only. No affiliate signup on official site.
+    Third-party aggregator listings excluded per Sprint 007 rules.
+
+notes: >
+  Sprint 007 discovery. Brick-and-mortar + e-commerce. Free shipping over $25 per site.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

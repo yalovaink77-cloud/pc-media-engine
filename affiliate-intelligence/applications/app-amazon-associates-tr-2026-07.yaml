@@ -1,0 +1,53 @@
+id: app-amazon-associates-tr-2026-07
+brand_id: brand-amazon
+network_id: net-amazon-associates
+merchant_id: merchant-amazon-associates-tr
+
+status: draft
+
+applied_at: 2026-07-15
+decision_date: null
+
+program_id: prog-amazon-associates-tr
+
+application_channel: network_portal
+
+site_context:
+  site_url: https://piercingconnect.com
+  content_examples: []
+  pitch_summary: >
+    PiercingConnect editorial hub for piercing aftercare and jewelry guidance. TR tax-resident
+    publisher targeting Amazon.com.tr piercing SKUs after content and sales gates met.
+
+commission_offered:
+  commission_type: unknown
+  rate_description: Per-product category rates on Amazon TR—not pre-documented.
+  cookie_days: null
+
+rejection_reason: ''
+
+editorial_gate:
+  hub_published: false
+  review_draft_url: ''
+  editorial_lead_notified: false
+
+documents: []
+
+notes: >
+  Ready-to-apply stub—NOT submitted. Blockers: TR tax registration, ~10 site posts within 60
+  days, 3 qualifying sales within 180 days, disclosure policy live.
+
+verification:
+  status: partially_verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://gelirortakligi.amazon.com.tr/
+  evidence_urls:
+    - https://gelirortakligi.amazon.com.tr/help/operating/agreement
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Application URL verified; enrollment not initiated.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

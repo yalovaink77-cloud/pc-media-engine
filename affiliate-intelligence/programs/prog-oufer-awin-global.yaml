@@ -1,0 +1,67 @@
+id: prog-oufer-awin-global
+name: OUFER Body Jewelry — Awin Global
+slug: oufer-awin-global
+
+brand_id: brand-oufer
+merchant_id: merchant-oufer-awin
+network_id: net-awin
+program_type: network
+
+application_id: app-oufer-awin-2026-07
+status: pending
+editorial_approved: false
+
+current_commission_id: comm-prog-oufer-awin-global-2026-07-15
+commission_ids:
+  - comm-prog-oufer-awin-global-2026-07-15
+product_ids: []
+
+region_programs:
+  - region_label: Global
+    country_codes: [US, GB, DE, FR, TR]
+    program_portal_url: https://ui.awin.com/merchant-profile/91941
+    link_base_url: ''
+    currency: USD
+    notes: Worldwide shipping cited on Awin profile.
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Publisher payout via Awin—Turkey tax residency supported (net-awin).
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Active Awin publisher account.
+  content_requirements: []
+  prohibited_traffic: []
+  notes: >
+    Apply: https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+
+content_opportunities:
+  wordpress: { allowed: true, restrictions: '', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: Re-verify brand affiliates page. }
+  instagram: { allowed: null, restrictions: '', notes: Re-verify brand affiliates page. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Re-verify brand affiliates page. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/91941
+  evidence_urls:
+    - https://ui.awin.com/publisher-signup/us/awin?advertiser=91941
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: 15% CPS; 45-day cookie; AOV $35+ (Awin marketing claim).
+
+notes: Inherits payout from pay-awin-default via net-awin.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

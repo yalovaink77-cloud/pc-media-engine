@@ -1,0 +1,67 @@
+id: prog-painful-pleasures-direct-us
+name: Painful Pleasures — direct US
+slug: painful-pleasures-direct-us
+
+brand_id: brand-painful-pleasures
+merchant_id: merchant-painful-pleasures-direct
+network_id: null
+program_type: direct
+
+status: pending
+editorial_approved: false
+
+current_commission_id: comm-prog-painful-pleasures-direct-us-2026-07-15
+commission_ids:
+  - comm-prog-painful-pleasures-direct-us-2026-07-15
+product_ids: []
+
+payment_id: pay-painful-pleasures-direct-default
+
+region_programs:
+  - region_label: US
+    country_codes: [US]
+    program_portal_url: https://www.painfulpleasures.com/pages/affiliate
+    link_base_url: ''
+    currency: USD
+    notes: Promo-code model; US-only code redemption.
+
+country_restrictions:
+  allowed_country_codes: [US]
+  blocked_country_codes: []
+  notes: Anyone may apply; discount codes work for US customers only.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Social profiles linked in application.
+  content_requirements:
+    - Reels, DMs, stories, website, in-person per official page
+  prohibited_traffic: []
+  notes: Not recommended for TR-resident publishers (PayPal payout).
+
+content_opportunities:
+  wordpress: { allowed: true, restrictions: '', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: Reels mentioned; YouTube not explicit. }
+  instagram: { allowed: true, restrictions: '', notes: Reels, DMs, stories explicitly allowed. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: verified
+  source_type: official_program
+  confidence: high
+  official_source_url: https://www.painfulpleasures.com/pages/affiliate
+  evidence_urls: []
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: Up to 10% commission; PayPal monthly; cookie duration unresolved.
+
+notes: Verified but Turkey payout unusable. No application stub created.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

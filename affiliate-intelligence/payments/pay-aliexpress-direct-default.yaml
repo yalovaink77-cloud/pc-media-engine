@@ -1,0 +1,45 @@
+id: pay-aliexpress-direct-default
+name: AliExpress Portals — default publisher payout
+
+scope_type: program
+program_id: prog-aliexpress-direct-global
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 15
+    notes: >
+      Remittance to designated bank account when balance exceeds USD 15 per
+      AliExpress Affiliate Program Service Agreement clause 7.5.
+
+payment_methods:
+  - bank-transfer
+
+supported_currencies:
+  - USD
+
+payout_schedule: >
+  Monthly Qualifying Amount credited to AliExpress Portal account balance;
+  bank remittance on request when balance exceeds threshold. Bank handling
+  fees deducted per agreement.
+
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://terms.alicdn.com/legal-agreement/terms/suit_bu1_aliexpress/suit_bu1_aliexpress202003132026_84536.html
+  evidence_urls:
+    - https://portals.aliexpress.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Turkey bank remittance eligibility not explicitly confirmed in agreement—confirm
+    at portal enrollment. Commission rates published on portal only—not in agreement.
+
+status: active
+effective_date: 2026-07-15
+
+notes: Direct AliExpress Portals program payout terms. PayPal not listed as remittance method.
+
+created_at: '2026-07-15T18:00:00Z'
+updated_at: '2026-07-15T18:00:00Z'

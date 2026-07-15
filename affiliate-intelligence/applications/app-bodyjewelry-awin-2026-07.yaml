@@ -1,0 +1,53 @@
+id: app-bodyjewelry-awin-2026-07
+brand_id: brand-bodyjewelry
+network_id: net-awin
+merchant_id: merchant-bodyjewelry-awin
+
+status: draft
+
+applied_at: 2026-07-15
+decision_date: null
+
+program_id: prog-bodyjewelry-awin-us
+
+application_channel: network_portal
+
+site_context:
+  site_url: https://piercingconnect.com
+  content_examples: []
+  pitch_summary: >
+    PiercingConnect body-jewelry guides and product comparisons. Join BODYJEWELRY.COM Awin
+    program after publisher account active. 15% standard / 20% VIP tier.
+
+commission_offered:
+  commission_type: tiered
+  rate_description: 15% standard; 20% VIP per Awin profile 63864.
+  cookie_days: 45
+
+rejection_reason: ''
+
+editorial_gate:
+  hub_published: false
+  review_draft_url: ''
+  editorial_lead_notified: false
+
+documents: []
+
+notes: >
+  Ready-to-apply stub—NOT submitted. Prerequisite: Awin publisher account. Join URL:
+  https://ui.awin.com/publisher-signup/us/awin?advertiser=63864
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/publisher-signup/us/awin?advertiser=63864
+  evidence_urls:
+    - https://ui.awin.com/merchant-profile/63864
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: TR payout via Awin Payoneer path.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

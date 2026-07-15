@@ -1,0 +1,57 @@
+id: brand-bodyjewelry
+name: BODYJEWELRY.COM
+slug: bodyjewelry
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://bodyjewelry.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - navel-jewelry
+  - tongue-jewelry
+  - nose-jewelry
+  - nipple-jewelry
+  - eyebrow-jewelry
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-bodyjewelry-awin
+program_ids:
+  - prog-bodyjewelry-awin-us
+
+editorial:
+  cluster_role: category-example
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/63864
+  evidence_urls:
+    - https://bodyjewelry.com/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Awin is current network per merchant profile. Legacy ShareASale footer link on site
+    not re-verified as active—treat Awin as authoritative enrollment path.
+
+notes: >
+  Sprint 007 discovery. Awin advertiser ID 63864. Dedicated affiliate manager email
+  affiliates@bodyjewelry.com per Awin profile.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

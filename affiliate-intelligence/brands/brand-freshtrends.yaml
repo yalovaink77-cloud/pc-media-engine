@@ -1,0 +1,54 @@
+id: brand-freshtrends
+name: FreshTrends
+slug: freshtrends
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.freshtrends.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - gold-body-jewelry
+  - platinum-jewelry
+  - sterling-silver-jewelry
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-freshtrends-direct
+program_ids:
+  - prog-freshtrends-direct-us
+
+editorial:
+  cluster_role: category-example
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: partially_verified
+  source_type: public_documentation
+  confidence: low
+  official_source_url: https://af.uppromote.com/freshtrends/register
+  evidence_urls:
+    - https://www.flexoffers.com/affiliate-programs/freshtrends-com-body-jewelry-affiliate-program/
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    UpPromote registration URL resolves but page content minimal. FlexOffers listing states
+    program not currently offered in their system. Brand /pages/affiliates returned 403.
+
+notes: >
+  Sprint 007 discovery. Treat as conditional until direct merchant terms re-verified.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

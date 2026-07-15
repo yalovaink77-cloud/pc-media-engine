@@ -1,0 +1,68 @@
+id: prog-bodyjewelry-awin-us
+name: BODYJEWELRY.COM — Awin US
+slug: bodyjewelry-awin-us
+
+brand_id: brand-bodyjewelry
+merchant_id: merchant-bodyjewelry-awin
+network_id: net-awin
+program_type: network
+
+application_id: app-bodyjewelry-awin-2026-07
+status: pending
+editorial_approved: false
+
+current_commission_id: comm-prog-bodyjewelry-awin-us-2026-07-15
+commission_ids:
+  - comm-prog-bodyjewelry-awin-us-2026-07-15
+product_ids: []
+
+region_programs:
+  - region_label: US
+    country_codes: [US]
+    program_portal_url: https://ui.awin.com/merchant-profile/63864
+    link_base_url: ''
+    currency: USD
+    notes: US-focused retailer.
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Turkey publisher enrollment via Awin network—not US-residency requirement documented.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Active Awin publisher account.
+  content_requirements: []
+  prohibited_traffic:
+    - Brand/trademark PPC restrictions per program terms
+  notes: >
+    Apply: https://ui.awin.com/publisher-signup/us/awin?advertiser=63864
+
+content_opportunities:
+  wordpress: { allowed: true, restrictions: 'Check Awin program terms for PPC/social.', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: Unresolved. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/63864
+  evidence_urls:
+    - https://ui.awin.com/merchant-profile-terms/63864
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: 15% standard / 20% VIP tier; 45-day cookie per Awin profile.
+
+notes: Inherits payout from pay-awin-default via net-awin.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

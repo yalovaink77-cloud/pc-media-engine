@@ -1,0 +1,67 @@
+id: prog-aliexpress-direct-global
+name: AliExpress Portals — direct global
+slug: aliexpress-direct-global
+
+brand_id: brand-aliexpress
+merchant_id: merchant-aliexpress-direct
+network_id: null
+program_type: direct
+
+status: pending
+editorial_approved: false
+
+commission_ids: []
+product_ids: []
+
+payment_id: pay-aliexpress-direct-default
+
+region_programs:
+  - region_label: Global
+    country_codes: [TR, US, GB, DE]
+    program_portal_url: https://portals.aliexpress.com/
+    link_base_url: ''
+    currency: USD
+    notes: Commission rates on portal post-enrollment only.
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: TR bank remittance eligibility unresolved.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: AliExpress Portals registration.
+  content_requirements: []
+  prohibited_traffic: []
+  notes: Do not apply until TR payout path confirmed.
+
+content_opportunities:
+  wordpress: { allowed: null, restrictions: 'Per service agreement.', notes: Verify at enrollment. }
+  youtube: { allowed: null, restrictions: '', notes: Unresolved. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+disclosure:
+  template_id: policy-disclosure-default
+  custom_copy: ''
+
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://portals.aliexpress.com/
+  evidence_urls:
+    - https://terms.alicdn.com/legal-agreement/terms/suit_bu1_aliexpress/suit_bu1_aliexpress202003132026_84536.html
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Agreement §7.2 commission rates published on portal—not extracted. §7.5 bank remittance
+    min USD 15. No commission snapshot—rates not logged without portal proof.
+
+notes: Conditional Turkey opportunity. No application stub until TR bank path verified.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

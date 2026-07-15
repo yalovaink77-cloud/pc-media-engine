@@ -1,0 +1,52 @@
+id: brand-aliexpress
+name: AliExpress
+slug: aliexpress
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.aliexpress.com/
+
+product_categories:
+  - body-piercing-jewelry
+  - marketplace-general
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids: []
+
+merchant_ids:
+  - merchant-aliexpress-direct
+program_ids:
+  - prog-aliexpress-direct-global
+
+editorial:
+  cluster_role: category-example
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://portals.aliexpress.com/
+  evidence_urls:
+    - https://terms.alicdn.com/legal-agreement/terms/suit_bu1_aliexpress/suit_bu1_aliexpress202003132026_84536.html
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Commission rates published on portal post-enrollment—not extracted in Sprint 007.
+    Turkey bank remittance eligibility unresolved.
+
+notes: >
+  Sprint 007 discovery. AliExpress Portals direct affiliate program.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

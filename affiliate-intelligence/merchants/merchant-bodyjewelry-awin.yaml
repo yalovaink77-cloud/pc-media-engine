@@ -1,0 +1,66 @@
+id: merchant-bodyjewelry-awin
+name: BODYJEWELRY.COM (Awin)
+slug: bodyjewelry-awin
+
+brand_id: brand-bodyjewelry
+channel_type: network
+network_id: net-awin
+external_merchant_id: '63864'
+
+program_ids:
+  - prog-bodyjewelry-awin-us
+product_ids: []
+
+storefront_urls:
+  - url: https://bodyjewelry.com/
+    country_codes: [US]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: US-focused retailer; international shipping policy not verified in Sprint 007.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: Awin publisher account required.
+  content_requirements: []
+  prohibited_traffic:
+    - PPC on brand/trademark terms per Awin program terms (verify at join)
+  notes: >
+    Join URL: https://ui.awin.com/publisher-signup/us/awin?advertiser=63864
+    Contact: affiliates@bodyjewelry.com
+
+content_opportunities:
+  wordpress:
+    { allowed: true, restrictions: 'PPC/trademark restrictions may apply on search.', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: Unresolved—check Awin program terms. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook:
+    {
+      allowed: null,
+      restrictions: '',
+      notes: Merchant has Facebook presence; affiliate social rules unresolved.,
+    }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Merchant Twitter linked on Awin profile. }
+
+verification:
+  status: verified
+  source_type: official_network
+  confidence: high
+  official_source_url: https://ui.awin.com/merchant-profile/63864
+  evidence_urls:
+    - https://ui.awin.com/merchant-profile-terms/63864
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: 15% standard / 20% VIP commission; 45-day cookie per Awin profile.
+
+status: evaluating
+
+notes: >
+  Turkey payout via Awin Payoneer path. Product range: navel, tongue, eyebrow, labret, nipple, nose jewelry.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'

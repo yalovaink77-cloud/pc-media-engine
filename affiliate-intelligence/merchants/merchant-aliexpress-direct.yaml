@@ -1,0 +1,64 @@
+id: merchant-aliexpress-direct
+name: AliExpress Portals (direct)
+slug: aliexpress-direct
+
+brand_id: brand-aliexpress
+channel_type: direct
+network_id: null
+external_merchant_id: ''
+
+program_ids:
+  - prog-aliexpress-direct-global
+product_ids: []
+
+storefront_urls:
+  - url: https://www.aliexpress.com/
+    country_codes: [TR, US, GB, DE]
+    label: official-marketplace
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: Global marketplace; affiliate promotion geography per portal agreement—unresolved for TR.
+
+application_eligibility:
+  open_to_new_publishers: true
+  traffic_requirements: AliExpress Portals account registration.
+  content_requirements: []
+  prohibited_traffic: []
+  notes: >
+    Application URL: https://portals.aliexpress.com/
+
+content_opportunities:
+  wordpress:
+    {
+      allowed: null,
+      restrictions: 'Per AliExpress Affiliate Program Service Agreement.',
+      notes: Verify prohibited promotion types at enrollment.,
+    }
+  youtube: { allowed: null, restrictions: '', notes: Unresolved. }
+  instagram: { allowed: null, restrictions: '', notes: Unresolved. }
+  facebook: { allowed: null, restrictions: '', notes: Unresolved. }
+  pinterest: { allowed: null, restrictions: '', notes: Unresolved. }
+  x: { allowed: null, restrictions: '', notes: Unresolved. }
+
+verification:
+  status: partially_verified
+  source_type: legal_terms
+  confidence: high
+  official_source_url: https://portals.aliexpress.com/
+  evidence_urls:
+    - https://terms.alicdn.com/legal-agreement/terms/suit_bu1_aliexpress/suit_bu1_aliexpress202003132026_84536.html
+  last_checked: 2026-07-15
+  checked_by: revenue-ops
+  review_due: 2026-10-15
+  notes: >
+    Commission rates in agreement section 7.2 reference portal-published rates—not logged here.
+    Bank remittance min USD 15 (clause 7.5). TR bank support unresolved.
+
+status: evaluating
+
+notes: Conditional Turkey-usable opportunity pending TR bank remittance confirmation.
+
+created_at: '2026-07-15T18:30:00Z'
+updated_at: '2026-07-15T18:30:00Z'
