@@ -1,0 +1,153 @@
+# PiercingConnect Affiliate Intelligence — Commission Schema
+# Version: 0.2
+#
+# Point-in-time commission and attribution terms snapshot.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/commission/v1'
+title: AffiliateCommission
+description: Immutable snapshot of commission type, rate, cookie duration, and currency for a program.
+type: object
+required:
+  - id
+  - program_id
+  - commission_type
+  - effective_date
+  - verification
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^comm-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - comm-neilmed-shareasale-2026-07-01
+
+  program_id:
+    type: string
+    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  merchant_id:
+    type: string
+    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  network_id:
+    type:
+      - string
+      - 'null'
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  commission_type:
+    type: string
+    enum:
+      - cpa
+      - cps
+      - cpc
+      - cpl
+      - flat
+      - tiered
+      - hybrid
+      - unknown
+
+  rate_description:
+    type: string
+    description: Human-readable terms (e.g. "8% CPS on all SKUs").
+    maxLength: 500
+
+  rate_percent:
+    type: number
+    minimum: 0
+    maximum: 100
+    description: Single-tier percent when applicable; use rate_description for tiers.
+
+  rate_flat_amount:
+    type: number
+    minimum: 0
+    description: Flat CPA/CPL amount when applicable.
+
+  currency:
+    type: string
+    pattern: '^[A-Z]{3}$'
+    description: ISO 4217 currency for flat amounts and payout context.
+
+  cookie_days:
+    type: integer
+    minimum: 0
+    description: Attribution window in days at time of snapshot.
+
+  country_codes:
+    type: array
+    description: ISO country codes where this commission applies; empty = program default.
+    items:
+      type: string
+      pattern: '^[A-Z]{2}$'
+
+  effective_date:
+    type: string
+    format: date
+    description: Date these terms were observed or took effect.
+
+  end_date:
+    type: string
+    format: date
+    description: Date superseded or program terms changed—null if current.
+
+  supersedes:
+    type: string
+    pattern: '^comm-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Prior commission record this snapshot replaces.
+
+  verification:
+    $ref: '#/$defs/verification'
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+$defs:
+  verification:
+    type: object
+    required:
+      - status
+      - last_checked_at
+      - evidence_confidence
+    properties:
+      status:
+        type: string
+        enum:
+          - unverified
+          - partial
+          - verified
+          - stale
+          - disputed
+      official_source_url:
+        type: string
+        format: uri
+        description: Network rate card, brand affiliate FAQ, or email confirmation archive link (non-secret).
+      last_checked_at:
+        type: string
+        format: date
+      evidence_confidence:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+      checked_by:
+        type: string
+      notes:
+        type: string
+
+additionalProperties: false

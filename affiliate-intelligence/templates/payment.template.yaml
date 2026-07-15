@@ -1,0 +1,48 @@
+# Template: Affiliate Payment Terms
+# Schema: affiliate-intelligence/schemas/payment.schema.yaml
+# Copy to: affiliate-intelligence/payments/{id}.yaml
+# NEVER store tax IDs, banking details, API keys, or account numbers.
+
+id: pay-{scope}-{slug}
+name: ''
+
+scope_type: program # network | program
+network_id: net- # required when scope_type is network
+program_id: prog- # required when scope_type is program
+
+brand_id: brand-
+merchant_id: merchant-
+
+payout_thresholds:
+  - currency: USD
+    minimum_amount: 0
+    country_codes: [US]
+    notes: ''
+
+payment_methods: [] # e.g. paypal, ach, wire, check, payoneer — names only
+
+supported_currencies: [USD]
+
+payout_schedule: ''
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: ''
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: ''
+
+status: active # active | historical | unknown
+effective_date: YYYY-MM-DD
+supersedes: pay-
+
+notes: ''
+
+created_at: ''
+updated_at: ''

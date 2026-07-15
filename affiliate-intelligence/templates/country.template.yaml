@@ -1,0 +1,42 @@
+# Template: Affiliate Country Reference
+# Schema: affiliate-intelligence/schemas/country.schema.yaml
+# Copy to: affiliate-intelligence/countries/{id}.yaml
+
+id: country-us
+iso_code: US
+name: United States
+
+region_groups:
+  - north-america
+
+primary_currency: USD
+supported_currencies: [USD]
+
+affiliate_notes:
+  disclosure_requirements_summary: ''
+  common_network_availability: ''
+  piercing_content_caution: ''
+
+related_program_ids: []
+related_network_ids: []
+
+traffic_requirements_notes: ''
+
+restrictions:
+  blocked_for_piercingconnect: false
+  reason: ''
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: ''
+
+status: active # active | monitoring | restricted | inactive
+
+notes: ''
+
+created_at: ''
+updated_at: ''

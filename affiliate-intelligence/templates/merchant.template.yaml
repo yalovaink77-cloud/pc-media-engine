@@ -1,0 +1,57 @@
+# Template: Affiliate Merchant
+# Schema: affiliate-intelligence/schemas/merchant.schema.yaml
+# Copy to: affiliate-intelligence/merchants/{id}.yaml
+# Do not store credentials, tax IDs, or banking details.
+
+id: merchant-{brand}-{channel}
+name: ''
+slug: ''
+
+brand_id: brand-
+channel_type: network # network | direct
+network_id: net- # null when channel_type is direct
+
+external_merchant_id: ''
+
+program_ids: []
+product_ids: []
+
+storefront_urls:
+  - url: ''
+    country_codes: [US]
+    label: official-storefront
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: ''
+
+application_eligibility:
+  open_to_new_publishers: null
+  traffic_requirements: ''
+  content_requirements: []
+  prohibited_traffic: []
+  notes: ''
+
+content_opportunities:
+  wordpress: { allowed: null, restrictions: '', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: '' }
+  instagram: { allowed: null, restrictions: '', notes: '' }
+  facebook: { allowed: null, restrictions: '', notes: '' }
+  pinterest: { allowed: null, restrictions: '', notes: '' }
+  x: { allowed: null, restrictions: '', notes: '' }
+
+verification:
+  status: unverified # unverified | partial | verified | stale | disputed
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low # low | medium | high
+  checked_by: revenue-ops
+  notes: ''
+
+status: prospect # prospect | evaluating | active | paused | terminated
+
+notes: ''
+
+created_at: ''
+updated_at: ''

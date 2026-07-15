@@ -1,0 +1,151 @@
+# PiercingConnect Affiliate Intelligence — Country Schema
+# Version: 0.2
+#
+# Reference record for geo rules, currencies, and regional program grouping.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/country/v1'
+title: AffiliateCountry
+description: Country or territory reference for affiliate eligibility, currencies, and regional policies.
+type: object
+required:
+  - id
+  - iso_code
+  - name
+  - status
+  - verification
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^country-[a-z]{2}$'
+    examples:
+      - country-us
+      - country-de
+
+  iso_code:
+    type: string
+    pattern: '^[A-Z]{2}$'
+    description: ISO 3166-1 alpha-2.
+
+  name:
+    type: string
+    minLength: 2
+    maxLength: 120
+
+  region_groups:
+    type: array
+    description: Logical groupings for program matching (not ISO).
+    items:
+      type: string
+    examples:
+      - north-america
+      - european-union
+      - apac
+
+  primary_currency:
+    type: string
+    pattern: '^[A-Z]{3}$'
+    description: ISO 4217 default currency for commercial terms.
+
+  supported_currencies:
+    type: array
+    items:
+      type: string
+      pattern: '^[A-Z]{3}$'
+
+  affiliate_notes:
+    type: object
+    description: Non-legal summary pointers— not tax or compliance advice.
+    properties:
+      disclosure_requirements_summary:
+        type: string
+      common_network_availability:
+        type: string
+      piercing_content_caution:
+        type: string
+
+  related_program_ids:
+    type: array
+    description: Programs known to accept traffic from this country.
+    items:
+      type: string
+      pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  related_network_ids:
+    type: array
+    items:
+      type: string
+      pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  traffic_requirements_notes:
+    type: string
+    description: Country-specific publisher requirements if documented.
+
+  restrictions:
+    type: object
+    properties:
+      blocked_for_piercingconnect:
+        type: boolean
+        description: Internal flag if PC will not monetize in this country.
+      reason:
+        type: string
+
+  verification:
+    $ref: '#/$defs/verification'
+
+  status:
+    type: string
+    enum:
+      - active
+      - monitoring
+      - restricted
+      - inactive
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+$defs:
+  verification:
+    type: object
+    required:
+      - status
+      - last_checked_at
+      - evidence_confidence
+    properties:
+      status:
+        type: string
+        enum:
+          - unverified
+          - partial
+          - verified
+          - stale
+          - disputed
+      official_source_url:
+        type: string
+        format: uri
+      last_checked_at:
+        type: string
+        format: date
+      evidence_confidence:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+      checked_by:
+        type: string
+      notes:
+        type: string
+
+additionalProperties: false

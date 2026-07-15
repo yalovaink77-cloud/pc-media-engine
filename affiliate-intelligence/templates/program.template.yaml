@@ -1,0 +1,66 @@
+# Template: Affiliate Program
+# Schema: affiliate-intelligence/schemas/program.schema.yaml
+# Copy to: affiliate-intelligence/programs/{id}.yaml
+
+id: prog-{brand}-{channel}-{region}
+name: ''
+slug: ''
+
+brand_id: brand-
+merchant_id: merchant-
+network_id: net- # null for direct programs
+program_type: network # network | direct
+
+application_id: app-
+status: pending # pending | active | paused | terminated
+editorial_approved: false
+
+current_commission_id: comm-
+commission_ids: []
+product_ids: []
+payment_id: pay-
+
+region_programs:
+  - region_label: US
+    country_codes: [US]
+    program_portal_url: ''
+    link_base_url: ''
+    currency: USD
+    notes: ''
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: ''
+
+application_eligibility:
+  open_to_new_publishers: null
+  traffic_requirements: ''
+  content_requirements: []
+  prohibited_traffic: []
+  notes: ''
+
+content_opportunities:
+  wordpress: { allowed: null, restrictions: '', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: '' }
+  instagram: { allowed: null, restrictions: '', notes: '' }
+  facebook: { allowed: null, restrictions: '', notes: '' }
+  pinterest: { allowed: null, restrictions: '', notes: '' }
+  x: { allowed: null, restrictions: '', notes: '' }
+
+disclosure:
+  template_id: ''
+  custom_copy: ''
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: ''
+
+notes: ''
+
+created_at: ''
+updated_at: ''

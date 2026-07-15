@@ -1,0 +1,217 @@
+# PiercingConnect Affiliate Intelligence — Product Schema
+# Version: 0.2
+#
+# Linkable SKU or product target mapped to programs and content cards.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/product/v1'
+title: AffiliateProduct
+description: Product or SKU with regional affiliate URLs and editorial crosswalks.
+type: object
+required:
+  - id
+  - name
+  - slug
+  - brand_id
+  - program_id
+  - status
+  - verification
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^prod-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - prod-neilmed-fine-mist-177ml
+      - prod-steri-wash-4-25oz
+
+  name:
+    type: string
+    description: Human-readable product name including size/SKU context.
+    minLength: 2
+    maxLength: 200
+
+  slug:
+    type: string
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  merchant_id:
+    type: string
+    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  program_id:
+    type: string
+    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  network_id:
+    type:
+      - string
+      - 'null'
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  sku:
+    type: string
+    description: Manufacturer or retailer SKU when known.
+
+  gtin:
+    type: string
+    description: UPC/EAN if verified—optional.
+
+  content_crosswalk:
+    type: object
+    properties:
+      content_card_id:
+        type: string
+        pattern: '^pc-[a-z0-9]+(?:-[a-z0-9]+)*$'
+      evidence_record_id:
+        type: string
+      wordpress_canonical_url:
+        type: string
+        format: uri
+
+  official_product_url:
+    type: string
+    format: uri
+    description: Non-affiliate manufacturer or brand product page.
+
+  region_links:
+    type: array
+    description: Regional affiliate or deep links—templates only, no credentials.
+    minItems: 1
+    items:
+      type: object
+      required:
+        - country_codes
+      properties:
+        country_codes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        affiliate_url:
+          type: string
+          format: uri
+          description: Documented affiliate URL or approved link template.
+        retailer_name:
+          type: string
+        link_type:
+          type: string
+          enum:
+            - direct-brand
+            - network-deep-link
+            - amazon-asin
+            - other
+        notes:
+          type: string
+
+  country_restrictions:
+    $ref: '#/$defs/countryRestrictions'
+
+  content_opportunities:
+    $ref: '#/$defs/contentOpportunities'
+
+  verification:
+    $ref: '#/$defs/verification'
+
+  status:
+    type: string
+    enum:
+      - inactive
+      - active
+      - broken
+      - retired
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+$defs:
+  verification:
+    type: object
+    required:
+      - status
+      - last_checked_at
+      - evidence_confidence
+    properties:
+      status:
+        type: string
+        enum:
+          - unverified
+          - partial
+          - verified
+          - stale
+          - disputed
+      official_source_url:
+        type: string
+        format: uri
+      last_checked_at:
+        type: string
+        format: date
+      evidence_confidence:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+      checked_by:
+        type: string
+      notes:
+        type: string
+
+  countryRestrictions:
+    type: object
+    properties:
+      allowed_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      blocked_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      notes:
+        type: string
+
+  contentOpportunities:
+    type: object
+    properties:
+      wordpress:
+        $ref: '#/$defs/platformOpportunity'
+      youtube:
+        $ref: '#/$defs/platformOpportunity'
+      instagram:
+        $ref: '#/$defs/platformOpportunity'
+      facebook:
+        $ref: '#/$defs/platformOpportunity'
+      pinterest:
+        $ref: '#/$defs/platformOpportunity'
+      x:
+        $ref: '#/$defs/platformOpportunity'
+
+  platformOpportunity:
+    type: object
+    properties:
+      allowed:
+        type: boolean
+      restrictions:
+        type: string
+      notes:
+        type: string
+
+additionalProperties: false

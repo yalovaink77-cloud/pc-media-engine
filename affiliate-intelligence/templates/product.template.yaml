@@ -1,0 +1,57 @@
+# Template: Affiliate Product
+# Schema: affiliate-intelligence/schemas/product.schema.yaml
+# Copy to: affiliate-intelligence/products/{id}.yaml
+
+id: prod-{brand}-{sku-slug}
+name: ''
+slug: ''
+
+brand_id: brand-
+merchant_id: merchant-
+program_id: prog-
+network_id: net- # null for direct
+
+sku: ''
+gtin: ''
+
+content_crosswalk:
+  content_card_id: pc-
+  evidence_record_id: ''
+  wordpress_canonical_url: ''
+
+official_product_url: ''
+
+region_links:
+  - country_codes: [US]
+    affiliate_url: ''
+    retailer_name: ''
+    link_type: direct-brand # direct-brand | network-deep-link | amazon-asin | other
+    notes: ''
+
+country_restrictions:
+  allowed_country_codes: []
+  blocked_country_codes: []
+  notes: ''
+
+content_opportunities:
+  wordpress: { allowed: true, restrictions: '', notes: '' }
+  youtube: { allowed: null, restrictions: '', notes: '' }
+  instagram: { allowed: null, restrictions: '', notes: '' }
+  facebook: { allowed: null, restrictions: '', notes: '' }
+  pinterest: { allowed: null, restrictions: '', notes: '' }
+  x: { allowed: null, restrictions: '', notes: '' }
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: ''
+
+status: inactive # inactive | active | broken | retired
+
+notes: ''
+
+created_at: ''
+updated_at: ''

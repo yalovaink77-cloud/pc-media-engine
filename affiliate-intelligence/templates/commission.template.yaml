@@ -1,0 +1,37 @@
+# Template: Affiliate Commission Snapshot
+# Schema: affiliate-intelligence/schemas/commission.schema.yaml
+# Copy to: affiliate-intelligence/commissions/{id}.yaml
+# Create new file when terms change; link via supersedes.
+
+id: comm-{program}-{effective-date}
+program_id: prog-
+brand_id: brand-
+merchant_id: merchant-
+network_id: net-
+
+commission_type: unknown # cpa | cps | cpc | cpl | flat | tiered | hybrid | unknown
+rate_description: ''
+rate_percent: null
+rate_flat_amount: null
+currency: USD
+
+cookie_days: null
+
+country_codes: [] # empty = program default
+
+effective_date: YYYY-MM-DD
+end_date: null
+supersedes: comm-
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: YYYY-MM-DD
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: ''
+
+notes: ''
+
+created_at: ''
+updated_at: ''

@@ -1,0 +1,222 @@
+# PiercingConnect Affiliate Intelligence — Merchant Schema
+# Version: 0.2
+#
+# Advertiser account as enrolled or listed on a network, or direct brand storefront.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/merchant/v1'
+title: AffiliateMerchant
+description: Merchant or advertiser entity linking a brand to a network or direct program channel.
+type: object
+required:
+  - id
+  - name
+  - slug
+  - brand_id
+  - channel_type
+  - status
+  - verification
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - merchant-neilmed-shareasale
+      - merchant-h2ocean-direct
+
+  name:
+    type: string
+    description: Merchant display name as shown in network portal or brand program.
+    minLength: 2
+    maxLength: 160
+
+  slug:
+    type: string
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  channel_type:
+    type: string
+    enum:
+      - network
+      - direct
+    description: network = via affiliate network; direct = brand-operated affiliate program.
+
+  network_id:
+    type:
+      - string
+      - 'null'
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Required when channel_type is network; null when direct-only.
+
+  external_merchant_id:
+    type: string
+    description: Network-assigned merchant/advertiser ID—never credentials.
+
+  program_ids:
+    type: array
+    items:
+      type: string
+      pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  product_ids:
+    type: array
+    items:
+      type: string
+      pattern: '^prod-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  storefront_urls:
+    type: array
+    description: Official consumer storefront URLs by region (non-affiliate).
+    items:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        country_codes:
+          type: array
+          items:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        label:
+          type: string
+
+  country_restrictions:
+    $ref: '#/$defs/countryRestrictions'
+
+  application_eligibility:
+    $ref: '#/$defs/applicationEligibility'
+
+  content_opportunities:
+    $ref: '#/$defs/contentOpportunities'
+
+  verification:
+    $ref: '#/$defs/verification'
+
+  status:
+    type: string
+    enum:
+      - prospect
+      - evaluating
+      - active
+      - paused
+      - terminated
+
+  notes:
+    type: string
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+$defs:
+  verification:
+    type: object
+    required:
+      - status
+      - last_checked_at
+      - evidence_confidence
+    properties:
+      status:
+        type: string
+        enum:
+          - unverified
+          - partial
+          - verified
+          - stale
+          - disputed
+      official_source_url:
+        type: string
+        format: uri
+        description: Network merchant page, brand affiliate page, or TOS—not login URLs.
+      last_checked_at:
+        type: string
+        format: date
+      evidence_confidence:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+      checked_by:
+        type: string
+        description: Role label (e.g. revenue-ops)—not personal credentials.
+      notes:
+        type: string
+
+  countryRestrictions:
+    type: object
+    properties:
+      allowed_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      blocked_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      notes:
+        type: string
+
+  applicationEligibility:
+    type: object
+    properties:
+      open_to_new_publishers:
+        type: boolean
+      traffic_requirements:
+        type: string
+        description: Human-readable summary (e.g. "10k sessions/mo")—not analytics secrets.
+      content_requirements:
+        type: array
+        items:
+          type: string
+      prohibited_traffic:
+        type: array
+        items:
+          type: string
+      notes:
+        type: string
+
+  contentOpportunities:
+    type: object
+    description: Platform-level commercial placement eligibility—not editorial approval.
+    properties:
+      wordpress:
+        $ref: '#/$defs/platformOpportunity'
+      youtube:
+        $ref: '#/$defs/platformOpportunity'
+      instagram:
+        $ref: '#/$defs/platformOpportunity'
+      facebook:
+        $ref: '#/$defs/platformOpportunity'
+      pinterest:
+        $ref: '#/$defs/platformOpportunity'
+      x:
+        $ref: '#/$defs/platformOpportunity'
+
+  platformOpportunity:
+    type: object
+    properties:
+      allowed:
+        type: boolean
+      restrictions:
+        type: string
+      notes:
+        type: string
+
+additionalProperties: false

@@ -1,0 +1,182 @@
+# PiercingConnect Affiliate Intelligence — Payment Schema
+# Version: 0.2
+#
+# Payout terms snapshot—thresholds, methods, currencies. No banking or tax data.
+
+$schema: 'https://json-schema.org/draft/2020-12/schema'
+$id: 'https://piercingconnect.com/schemas/affiliate-intelligence/payment/v1'
+title: AffiliatePayment
+description: Payout configuration snapshot for a network or program enrollment.
+type: object
+required:
+  - id
+  - scope_type
+  - status
+  - verification
+  - created_at
+  - updated_at
+
+properties:
+  id:
+    type: string
+    pattern: '^pay-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    examples:
+      - pay-shareasale-default
+      - prog-neilmed-shareasale-us-payout
+
+  name:
+    type: string
+    description: Human label for this payout profile.
+    minLength: 2
+    maxLength: 160
+
+  scope_type:
+    type: string
+    enum:
+      - network
+      - program
+    description: Whether terms apply network-wide or to a specific program.
+
+  network_id:
+    type: string
+    pattern: '^net-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Set when scope_type is network.
+
+  program_id:
+    type: string
+    pattern: '^prog-[a-z0-9]+(?:-[a-z0-9]+)*$'
+    description: Set when scope_type is program.
+
+  brand_id:
+    type: string
+    pattern: '^brand-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  merchant_id:
+    type: string
+    pattern: '^merchant-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  payout_thresholds:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required:
+        - currency
+        - minimum_amount
+      properties:
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        minimum_amount:
+          type: number
+          minimum: 0
+        country_codes:
+          type: array
+          items:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        notes:
+          type: string
+
+  payment_methods:
+    type: array
+    description: Method names only—no account numbers.
+    items:
+      type: string
+    examples:
+      - paypal
+      - ach
+      - wire
+      - check
+      - payoneer
+
+  supported_currencies:
+    type: array
+    items:
+      type: string
+      pattern: '^[A-Z]{3}$'
+
+  payout_schedule:
+    type: string
+    description: Human-readable (e.g. "Net-30 monthly on the 20th").
+
+  country_restrictions:
+    type: object
+    properties:
+      allowed_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      blocked_country_codes:
+        type: array
+        items:
+          type: string
+          pattern: '^[A-Z]{2}$'
+      notes:
+        type: string
+
+  verification:
+    $ref: '#/$defs/verification'
+
+  status:
+    type: string
+    enum:
+      - active
+      - historical
+      - unknown
+
+  effective_date:
+    type: string
+    format: date
+
+  supersedes:
+    type: string
+    pattern: '^pay-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+  notes:
+    type: string
+    description: Explicit reminder—never store tax IDs, banking details, or API secrets here.
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+$defs:
+  verification:
+    type: object
+    required:
+      - status
+      - last_checked_at
+      - evidence_confidence
+    properties:
+      status:
+        type: string
+        enum:
+          - unverified
+          - partial
+          - verified
+          - stale
+          - disputed
+      official_source_url:
+        type: string
+        format: uri
+      last_checked_at:
+        type: string
+        format: date
+      evidence_confidence:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+      checked_by:
+        type: string
+      notes:
+        type: string
+
+additionalProperties: false
