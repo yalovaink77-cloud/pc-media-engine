@@ -1,0 +1,39 @@
+id: brand-otzi
+name: Otzi
+slug: otzi
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://www.otzi.fr/en/nos-produits/otzi-piercing-en/otzi-by-easypiercing-saline-solution-spray-50ml-piercing-aftercare/
+
+product_categories:
+  - sterile-saline
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids:
+    - official-otzi
+
+merchant_ids: []
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: >
+  OTZI by Easypiercing product line. Evidence record official-otzi covers Easypiercing
+  Saline Solution 50 mL SKU. No dedicated content card. Relationship to brand-easypiercing
+  unresolved for affiliate enrollment. EU/FR commercial context likely—geo limits unknown.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

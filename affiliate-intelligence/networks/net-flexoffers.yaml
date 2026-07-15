@@ -1,0 +1,35 @@
+id: net-flexoffers
+name: FlexOffers
+slug: flexoffers
+
+status: evaluating
+
+website_url: https://www.flexoffers.com/
+
+publisher_account:
+  account_label: ''
+  publisher_id: ''
+  enrolled_at: null
+
+default_cookie_days: null
+
+supported_countries: []
+
+payout:
+  minimum_threshold_usd: null
+  payment_methods: []
+  schedule_notes: 'Unresolved — pending live research.'
+
+policies:
+  tos_url: https://www.flexoffers.com/publisher-terms/
+  piercing_content_notes: 'Unresolved — review publisher terms for piercing/aftercare content.'
+  last_reviewed: null
+
+contacts: []
+
+notes: >
+  Stub record (Sprint 005). Unresolved: default_payment_id, publisher_account,
+  default_cookie_days, supported_countries, payout terms.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

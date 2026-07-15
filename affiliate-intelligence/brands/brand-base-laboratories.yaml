@@ -1,0 +1,40 @@
+id: brand-base-laboratories
+name: Base Laboratories
+slug: base-laboratories
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://baselaboratories.com/products/base-labs-piercing-aftercare-spray
+
+product_categories:
+  - sterile-saline
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids:
+    - pc-hub-sterile-saline-complete-guide
+  evidence_record_ids:
+    - official-base-laboratories
+
+merchant_ids: []
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: >
+  Hub comparison peer only—no dedicated review content card. Referenced in sterile-saline
+  hub and peer review alternates tables. Legal entity name unresolved. Affiliate program
+  unresolved. 0.9% concentration unresolved per evidence record.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

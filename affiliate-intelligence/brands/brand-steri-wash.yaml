@@ -1,0 +1,40 @@
+id: brand-steri-wash
+name: Steri-Wash
+slug: steri-wash
+
+legal_name: ''
+
+status: prospect
+
+website_url: https://steri-wash.myshopify.com/pages/frontpage
+
+product_categories:
+  - sterile-saline
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids:
+    - pc-review-steri-wash-saline
+  evidence_record_ids:
+    - official-steri-wash
+
+merchant_ids: []
+program_ids: []
+
+editorial:
+  cluster_role: category-example
+  review_status: draft
+  limitations_on_file: true
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: >
+  Sterile-saline cluster category example. Review draft exists (WP post 444).
+  Legal entity name unresolved. Affiliate program unresolved. 0.9% verified on
+  4.25 oz label only per evidence record.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

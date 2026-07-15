@@ -1,0 +1,38 @@
+id: brand-easypiercing
+name: EasyPiercing
+slug: easypiercing
+
+legal_name: ''
+
+status: prospect
+
+product_categories:
+  - sterile-saline
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids: []
+  evidence_record_ids:
+    - official-otzi
+
+merchant_ids: []
+program_ids: []
+
+editorial:
+  cluster_role: comparison-peer
+  review_status: none
+  limitations_on_file: false
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: >
+  Name-only peer in sterile-saline hub—no dedicated content card. Evidence via
+  official-otzi (OTZI by Easypiercing 50 mL SKU). Official brand website URL
+  unresolved. Affiliate program unresolved. Sterility and 0.9% concentration
+  unresolved.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

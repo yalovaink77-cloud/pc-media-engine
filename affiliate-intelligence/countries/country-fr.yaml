@@ -1,0 +1,39 @@
+id: country-fr
+iso_code: FR
+name: France
+
+region_groups:
+  - european-union
+
+primary_currency: EUR
+supported_currencies:
+  - EUR
+
+affiliate_notes:
+  disclosure_requirements_summary: 'Unresolved — pending live research on EU/FR commercial disclosure expectations.'
+  common_network_availability: 'Unresolved — EU networks may apply; OTZI/EasyPiercing EU context possible.'
+  piercing_content_caution: 'Unresolved — review network TOS for health/aftercare content.'
+
+related_program_ids: []
+related_network_ids: []
+
+traffic_requirements_notes: 'Unresolved — pending live research.'
+
+restrictions:
+  blocked_for_piercingconnect: false
+  reason: ''
+
+verification:
+  status: unverified
+  official_source_url: ''
+  last_checked_at: 2026-07-15
+  evidence_confidence: low
+  checked_by: revenue-ops
+  notes: 'Stub record (Sprint 005).'
+
+status: monitoring
+
+notes: 'Stub — network and program eligibility unresolved.'
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

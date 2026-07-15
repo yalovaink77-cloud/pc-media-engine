@@ -1,0 +1,40 @@
+id: brand-neilmed
+name: NeilMed
+slug: neilmed
+
+legal_name: NeilMed Pharmaceuticals, Inc.
+
+status: prospect
+
+website_url: https://www.neilmedpac.com/usa/piercing-aftercare/
+
+product_categories:
+  - sterile-saline
+  - piercing-aftercare
+
+content_crosswalk:
+  content_card_ids:
+    - pc-review-neilmed-fine-mist
+  evidence_record_ids:
+    - official-neilmed
+
+merchant_ids: []
+program_ids: []
+
+editorial:
+  cluster_role: category-example
+  review_status: draft
+  limitations_on_file: true
+
+restrictions:
+  brand_guidelines_url: ''
+  prohibited_claims: []
+  geographic_limits: []
+
+notes: >
+  Sterile-saline cluster category example. Review draft exists (WP post 443).
+  Affiliate channel (Amazon, direct, network) unresolved. 0.9% concentration
+  unresolved on piercing SKU per evidence record.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'

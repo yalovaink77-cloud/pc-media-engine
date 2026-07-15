@@ -1,0 +1,42 @@
+id: policy-disclosure-default
+name: PiercingConnect Default Affiliate Disclosure
+slug: disclosure-default
+
+policy_type: disclosure
+scope_level: global
+
+summary: >
+  Default affiliate disclosure copy for PiercingConnect product reviews and commercial
+  content. Programs may reference this policy via disclosure.template_id until a
+  program-specific addendum is required.
+
+template_text: |
+  We may earn a commission from qualifying purchases made through links on this page.
+  Product inclusion, limitations, and editorial verdicts are independent of commission.
+  Affiliate relationships do not create a ranking and do not remove documented evidence
+  gaps on reviewed products.
+
+body_markdown: |
+  ## Usage
+
+  - Apply at end of article after source notes (WordPress packages use `affiliate_disclosure_placement.position: end_of_article`).
+  - Do not place in safety, escalation, or medical-advice sections.
+  - Program-specific addendum may append via `programs/{id}.yaml` → `disclosure.custom_copy`.
+
+  ## Editorial firewall
+
+  Commission rate must not influence product verdict, ranking language, or evidence boundaries.
+
+official_source_url: https://www.ftc.gov/business-guidance/resources/disclosures-101-social-media-influencers
+last_reviewed: 2026-07-15
+
+related_policy_ids: []
+
+status: active
+
+notes: >
+  Global default stub for Sprint 005. Legal review and locale-specific variants (TR/EU)
+  unresolved—do not treat as legal advice.
+
+created_at: '2026-07-15T14:00:00Z'
+updated_at: '2026-07-15T14:00:00Z'
